@@ -1,0 +1,21 @@
+{
+  "APP": {
+    "TITLE": "BuenoHotel - Reserva tu estadía",
+    "MENU": {
+      "HOME": "Inicio",
+      "ROOMS": "Habitaciones",
+      "SERVICES": "Servicios",
+      "ABOUT": "Sobre Nosotros",
+      "CONTACT": "Contacto"
+    },
+    "CURRENCY": {
+      "DOP": "Peso Dominicano (DOP)",
+      "USD": "Dólar Estadounidense (USD)"
+    },
+    "BUTTONS": {
+      "BOOK_NOW": "Reservar Ahora",
+      "LEARN_MORE": "Saber Más",
+      "CONTACT_US": "Contáctenos"
+    }
+  }
+}
