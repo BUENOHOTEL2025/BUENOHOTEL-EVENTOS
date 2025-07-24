@@ -6,9 +6,12 @@ async function cargarEventos() {
   // El body es un string JSON, así que hay que parsearlo
   const eventos = JSON.parse(data.body);
   console.log('EVENTOS:', eventos); // <-- Depuración
-  mostrarProximos(eventos.filter(ev => ev.tipo === 'proximos'));
-  mostrarGaleria(eventos.filter(ev => ev.tipo === 'galeria'));
-  mostrarOtros(eventos.filter(ev => ev.tipo === 'otros'));
+  const getTipo = ev => typeof ev.tipo === "string" ? ev.tipo : (ev.tipo && ev.tipo.S ? ev.tipo.S : "");
+  const galeriaFiltrada = eventos.filter(ev => getTipo(ev) === 'galeria');
+  console.log('GALERIA FILTRADA:', galeriaFiltrada);
+  mostrarProximos(eventos.filter(ev => getTipo(ev) === 'proximos'));
+  mostrarGaleria(galeriaFiltrada);
+  mostrarOtros(eventos.filter(ev => getTipo(ev) === 'otros'));
 }
 
 function mostrarProximos(eventos) {
@@ -33,20 +36,28 @@ function mostrarProximos(eventos) {
 }
 
 function mostrarGaleria(eventos) {
+  console.log('EVENTOS EN GALERIA:', eventos);
   const cont = document.getElementById('galeria-container');
   cont.innerHTML = '';
-  cont.innerHTML = `<div class="gallery-grid">${eventos.map(ev => `
-    <div class="gallery-card">
-      <div class="gallery-images">
-        ${(ev.imagenes || []).map(img => `<img src="${img}" alt="${ev.nombre}">`).join('')}
+  cont.innerHTML = `<div class="gallery-grid">${eventos.map(ev => {
+    // Normaliza el array de imágenes: acepta arrays de strings o de objetos {S: ...}
+    const imagenes = (ev.imagenes || [])
+      .map(img => typeof img === "string" ? img : (img && img.S ? img.S : ''))
+      .filter(img => img.startsWith('assets/img/'));
+    console.log('IMAGENES DEL EVENTO:', ev.nombre, imagenes);
+    return `
+      <div class="gallery-card">
+        <div class="gallery-images">
+          ${imagenes.filter(Boolean).map(img => `<img src="${img}" alt="${ev.nombre}">`).join('')}
+        </div>
+        <div class="gallery-info">
+          <h4>${ev.nombre}</h4>
+          <p><strong>Lugar:</strong> ${ev.lugar && ev.lugar.S ? ev.lugar.S : (ev.lugar || '')}</p>
+          <p><strong>Fecha:</strong> ${ev.fecha && ev.fecha.S ? ev.fecha.S : (ev.fecha || '')}</p>
+        </div>
       </div>
-      <div class="gallery-info">
-        <h4>${ev.nombre}</h4>
-        <p><strong>Lugar:</strong> ${ev.lugar || ''}</p>
-        <p><strong>Fecha:</strong> ${ev.fecha}</p>
-      </div>
-    </div>
-  `).join('')}</div>`;
+    `;
+  }).join('')}</div>`;
 }
 
 function mostrarOtros(eventos) {

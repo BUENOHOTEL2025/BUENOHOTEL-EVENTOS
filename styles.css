@@ -32,7 +32,7 @@ header nav ul li a:hover {
   text-decoration: underline;
 }
 .banner {
-  background: linear-gradient(rgba(20,20,20,0.5),rgba(20,20,20,0.5)), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80') no-repeat center center/cover;
+  background: #222; /* Puedes poner otro color o una imagen local si lo prefieres */
   color: #fff;
   text-align: center;
   padding: 90px 20px 70px 20px;

@@ -1,0 +1,61 @@
+<!-- Footer BuenoHotel adaptado de Ecommerce para Eventos -->
+<footer class="footer-bueno" style="background: #FBB03B; color: #222; padding: 32px 0 0 0; margin-top: 40px;">
+  <div class="footer-content animated-footer" style="max-width: 900px; margin: 0 auto; text-align: center;">
+    <div class="footer-logo-center" style="margin-bottom: 12px;">
+      <img src="assets/logo/logo-white.png" alt="Logo BuenoHotel" class="footer-main-logo" style="height: 54px; background: #fff; border-radius: 12px; padding: 6px 18px;"/>
+    </div>
+    <div class="footer-links-grid-modern" style="margin-bottom: 18px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.8rem;">
+      <a href="https://www.buenohotel.com" class="footer-link-card" target="_blank">Conócenos</a>
+      <a href="#" class="footer-link-card">Encuentra tu destino</a>
+      <a href="#contacto-section" class="footer-link-card">Contacto</a>
+      <a href="https://facebook.com/BuenohotelSRL" class="footer-link-card" target="_blank">Facebook</a>
+      <a href="https://instagram.com/buenohotel" class="footer-link-card" target="_blank">Instagram</a>
+      <a href="#" class="footer-link-card">Ofertas</a>
+      <a href="#servicios-section" class="footer-link-card">Servicios</a>
+      <a href="#" class="footer-link-card">Categorías</a>
+      <a href="../Ecommerce/index.html" class="footer-link-card">Volver al Inicio</a>
+    </div>
+    <div class="footer-separator" style="border-top: 1px solid #e8c167; margin: 18px 0 14px 0;"></div>
+    <div class="footer-pay-contact" style="margin-bottom: 10px;">
+      <div class="footer-pay-logos" style="margin-bottom: 8px;">
+        <span style="font-size: 1.05em; margin-right: 1.2rem;">Autorizados por:</span>
+        <img class="pay-logo zoomable-logo" src="assets/logo/mastercardidentitycheck.png" alt="Mastercard Identity Check" data-img="assets/logo/mastercardidentitycheck.png" style="height: 28px; margin-right: 10px; cursor: pointer; background: #fff; border-radius: 6px; padding: 2px 6px;" />
+        <img class="pay-logo zoomable-logo" src="assets/logo/visa-secure_blu_2021.png" alt="Visa Secure" data-img="assets/logo/visa-secure_blu_2021.png" style="height: 28px; margin-right: 10px; cursor: pointer; background: #fff; border-radius: 6px; padding: 2px 6px;" />
+        <br>
+        <span style="font-size: 1.05em; margin-right: 1.2rem; margin-top: 8px; display: inline-block;">Aceptamos pagos de:</span>
+        <img class="pay-logo zoomable-logo" src="assets/logo/Visa-Logo-2005.jpg" alt="Visa" data-img="assets/logo/Visa-Logo-2005.jpg" style="height: 32px; margin-right: 12px; background: #fff; border-radius: 6px; padding: 2px 8px; cursor: pointer;" />
+        <img class="pay-logo zoomable-logo" src="assets/logo/mastercard-logo.jpg" alt="Mastercard" data-img="assets/logo/mastercard-logo.jpg" style="height: 32px; background: #fff; border-radius: 6px; padding: 2px 8px; cursor: pointer;" />
+      </div>
+      <!-- Modal para mostrar el logo ampliado -->
+      <div id="zoom-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); align-items: center; justify-content: center;">
+        <div style="background: #fff; border-radius: 1.1em; box-shadow: 0 8px 32px #000a; padding: 1.2em 2em 1.5em 2em; position: relative; display: flex; flex-direction: column; align-items: center; max-width: 96vw; max-height: 90vh;">
+          <img id="zoom-img" src="" alt="Logo ampliado" style="max-width: 320px; max-height: 60vh; width: auto; height: auto; margin-bottom: 0.7em; box-shadow: 0 2px 24px #0003; border-radius: 0.5em; background: #fff;" />
+          <span id="close-zoom" style="position: absolute; top: 0.4em; right: 1em; font-size: 2.2em; color: #000; cursor: pointer; font-weight: bold; transition: color 0.15s;">&times;</span>
+        </div>
+      </div>
+      <div class="footer-contact-info" style="margin-top: 8px;">
+        <span class="footer-contact-label">Correo:</span> <a class="footer-contact-mail" href="mailto:info@buenohotel.com" style="color:#222;font-weight:bold;">info@buenohotel.com</a>
+      </div>
+    </div>
+    <div class="footer-copyright" style="margin-top: 16px; color: #111; font-size: 0.92em;">
+      &copy; 2025 Ecommerce BuenoHotel. Todos los derechos reservados.
+    </div>
+  </div>
+</footer>
+<script>
+  document.querySelectorAll('.zoomable-logo').forEach(function(el){
+    el.addEventListener('click',function(){
+      document.getElementById('zoom-img').src = el.getAttribute('data-img');
+      document.getElementById('zoom-modal').style.display = 'flex';
+    });
+  });
+  document.getElementById('close-zoom').onclick = function(){
+    document.getElementById('zoom-modal').style.display = 'none';
+  }
+  document.getElementById('zoom-modal').onclick = function(e){
+    if(e.target===this){
+      document.getElementById('zoom-modal').style.display = 'none';
+    }
+  }
+</script>
+<!-- Fin Footer BuenoHotel -->
