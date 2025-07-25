@@ -41,9 +41,13 @@ function mostrarGaleria(eventos) {
   cont.innerHTML = '';
   cont.innerHTML = `<div class="gallery-grid">${eventos.map(ev => {
     // Normaliza el array de imágenes: acepta arrays de strings o de objetos {S: ...}
+    // Prefijo de tu bucket S3 para imágenes de eventos
+    const S3_BASE_URL = 'https://eventos-buenohotel-com-do-website-bucket.s3.us-east-1.amazonaws.com/';
+    // En DynamoDB solo debes guardar la ruta relativa, ejemplo: "assets/img/Gran_Ventana_Beach_Resort_1.jpg"
     const imagenes = (ev.imagenes || [])
       .map(img => typeof img === "string" ? img : (img && img.S ? img.S : ''))
-      .filter(img => img.startsWith('assets/img/'));
+      .filter(img => !!img)
+      .map(img => S3_BASE_URL + img);
     console.log('IMAGENES DEL EVENTO:', ev.nombre, imagenes);
     return `
       <div class="gallery-card">
