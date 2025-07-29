@@ -55,10 +55,271 @@ main {
   margin: 30px auto;
   padding: 20px;
 }
-.event {
-  margin-bottom: 40px;
+
+/* Grilla responsiva para eventos */
+#proximos-section {
+  margin-bottom: 50px;
+  text-align: center;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+#proximos-section h2 {
+  color: #000;
+  margin-bottom: 30px;
+  font-size: 2.2rem;
+  width: 100%;
   text-align: center;
 }
+#proximos-container {
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 32px;
+  margin-top: 20px;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px 22px;
+  justify-items: center;
+  align-items: stretch;
+}
+
+/* Tarjetas de eventos mejoradas */
+.event-card, .gallery-card, .other-event-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+  padding: 18px 18px 18px 18px;
+  margin: 0;
+  max-width: 390px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.2s;
+  position: relative;
+}
+.event-card:hover, .gallery-card:hover, .other-event-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+}
+.event-card img, .gallery-card img, .other-event-card img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 340px;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.event-info, .gallery-info {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.event-info h3, .gallery-info h4, .event-info p, .gallery-info p {
+  text-align: center;
+  width: 100%;
+}
+.btn-ver-mas {
+  margin-left: auto;
+  margin-right: auto;
+}
+.btn-ver-mas {
+  background: #FBB03B;
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 28px;
+  font-weight: bold;
+  font-size: 1.08rem;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-ver-mas:hover {
+  background: #222;
+  color: #FBB03B;
+}
+
+/* Modal grande para eventos */
+.evento-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.65);
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+.evento-modal-content {
+  background: #fff;
+  border-radius: 18px;
+  max-width: 900px;
+  width: 96vw;
+  min-height: 400px;
+  margin: 36px auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px 24px 24px;
+}
+.evento-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 28px;
+  font-size: 2.6rem;
+  color: #222;
+  cursor: pointer;
+  z-index: 2;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+.evento-modal-close:hover {
+  color: #FBB03B;
+}
+.evento-modal-body {
+  display: flex;
+  flex-direction: row;
+  gap: 36px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.evento-modal-info {
+  flex: 1 1 300px;
+  min-width: 260px;
+  max-width: 350px;
+  margin-top: 18px;
+  color: #111;
+}
+.evento-modal-info h2,
+.evento-modal-info p,
+.evento-modal-info strong,
+.evento-modal-info a {
+  color: #111 !important;
+  background: none !important;
+}
+.evento-modal-info h2 {
+  font-size: 2.1rem;
+  margin-bottom: 18px;
+}
+.evento-modal-info p {
+  font-size: 1.13rem;
+  margin-bottom: 8px;
+}
+
+/* Carrusel de imágenes */
+.evento-carrusel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 350px;
+  max-width: 450px;
+  min-width: 240px;
+  position: relative;
+}
+.evento-carrusel-img {
+  width: 100%;
+  max-width: 420px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
+.evento-carrusel-prev, .evento-carrusel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.18);
+  border: none;
+  color: #fff;
+  font-size: 2.2rem;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s;
+}
+.evento-carrusel-prev:hover, .evento-carrusel-next:hover {
+  background: #FBB03B;
+  color: #222;
+}
+.evento-carrusel-prev {
+  left: 6px;
+}
+.evento-carrusel-next {
+  right: 6px;
+}
+.evento-carrusel-indicadores {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+  gap: 8px;
+}
+.evento-carrusel-dot {
+  width: 12px;
+  height: 12px;
+  background: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.evento-carrusel-dot.active {
+  background: #FBB03B;
+}
+
+@media (max-width: 900px) {
+  .evento-modal-content {
+    flex-direction: column;
+    max-width: 99vw;
+    padding: 16px 4vw 24px 4vw;
+  }
+  .evento-modal-body {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .evento-carrusel-img {
+    max-width: 98vw;
+    height: 210px;
+  }
+}
+
+@media (max-width: 600px) {
+  .event-card, .gallery-card, .other-event-card {
+    max-width: 98vw;
+    padding: 12px 4vw;
+  }
+  .evento-modal-content {
+    padding: 8px 1vw 18px 1vw;
+  }
+  .evento-modal-info {
+    max-width: 98vw;
+    min-width: 0;
+  }
+}
+
+
+/* Fin de estilos para eventos y modal */
+
 .event h2 {
   text-align: center;
   margin-left: auto;
@@ -80,27 +341,27 @@ main {
 }
 .event-card, .gallery-card, .other-event-card {
   background: #fff;
-  margin: 32px auto 24px auto;
-  box-shadow: 0 6px 32px rgba(0,0,0,0.09);
-  border-radius: 18px;
-  overflow: hidden;
-  max-width: 820px;
-  transition: transform 0.22s, box-shadow 0.22s;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  margin: 12px;
+  padding: 0;
+  transition: box-shadow 0.2s;
+  max-width: 350px;
+  min-height: 390px;
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
 }
-.event-card img, .gallery-card img, .other-event-card img {
-  width: 340px;
+.event-card:hover, .other-event-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.event-card img, .other-event-card img {
+  width: 100%;
   height: 220px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
   object-fit: cover;
-  border-radius: 18px 0 0 18px;
-  transition: transform 0.4s cubic-bezier(.25,.8,.25,1);
-}
-.event-card:hover img, .gallery-card:hover img, .other-event-card:hover img {
-  transform: scale(1.08);
-}
-.event-card:hover, .gallery-card:hover, .other-event-card:hover {
   transform: translateY(-8px) scale(1.025);
   box-shadow: 0 12px 48px rgba(0,0,0,0.13);
 }
@@ -182,34 +443,41 @@ main {
 }
 .gallery-card {
   background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  max-width: 340px;
-  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  max-width: 390px;
+  width: 100%;
   overflow: hidden;
-  transition: transform 0.18s, box-shadow 0.18s;
-  margin: 0 auto;
+  transition: box-shadow 0.2s;
+  margin: 0 auto 24px auto;
+  padding: 0 0 18px 0;
 }
 .gallery-card:hover {
   transform: translateY(-6px) scale(1.025);
   box-shadow: 0 8px 32px rgba(0,0,0,0.13);
 }
-.gallery-card img {
-  width: 110px;
-  height: 110px;
+.gallery-card-img {
+  width: 100%;
+  height: 220px;
   object-fit: cover;
-  border-radius: 14px 0 0 14px;
-  flex-shrink: 0;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.13);
 }
 .gallery-info {
-  padding: 16px 14px;
+  width: 100%;
+  padding: 18px 22px 0 22px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  font-size: 0.98rem;
+  font-size: 1.01rem;
+  text-align: center;
 }
 .gallery-info h4 {
   margin: 0 0 8px 0;

@@ -11,20 +11,19 @@
     <!-- HEADER NUEVO IGUAL AL DE ECOMMERCE -->
     <header class="main-header" style="width: 100vw; background: #FBB03B; box-shadow: 0 2px 8px rgba(0,0,0,0.07); position: relative; z-index: 10;">
       <div style="max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; min-height: 64px;">
-        <div class="logo" style="display: flex; align-items: center;">
-          <img src="assets/logo/114x114.png" alt="Logo BuenoHotel" style="height: 40px; width: 40px; margin-right: 12px; vertical-align: middle; background: transparent;">
-          <span class="logo-text" style="color: #fff; font-size: 1.7rem; font-weight: bold; letter-spacing: 1px;">BuenOHotel</span>
-        </div>
-        <nav class="main-nav">
+  <div class="logo-container" style="flex:0 0 auto; display:flex; align-items:center; justify-content:flex-start;">
+    <img src="assets/logo/logo-white.png" alt="Logo BuenoHotel" class="header-main-logo" style="height: 44px; width: auto; display: block;" />
+  </div>
+  <nav class="main-nav" style="flex:1 1 auto; display:flex; justify-content:flex-end;">
           <ul style="display: flex; gap: 0; margin: 0; padding: 0; list-style: none; background: none; align-items: center;">
-            <li><a href="../Ecommerce/index.html" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;">Inicio</a></li>
-            <li><a href="#servicios-section" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;">Servicios</a></li>
-            <li><a href="https://tours-buenohotel-com-do-website-bucket.s3.amazonaws.com/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;">Tours</a></li>
-            <li><a href="https://booking-buenohotel-com-do-website-bucket.s3.amazonaws.com/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;">Alojamientos</a></li>
-            <li><a href="https://booking-buenohotel-com-do-website-bucket.s3.amazonaws.com/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;">Hoteles</a></li>
-            <li><a href="https://eventos-buenohotel-com-do-website-bucket.s3.amazonaws.com/" style="background: #222; color: #FBB03B; padding: 12px 26px; border-radius: 8px; font-weight: 700; font-size: 1.08rem;">Eventos</a></li>
-            <li><a href="https://www.buenohotel.com" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;">Conócenos</a></li>
-            <li><a href="#contacto-section" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;">Contacto</a></li>
+            <li><a href="https://eventos-buenohotel-com-do-website-bucket.s3.amazonaws.com/" style="background: #222; color: #FBB03B; padding: 12px 26px; border-radius: 8px; font-weight: 700; font-size: 1.08rem;" target="_blank">Eventos</a></li>
+            <li><a href="https://ecommerce.buenohotel.com.do/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank">Ecommerce</a></li>
+            <li><a href="#servicios-section" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank">Servicios</a></li>
+            <li><a href="https://tours.buenohotel.com.do/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank">Tours</a></li>
+            <li><a href="https://booking-buenohotel-com-do-website-bucket.s3.amazonaws.com/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank">Alojamientos</a></li>
+            <li><a href="https://booking-buenohotel-com-do-website-bucket.s3.amazonaws.com/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank">Hoteles</a></li>
+            <li><a href="https://www.buenohotel.com" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank">Conócenos</a></li>
+            <li><a href="https://ecommerce.buenohotel.com.do/contactos" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank">Contacto</a></li>
           </ul>
         </nav>
       </div>
@@ -54,33 +53,20 @@
       <div id="otros-container"></div>
     </section>
 
-    <section class="event">
-      <h2>Próximo Evento: Retiro de Casados</h2>
-      <div class="event-card" style="display: flex; flex-direction: column; align-items: center;">
-        <img
-          src="assets/img/Gran_Ventana_Beach_Resort_1.jpg"
-          alt="Retiro de Casados"
-          style="max-width: 100%; border-radius: 16px; margin-bottom: 16px;"
-        />
-        <div class="event-info" style="text-align: center;">
-          <h3>Retiro de Casados</h3>
-          <p><strong>Invita:</strong> Iglesia de Cristo de Santo Domingo</p>
-          <p><strong>Lugar:</strong> Hotel Emotions by Hodelpa Puerto Plata</p>
-          <p><strong>Fecha:</strong> 12 al 14 de septiembre, 2025</p>
-          <a
-            href="https://forms.office.com/pages/responsepage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAN__hsYcupURVNPRlUzVlpURUk1UUY4UE8yQklPUlYwNC4u&origin=lprLink&route=shorturl"
-            target="_blank"
-            class="btn-register"
-            style="margin-top: 12px; display: inline-block;"
-            >Registro de Usuario al Evento</a>
-        </div>
-      </div>
-    </section>
-
-
     <!-- FOOTER NUEVO IGUAL AL DE ECOMMERCE -->
     <footer style="background: #FBB03B; color: #fff; padding: 32px 0 0 0; margin-top: 40px;">
       <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+
+    <!-- Modal para detalles de eventos -->
+    <div id="evento-modal" class="evento-modal">
+      <div class="evento-modal-content">
+        <span class="evento-modal-close">&times;</span>
+        <div class="evento-modal-body">
+          <!-- Aquí se inyectará el contenido dinámicamente -->
+        </div>
+      </div>
+    </div>
+
         <nav class="footer-nav" style="margin-bottom: 22px;">
           <ul class="footer-pill-list">
             <li><a href="https://www.buenohotel.com" class="footer-pill">Conócenos</a></li>
@@ -134,6 +120,8 @@
           }
         }
         </script>
+        <script src="main.js"></script>
+        <script>window.addEventListener('DOMContentLoaded', cargarEventos);</script>
         <div style="margin-bottom: 10px;">
           <span>Correo. <a href="mailto:info@buenohotel.com" style="color:#222;font-weight:bold;">info@buenohotel.com</a></span>
         </div>
