@@ -7,14 +7,86 @@ async function cargarEventos() {
   const eventos = JSON.parse(data.body);
   console.log('EVENTOS:', eventos); // <-- Depuración
   const getTipo = ev => typeof ev.tipo === "string" ? ev.tipo : (ev.tipo && ev.tipo.S ? ev.tipo.S : "");
-  const proximos = eventos.filter(ev => getTipo(ev) === 'proximos');
-  const galeriaFiltrada = eventos.filter(ev => getTipo(ev) === 'galeria');
+  // --- ORDENAR eventos proximos por fecha más próxima ---
+  function extraerFecha(fechaTexto) {
+    // 1. Rango con 'de' y coma: "23-25 de Junio, 2023"
+    let match = fechaTexto.match(/(\d+)[\s\-]+(\d+)\s+de\s+([a-zA-ZñÑ]+),?\s*(\d{4})/i);
+    if (match) {
+      const dia = parseInt(match[2], 10);
+      const mesNombre = match[3].toLowerCase();
+      const anio = parseInt(match[4], 10);
+      const meses = {
+        enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+        julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+      };
+      return new Date(anio, meses[mesNombre], dia);
+    }
+    // 2. Rango sin 'de': "21 al 23 junio 2024"
+    match = fechaTexto.match(/(\d+)[\s\-]+(\d+)\s+([a-zA-ZñÑ]+),?\s*(\d{4})/i);
+    if (match) {
+      const dia = parseInt(match[2], 10);
+      const mesNombre = match[3].toLowerCase();
+      const anio = parseInt(match[4], 10);
+      const meses = {
+        enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+        julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+      };
+      return new Date(anio, meses[mesNombre], dia);
+    }
+    // 3. Simple: "4 Diciembre, 2021", "4 Diciembre 2021"
+    match = fechaTexto.match(/(\d+)\s+([a-zA-ZñÑ]+),?\s*(\d{4})/i);
+    if (match) {
+      const dia = parseInt(match[1], 10);
+      const mesNombre = match[2].toLowerCase();
+      const anio = parseInt(match[3], 10);
+      const meses = {
+        enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+        julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+      };
+      return new Date(anio, meses[mesNombre], dia);
+    }
+    // 4. Rango con mes y año: "18-20 Octubre, 2019"
+    match = fechaTexto.match(/(\d+)[\s\-]+(\d+)\s+([a-zA-ZñÑ]+),?\s*(\d{4})/i);
+    if (match) {
+      const dia = parseInt(match[2], 10);
+      const mesNombre = match[3].toLowerCase();
+      const anio = parseInt(match[4], 10);
+      const meses = {
+        enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+        julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+      };
+      return new Date(anio, meses[mesNombre], dia);
+    }
+    // 5. Si solo hay año: "2023"
+    match = fechaTexto.match(/(\d{4})/);
+    if (match) {
+      return new Date(parseInt(match[1], 10), 0, 1);
+    }
+    return new Date(2100, 0, 1); // Por defecto, una fecha lejana
+  }
+  let proximos = eventos.filter(ev => getTipo(ev) === 'proximos');
+  proximos = proximos.sort((a, b) => {
+    const fechaA = extraerFecha(a.fecha || (a.fecha && a.fecha.S) || '');
+    const fechaB = extraerFecha(b.fecha || (b.fecha && b.fecha.S) || '');
+    return fechaA - fechaB;
+  });
+  let galeriaFiltrada = eventos.filter(ev => getTipo(ev) === 'galeria');
+  galeriaFiltrada = galeriaFiltrada.sort((a, b) => {
+    // Soporta tanto string como objeto tipo DynamoDB
+    let fechaStrA = (a.fecha && typeof a.fecha === 'object' && a.fecha.S) ? a.fecha.S : (a.fecha || '');
+    let fechaStrB = (b.fecha && typeof b.fecha === 'object' && b.fecha.S) ? b.fecha.S : (b.fecha || '');
+    const fechaA = extraerFecha(fechaStrA);
+    const fechaB = extraerFecha(fechaStrB);
+    // Debug: muestra el año extraído
+    console.log('Orden galeria:', {nombreA: a.nombre, fechaStrA, fechaA, nombreB: b.nombre, fechaStrB, fechaB});
+    return fechaB - fechaA; // Descendente
+  });
   const otros = eventos.filter(ev => getTipo(ev) === 'otros');
   eventosGlobal.proximos = proximos;
   eventosGlobal.galeria = galeriaFiltrada;
   eventosGlobal.otros = otros;
   console.log('GALERIA FILTRADA:', galeriaFiltrada);
-  mostrarProximos(proximos);
+  mostrarProximos(proximos); // Ya está ordenado por fecha más próxima
   mostrarGaleria(galeriaFiltrada);
   mostrarOtros(otros);
 }
