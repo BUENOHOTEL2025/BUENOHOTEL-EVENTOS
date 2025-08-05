@@ -197,7 +197,7 @@ function openEventoModal(evento, imagenes) {
     <div class="evento-modal-info">
       <h2>${nombre}</h2>
       <p><strong>Tipo:</strong> ${tipo}</p>
-      <p><strong>Invita:</strong> ${invita}</p>
+
       <p><strong>Lugar:</strong> ${lugar}</p>
       <p><strong>Fecha:</strong> ${fecha}</p>
       ${info_extra ? `<p>${info_extra}</p>` : ''}
