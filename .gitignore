@@ -27,3 +27,6 @@ yarn-error.log*
 # Archivos del sistema operativo
 .DS_Store
 Thumbs.db
+
+node_modules/
+.aws-sam/
