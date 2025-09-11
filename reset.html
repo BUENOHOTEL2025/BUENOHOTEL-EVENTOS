@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restablecer contraseña - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background:#f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; }
+    .main-content { min-height: calc(100vh - 200px); display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+    .auth-container { max-width:520px; width:100%; background:#fff; border-radius:12px; padding:32px; box-shadow:0 4px 20px rgba(0,0,0,.08); border:1px solid #eee; }
+    .auth-title { text-align:center; color:#222; margin-bottom:8px; font-size:1.8rem; font-weight:800; }
+    .auth-subtitle { text-align:center; color:#555; margin-bottom:24px; font-size:0.98rem; }
+    .form-group { margin-bottom:18px; }
+    .form-group label { display:block; margin-bottom:8px; color:#444; font-weight:600; }
+    .form-control { width:100%; padding:14px 16px; border:1px solid #ddd; border-radius:6px; font-size:1rem; }
+    .form-control:focus { border-color:#FBB03B; outline:none; box-shadow:0 0 0 2px rgba(251,176,59,.2); }
+    .btn-primary { background:#FBB03B; color:#222; border:none; padding:14px 22px; border-radius:6px; font-weight:800; cursor:pointer; width:100%; transition:.3s; text-transform:uppercase; letter-spacing:.5px; }
+    .btn-primary:hover { background:#e6a02c; box-shadow:0 4px 12px rgba(0,0,0,.1); }
+    .auth-footer { text-align:center; margin-top:16px; color:#666; }
+    .auth-footer a { color:#FBB03B; font-weight:700; text-decoration:none; }
+    .auth-footer a:hover { text-decoration:underline; }
+    .hint { font-size:0.9rem; color:#666; margin-top:-6px; margin-bottom:10px; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <div class="main-content">
+    <div class="auth-container">
+      <h1 class="auth-title">Restablecer contraseña</h1>
+      <p class="auth-subtitle">Ingresa tu nueva contraseña. El enlace expira en pocos minutos por seguridad.</p>
+      <form id="resetForm">
+        <div class="form-group">
+          <label for="password">Nueva contraseña</label>
+          <input id="password" name="password" type="password" class="form-control" required placeholder="••••••••" autocomplete="new-password" minlength="8">
+          <div class="hint">Mínimo 8 caracteres. Usa letras mayúsculas, minúsculas, números y símbolos.</div>
+        </div>
+        <div class="form-group">
+          <label for="confirm">Confirmar contraseña</label>
+          <input id="confirm" name="confirm" type="password" class="form-control" required placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-primary" id="submitBtn">Restablecer contraseña</button>
+      </form>
+      <p class="auth-footer" style="margin-top:20px;">
+        <a href="login.html">Volver a iniciar sesión</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function getQueryParam(name){
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || '';
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      const token = getQueryParam('token');
+      const email = (getQueryParam('email') || '').trim().toLowerCase();
+      if (!token || !email) {
+        showToast({ title:'Enlace inválido', message:'Falta token o email en el enlace de restablecimiento.', type:'error', duration:3500 });
+      }
+
+      const form = document.getElementById('resetForm');
+      const btn = document.getElementById('submitBtn');
+
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm').value;
+
+        if (!password || password.length < 8) {
+          showToast({ title:'Contraseña inválida', message:'La contraseña debe tener al menos 8 caracteres.', type:'error', duration:2600 });
+          return;
+        }
+        if (password !== confirm) {
+          showToast({ title:'No coinciden', message:'Las contraseñas no coinciden.', type:'error', duration:2600 });
+          return;
+        }
+        if (!token || !email) {
+          showToast({ title:'Enlace inválido', message:'Token o email no presentes en la URL.', type:'error', duration:3000 });
+          return;
+        }
+
+        const original = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = 'Guardando…';
+        try {
+          const { success, message } = await window.completePasswordReset(email, token, password);
+          if (success) {
+            showToast({ title:'Listo', message: message || 'Contraseña restablecida correctamente. Ahora puedes iniciar sesión.', type:'success', duration:2600 });
+            setTimeout(()=>{ window.location.href = 'login.html'; }, 1400);
+          } else {
+            showToast({ title:'No se pudo', message: message || 'No fue posible restablecer la contraseña.', type:'error', duration:3200 });
+          }
+        } catch (err) {
+          showToast({ title:'Error', message: err?.message || 'No se pudo procesar tu solicitud', type:'error', duration:3000 });
+        } finally {
+          btn.disabled = false; btn.innerHTML = original;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

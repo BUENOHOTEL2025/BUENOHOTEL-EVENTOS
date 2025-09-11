@@ -8,25 +8,69 @@
     <link rel="stylesheet" href="../Ecommerce/custom-responsive.css" />
   </head>
   <body>
-    <!-- HEADER NUEVO IGUAL AL DE ECOMMERCE -->
-    <header class="main-header" style="width: 100vw; background: #FBB03B; box-shadow: 0 2px 8px rgba(0,0,0,0.07); position: relative; z-index: 10;">
-      <div style="max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; min-height: 64px;">
-  <div class="logo-container" style="flex:0 0 auto; display:flex; align-items:center; justify-content:flex-start;">
-    <img src="assets/logo/logo-white.png" alt="Logo BuenoHotel" class="header-main-logo" style="height: 44px; width: auto; display: block;" />
-  </div>
-  <nav class="main-nav" style="flex:1 1 auto; display:flex; justify-content:flex-end;">
-          <ul style="display: flex; gap: 0; margin: 0; padding: 0; list-style: none; background: none; align-items: center;">
-<li><a target="_blank" rel="noopener noreferrer" href="https://ecommerce.buenohotel.com.do/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank" rel="noopener noreferrer">Ecommerce</a></li>
-<li><a target="_blank" rel="noopener noreferrer" href="#servicios-section" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank" rel="noopener noreferrer">Servicios</a></li>
-<li><a target="_blank" rel="noopener noreferrer" href="https://tours.buenohotel.com.do/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank" rel="noopener noreferrer">Tours</a></li>
-<li><a target="_blank" rel="noopener noreferrer" href="https://booking.buenohotel.com.do/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank" rel="noopener noreferrer">Alojamientos</a></li>
-<li><a target="_blank" rel="noopener noreferrer" href="https://booking.buenohotel.com.do/" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank" rel="noopener noreferrer">Hoteles</a></li>
-<li><a target="_blank" rel="noopener noreferrer" href="https://www.buenohotel.com" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank" rel="noopener noreferrer">Conócenos</a></li>
-<li><a target="_blank" rel="noopener noreferrer" href="https://ecommerce.buenohotel.com.do/contactos" style="color: #222; background: transparent; padding: 12px 26px; border-radius: 0; font-weight: 700; font-size: 1.08rem;" target="_blank" rel="noopener noreferrer">Contacto</a></li>
-          </ul>
-        </nav>
-      </div>
-    </header>
+    <!-- Shared navbar placeholder -->
+    <div id="site-header"></div>
+    
+    <!-- Auth + Shared Navbar -->
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script>
+      // Check authentication status on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        const userMenu = document.getElementById('user-menu');
+        const loginMenu = document.getElementById('login-menu');
+        const userGreeting = document.getElementById('user-greeting');
+        const userDropdown = document.getElementById('user-dropdown');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        // Toggle dropdown
+        if (userMenu) {
+          userMenu.addEventListener('mouseenter', function() {
+            userDropdown.style.display = 'block';
+          });
+          
+          userMenu.addEventListener('mouseleave', function() {
+            userDropdown.style.display = 'none';
+          });
+        }
+        
+        // Check if user is logged in
+        const userData = JSON.parse(localStorage.getItem('buenohotel_user_data'));
+        
+        if (userData && userData.nombre) {
+          // User is logged in
+          if (userMenu) userMenu.style.display = 'block';
+          if (loginMenu) loginMenu.style.display = 'none';
+          if (userGreeting) userGreeting.textContent = `Hola, ${userData.nombre.split(' ')[0]}`;
+          // Quick access floating button to profile
+          try {
+            if (!document.getElementById('perfil-fab')){
+              const fab = document.createElement('a');
+              fab.id = 'perfil-fab';
+              fab.href = 'dashboard.html';
+              fab.setAttribute('data-requires-auth','');
+              fab.textContent = 'Mi Perfil';
+              fab.style.cssText = 'position:fixed;right:22px;bottom:22px;background:#FBB03B;color:#222;padding:12px 16px;border-radius:999px;box-shadow:0 8px 22px rgba(0,0,0,.18);font-weight:800;text-decoration:none;z-index:9999;';
+              document.body.appendChild(fab);
+            }
+          } catch(_) {}
+        } else {
+          // User is not logged in
+          if (userMenu) userMenu.style.display = 'none';
+          if (loginMenu) loginMenu.style.display = 'block';
+        }
+        
+        // Handle logout
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('buenohotel_auth_token');
+            localStorage.removeItem('buenohotel_user_data');
+            window.location.href = 'index.html';
+          });
+        }
+      });
+    </script>
     <!-- FIN HEADER NUEVO b -->
 
 
@@ -115,6 +159,10 @@
           }
         }
         </script>
+        <script>
+          // Número de WhatsApp global (incluye código de país, sin '+')
+          window.WHATSAPP_NUMBER = '18093034991';
+        </script>
         <script src="main.js"></script>
         <script>window.addEventListener('DOMContentLoaded', cargarEventos);</script>
         <div style="margin-bottom: 10px;">
@@ -127,5 +175,4 @@
     </footer>
     <!-- FIN FOOTER NUEVO -->
   </body>
-  <script src="main.js"></script>
 </html>

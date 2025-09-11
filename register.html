@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .auth-container {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 50px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .auth-logo img {
+      height: 80px;
+      width: auto;
+    }
+    .auth-title {
+      text-align: center;
+      color: #222;
+      margin: 30px 0 40px;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .form-row {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    .form-group {
+      flex: 1;
+      margin-bottom: 0;
+      position: relative;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 12px;
+      color: #333;
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: -0.2px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 15px 18px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      transition: all 0.3s ease;
+      background-color: #f9f9f9;
+    }
+    .form-control:focus {
+      border-color: #FBB03B;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(251, 176, 59, 0.1);
+      outline: none;
+    }
+    .btn-primary {
+      background: #FBB03B;
+      color: #222;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+    .btn-primary:hover {
+      background: #e6a12c;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .auth-footer a {
+      color: #FBB03B;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .error-message {
+      color: #e74c3c;
+      background: #fde8e8;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Shared navbar placeholder -->
+  <div id="site-header"></div>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <div class="auth-container">
+    <div class="auth-logo">
+      <img src="assets/logo/logo-white.png" alt="BuenoHotel" style="filter: brightness(0) invert(0.1);">
+    </div>
+    <h1 class="auth-title">Crear Cuenta</h1>
+    <h2 style="text-align: center; color: #555; margin-bottom: 30px; font-weight: 600;">Registro básico</h2>
+    
+    <div id="error-message" class="error-message"></div>
+    
+    <form id="register-form">
+      <div id="error-message" class="error-message" style="display: none; color: #d32f2f; background-color: #fde7e7; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 0.95rem;"></div>
+      
+      <h3 style="color: #333; margin: 30px 0 20px; font-size: 1.4rem;">Información Personal</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombre *</label>
+          <input type="text" id="nombre" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="apellido">Apellido *</label>
+          <input type="text" id="apellido" class="form-control" required>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Correo Electrónico *</label>
+          <input type="email" id="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña *</label>
+          <input type="password" id="password" class="form-control" minlength="6" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="telefono">Teléfono *</label>
+          <input type="tel" id="telefono" class="form-control" placeholder="809-555-1234" required>
+        </div>
+        <div class="form-group">
+          <label for="tipoDocumento">Documento *</label>
+          <div style="display:flex; gap:10px;">
+            <select id="tipoDocumento" class="form-control" style="max-width:180px;">
+              <option value="cedula">Cédula</option>
+              <option value="pasaporte">Pasaporte</option>
+            </select>
+            <input type="text" id="documento" class="form-control" placeholder="001-0000000-1" required>
+          </div>
+          <small id="docHint" style="display:block; color:#666; margin-top:6px;">Formato cédula: 000-0000000-0</small>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fechaNacimiento">Fecha de Nacimiento *</label>
+          <input type="date" id="fechaNacimiento" class="form-control" required>
+        </div>
+      </div>
+      
+      <h3 style="color: #333; margin: 40px 0 20px; font-size: 1.4rem;">Información de la Iglesia</h3>
+      <div class="form-group">
+        <label>Iglesia de procedencia *</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+          <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="iglesia" value="La Romana" required> La Romana
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="iglesia" value="Santiago"> Santiago
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="iglesia" value="Zona Oriental"> Zona Oriental
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="iglesia" value="Central Miércoles"> Central Miércoles
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="iglesia" value="Región Jueves"> Región Jueves
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="iglesia" value="San Juan DLM"> San Juan DLM
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px; width: 100%; margin-top: 10px;">
+            <input type="radio" name="iglesia" id="otraIglesiaRadio" value="Otra"> Otra:
+            <input type="text" id="otraIglesia" class="form-control" style="flex: 1; margin-left: 10px;" disabled>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Campos de pago y detalles del evento se solicitarán al registrarse a un evento específico -->
+      
+      <div class="form-group" style="text-align: center; margin-top: 40px;">
+        <button type="submit" class="btn-primary" style="padding: 15px 40px; font-size: 1.1rem; font-weight: 700; background: #FBB03B; border: none; border-radius: 30px; cursor: pointer; transition: all 0.3s ease;">
+          Completar Registro
+        </button>
+        <p style="margin-top: 20px; color: #666;">
+          ¿Ya tienes una cuenta? <a href="login.html" style="color: #FBB03B; font-weight: 600; text-decoration: none;">Inicia sesión aquí</a>
+        </p>
+      </div>
+    </form>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Detectar origen del backend usando helper global (auth.js)
+      const API_BASE = (window.getAuthApiBase ? window.getAuthApiBase() : ((location.port === '5500') ? 'http://localhost:3000' : ''));
+      // Elementos
+      const otraIglesiaRadio = document.getElementById('otraIglesiaRadio');
+      const otraIglesiaInput = document.getElementById('otraIglesia');
+      const iglesiaRadios = document.querySelectorAll('input[name="iglesia"]');
+      const passwordInput = document.getElementById('password');
+      const telefonoInput = document.getElementById('telefono');
+      const registerForm = document.getElementById('register-form');
+
+      // ========== Toast UI + sonido ==========
+      const toastContainer = document.getElementById('toast-container');
+      const styleEl = document.createElement('style');
+      styleEl.innerHTML = `
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 300px; max-width: 380px; padding: 14px 16px; border-radius: 12px; color: #1a1a1a; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: flex; gap: 12px; align-items: flex-start; border-left: 6px solid; animation: slideIn .25s ease-out; }
+        .toast-success { border-color: #22c55e; }
+        .toast-error { border-color: #ef4444; }
+        .toast-title { font-weight: 700; margin-bottom: 4px; }
+        .toast-body { font-size: 14px; color: #333; }
+        .toast-icon { font-size: 18px; line-height: 1; margin-top: 2px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+      `;
+      document.head.appendChild(styleEl);
+
+      function playSuccessSound() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          // Doble tono armónico con decaimiento más largo (~0.9s)
+          const o1 = ctx.createOscillator();
+          const o2 = ctx.createOscillator();
+          const g = ctx.createGain();
+          o1.type = 'sine';
+          o2.type = 'sine';
+          o1.frequency.setValueAtTime(880, ctx.currentTime);   // A5
+          o2.frequency.setValueAtTime(1320, ctx.currentTime);  // E6 (armónico)
+          g.gain.setValueAtTime(0.0001, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+          o1.connect(g); o2.connect(g); g.connect(ctx.destination);
+          o1.start(); o2.start();
+          o1.stop(ctx.currentTime + 0.92); o2.stop(ctx.currentTime + 0.92);
+        } catch (e) { /* no-op */ }
+      }
+
+      function showToast({ title = 'Notificación', message = '', type = 'success', duration = 3000 } = {}) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        const icon = type === 'success' ? '✅' : '⚠️';
+        toast.innerHTML = `
+          <div class="toast-icon">${icon}</div>
+          <div>
+            <div class="toast-title">${title}</div>
+            <div class="toast-body">${message}</div>
+          </div>
+        `;
+        toastContainer.appendChild(toast);
+        if (type === 'success') playSuccessSound();
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-6px)'; }, duration - 150);
+        setTimeout(() => toast.remove(), duration);
+      }
+
+      // Toast con cuenta regresiva antes de redirigir
+      function showCountdownToast({ title = 'Registro exitoso', seconds = 3, type = 'success' } = {}) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        const icon = type === 'success' ? '✅' : '⚠️';
+        const bodyId = `toast-body-${Date.now()}`;
+        toast.innerHTML = `
+          <div class="toast-icon">${icon}</div>
+          <div>
+            <div class="toast-title">${title}</div>
+            <div id="${bodyId}" class="toast-body">Será redirigido al login en ${seconds} segundos…</div>
+          </div>
+        `;
+        toastContainer.appendChild(toast);
+        if (type === 'success') playSuccessSound();
+        let remaining = seconds;
+        const bodyEl = toast.querySelector(`#${bodyId}`);
+        const interval = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(interval);
+          } else if (bodyEl) {
+            bodyEl.textContent = `Será redirigido al login en ${remaining} segundos…`;
+          }
+        }, 1000);
+        // El toast se cierra solo un poco después
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-6px)'; }, (seconds * 1000) + 400);
+        setTimeout(() => { clearInterval(interval); toast.remove(); }, (seconds * 1000) + 700);
+      }
+
+      // Habilitar/deshabilitar campo de otra iglesia
+      if (otraIglesiaRadio) {
+        otraIglesiaRadio.addEventListener('change', function() {
+          if (otraIglesiaInput) {
+            otraIglesiaInput.disabled = !this.checked;
+            otraIglesiaInput.required = this.checked;
+            if (this.checked) otraIglesiaInput.focus();
+          }
+        });
+      }
+
+      // Escuchar selección (solo controlar "Otra")
+      iglesiaRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          const esOtra = this.value === 'Otra';
+          if (otraIglesiaInput) {
+            otraIglesiaInput.disabled = !esOtra;
+            otraIglesiaInput.required = esOtra;
+            if (esOtra) otraIglesiaInput.focus();
+          }
+        });
+      });
+
+      // Validación mínima de contraseña
+      if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+          if (this.value.length < 6) this.setCustomValidity('La contraseña debe tener al menos 6 caracteres');
+          else this.setCustomValidity('');
+        });
+      }
+
+      // Máscara visual de teléfono: +1(xxx) xxx-xxxx (solo visual)
+      function formatPhoneVisual(digits) {
+        // Mantener solo dígitos
+        const d = digits.replace(/\D/g, '').replace(/^1/, ''); // quitar prefijo 1 si viene
+        const a = d.substring(0, 3);
+        const b = d.substring(3, 6);
+        const c = d.substring(6, 10);
+        if (d.length <= 3) return `+1(${a}`;
+        if (d.length <= 6) return `+1(${a}) ${b}`;
+        return `+1(${a}) ${b}-${c}`;
+      }
+
+      function normalizeToE164(value) {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length >= 11 && digits.startsWith('1')) return `+1${digits.slice(-10)}`;
+        return digits.length >= 10 ? `+1${digits.slice(-10)}` : `+1${digits}`; // fallback
+      }
+
+      if (telefonoInput) {
+        telefonoInput.addEventListener('input', function() {
+          const digits = this.value.replace(/\D/g, '');
+          this.value = formatPhoneVisual(digits);
+          // Cursor al final para simplicidad
+          this.setSelectionRange(this.value.length, this.value.length);
+        });
+        // Inicializar si trae valor
+        telefonoInput.value = formatPhoneVisual(telefonoInput.value || '');
+      }
+      // === Documento: tipo + máscara/validación visual ===
+      const tipoDocumentoEl = document.getElementById('tipoDocumento');
+      const documentoEl = document.getElementById('documento');
+      const docHintEl = document.getElementById('docHint');
+      function formatCedulaVisual(raw){
+        const d = String(raw||'').replace(/\D/g,'').slice(0,11);
+        if (d.length <= 3) return d;
+        if (d.length <= 10) return `${d.slice(0,3)}-${d.slice(3)}`;
+        return `${d.slice(0,3)}-${d.slice(3,10)}-${d.slice(10,11)}`;
+      }
+      function applyDocMask(){
+        if (!documentoEl) return;
+        const tipo = (tipoDocumentoEl?.value||'cedula').toLowerCase();
+        if (tipo === 'cedula'){
+          documentoEl.value = formatCedulaVisual(documentoEl.value);
+          documentoEl.maxLength = 13; // 11 dígitos + 2 guiones
+          documentoEl.pattern = "\\d{3}-\\d{7}-\\d{1}";
+          documentoEl.placeholder = "001-0000000-1";
+          if (docHintEl) docHintEl.textContent = 'Formato cédula: 000-0000000-0';
+        } else {
+          let v = (documentoEl.value||'');
+          v = v.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,20);
+          documentoEl.value = v;
+          documentoEl.removeAttribute('pattern');
+          documentoEl.removeAttribute('maxLength');
+          documentoEl.placeholder = "ABC123456";
+          if (docHintEl) docHintEl.textContent = 'Pasaporte alfanumérico (5-20 caracteres)';
+        }
+      }
+      if (tipoDocumentoEl && documentoEl){
+        tipoDocumentoEl.addEventListener('change', applyDocMask);
+        ['input','keyup','blur'].forEach(evt => documentoEl.addEventListener(evt, applyDocMask));
+        documentoEl.addEventListener('paste', ()=> setTimeout(applyDocMask, 0));
+        // Inicializa según la opción actual
+        setTimeout(applyDocMask, 0);
+      }
+      if (registerForm) {
+        registerForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          // Mostrar mensaje de carga
+          const submitBtn = this.querySelector('button[type="submit"]');
+          const originalBtnText = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = 'Procesando...';
+
+          try {
+            // Validar iglesia
+            const iglesiaSeleccionada = document.querySelector('input[name="iglesia"]:checked');
+            if (!iglesiaSeleccionada) {
+              throw new Error('Por favor seleccione una iglesia');
+            }
+            
+            // Si es "Otra", exigir nombre de iglesia
+            if (iglesiaSeleccionada.value === 'Otra') {
+              const otraIglesia = document.getElementById('otraIglesia')?.value.trim();
+              if (!otraIglesia) throw new Error('Por favor especifique el nombre de su iglesia');
+            }
+            
+            // Datos del formulario (registro básico)
+            const formData = {
+              nombre: document.getElementById('nombre')?.value.trim() || '',
+              apellido: document.getElementById('apellido')?.value.trim() || '',
+              email: document.getElementById('email')?.value.trim() || '',
+              password: document.getElementById('password')?.value || '',
+              telefono: document.getElementById('telefono')?.value.trim() || '',
+              tipoDocumento: document.getElementById('tipoDocumento')?.value || 'cedula',
+              documento: document.getElementById('documento')?.value.trim() || '',
+              fechaNacimiento: document.getElementById('fechaNacimiento')?.value || '',
+              iglesia: iglesiaSeleccionada.value === 'Otra' 
+                ? document.getElementById('otraIglesia')?.value.trim() || ''
+                : iglesiaSeleccionada.value
+            };
+
+            // Validar campos requeridos
+            if (!formData.nombre) throw new Error('El nombre es requerido');
+            if (!formData.apellido) throw new Error('El apellido es requerido');
+            if (!formData.email) throw new Error('El correo electrónico es requerido');
+            if (!formData.password || formData.password.length < 6) throw new Error('La contraseña debe tener al menos 6 caracteres');
+            if (!formData.telefono) throw new Error('El teléfono es requerido');
+            if (!formData.documento) throw new Error('El documento (cédula o pasaporte) es requerido');
+            // Validación visual extra según tipo
+            if (formData.tipoDocumento === 'cedula'){
+              if (!/^\d{3}-\d{7}-\d{1}$/.test(formData.documento)) throw new Error('La cédula debe tener el formato 000-0000000-0');
+            } else {
+              if (!/^[A-Za-z0-9]{5,20}$/.test(formData.documento.replace(/\s/g,''))) throw new Error('El pasaporte debe ser alfanumérico (5-20 caracteres)');
+            }
+            if (!formData.fechaNacimiento) throw new Error('La fecha de nacimiento es requerida');
+
+            // Llamada real al backend
+            // Normalizar teléfono a E.164 antes de enviar (visual se queda en input)
+            formData.telefono = normalizeToE164(formData.telefono);
+
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData)
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              const apiError = data?.message || data?.errors?.[0]?.message || 'Error al registrar la cuenta';
+              throw new Error(apiError);
+            }
+
+            const redirectMs = 3100;
+            const secs = Math.floor(redirectMs / 1000);
+            showCountdownToast({ title: 'Registro exitoso', seconds: secs, type: 'success' });
+            setTimeout(() => { window.location.href = 'login.html'; }, redirectMs);
+            
+          } catch (err) {
+            console.error('Error en el registro:', err);
+            const msg = err.message || 'Error al registrar la cuenta';
+            const errorMessageEl = document.getElementById('error-message');
+            if (errorMessageEl) {
+              errorMessageEl.textContent = msg;
+              errorMessageEl.style.display = 'block';
+              showToast({ title: 'Error', message: msg, type: 'error', duration: 3200 });
+            } else {
+              showToast({ title: 'Error', message: msg, type: 'error', duration: 3200 });
+            }
+          } finally {
+            // Restaurar botón
+            // Restaurar el botón
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnText;
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

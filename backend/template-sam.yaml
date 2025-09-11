@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: API de Eventos BuenoHotel en AWS Lambda + API Gateway
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: nodejs18.x
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        NODE_ENV: production
+        # Variables de entorno adicionales se inyectarán desde SSM en la sección Parameters
+  Api:
+    Cors:
+      AllowOrigin: !Sub "'${AllowedOrigin}'"
+      AllowHeaders: "'Content-Type,Authorization'"
+      AllowMethods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: api.buenohotel.com.do
+  CertificateArn:
+    Type: String
+    Description: ARN del certificado ACM para el dominio personalizado (en us-east-1)
+  AllowedOrigin:
+    Type: String
+    Default: https://eventos.buenohotel.com.do
+
+  # Parámetros SSM (puedes crearlos en SSM Parameter Store y referenciarlos aquí)
+  # Los siguientes parámetros contienen los NOMBRES en SSM; se usarán con dynamic references
+  EnvEmailApiBase:
+    Type: String
+    Default: /buenohotel/eventos/EMAIL_API_BASE
+  EnvFrontendUrl:
+    Type: String
+    Default: /buenohotel/eventos/FRONTEND_URL
+  EnvJwtSecret:
+    Type: String
+    Default: /buenohotel/eventos/JWT_SECRET
+
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eventos-buenohotel-api
+      Handler: lambda.handler
+      CodeUri: .
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:DescribeTable
+              Resource: '*'
+      Environment:
+        Variables:
+          # Pasamos los NOMBRES de parámetros de SSM; lambda.js los resolverá en runtime
+          EMAIL_API_BASE_PARAM: !Ref EnvEmailApiBase
+          FRONTEND_URL_PARAM: !Ref EnvFrontendUrl
+          JWT_SECRET_PARAM: !Ref EnvJwtSecret
+      Events:
+        Proxy:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        RootGet:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+
+  ApiGatewayDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainName
+      EndpointConfiguration:
+        Types: [EDGE]
+      CertificateArn: !Ref CertificateArn
+      SecurityPolicy: TLS_1_2
+
+  BasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: ApiGatewayDomain
+    Properties:
+      DomainName: !Ref DomainName
+      RestApiId: !Ref ServerlessRestApi
+      Stage: !Ref ServerlessRestApiProdStage
+
+Outputs:
+  ApiUrl:
+    Description: URL de la API por defecto
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+  CustomApiUrl:
+    Description: URL de la API con dominio personalizado
+    Value: !Sub "https://${DomainName}"

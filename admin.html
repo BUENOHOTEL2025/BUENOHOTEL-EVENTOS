@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background:#f7f8fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .page-title { font-size: 1.8rem; font-weight: 800; color: #222; margin: 16px 0 10px; }
+    .tabs { display:flex; gap:10px; margin: 12px 0 18px; }
+    .tab { padding:8px 12px; border-radius: 8px; border:1px solid #e7eaef; background:#fff; font-weight:700; color:#222; cursor:pointer; }
+    .tab.active { background:#FBB03B; border-color:#E19A2E; }
+    .card { background:#fff; border:1px solid #eee; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.06); padding: 14px 16px; }
+    .list { display:flex; flex-direction:column; gap:12px; }
+    .row { display:grid; grid-template-columns: 1.1fr .8fr .8fr .8fr auto; align-items:center; gap:12px; padding:12px; border:1px solid #eef0f3; border-radius:10px; background:#fff; }
+    .row .badges { display:flex; gap:6px; flex-wrap:wrap; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:999px; font-weight:700; font-size:.8rem; }
+    .badge.pending { background:#fff3da; color:#8b5b00; border:1px solid #ffd17a; }
+    .badge.approved { background:#e6f4ea; color:#1f7a3d; border:1px solid #b7e1c1; }
+    .badge.canceled { background:#fdeaea; color:#a11313; border:1px solid #f2b8b8; }
+    .actions { display:flex; gap:8px; }
+    .btn { padding:8px 10px; border:none; border-radius:8px; font-weight:800; cursor:pointer; }
+    .btn-approve { background:#22c55e; color:#fff; }
+    .btn-cancel { background:#ef4444; color:#fff; }
+    .toolbar { display:flex; gap:10px; align-items:center; margin-bottom: 12px; }
+    .toolbar input, .toolbar select { padding:8px 10px; border:1px solid #d9dde3; border-radius:8px; }
+    .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .muted { color:#666; font-size:.9rem; }
+    /* Dropdown Export styles */
+    .dropdown { position: relative; }
+    .dropdown-menu { position:absolute; right:0; top:calc(100% + 6px); background:#fff; border:1px solid #eee; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.12); padding:6px; display:none; min-width: 200px; z-index: 20; }
+    .dropdown-menu .menu-item { display:block; width:100%; text-align:left; padding:10px 12px; border-radius:6px; border:none; background:#fff; cursor:pointer; font-weight:700; color:#222; }
+    .dropdown-menu .menu-item:hover { background:#f6f6f6; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <div class="container">
+    <h1 class="page-title">Panel de Administración</h1>
+
+    <div class="card" style="margin-bottom:14px;">
+      <div class="toolbar">
+        <input id="search" type="text" placeholder="Buscar por nombre, email, monto, método, ref, evento o registro..." />
+        <div class="controls">
+          <label>Usuario:</label>
+          <select id="userFilter">
+            <option value="">Todos</option>
+          </select>
+          <label>Evento:</label>
+          <select id="eventFilter">
+            <option value="">Todos</option>
+          </select>
+          <label>Estado:</label>
+          <select id="estadoFilter">
+            <option value="pendiente">Pendientes</option>
+            <option value="aprobado">Aprobados</option>
+            <option value="cancelado">Cancelados</option>
+            <option value="todos">Todos</option>
+          </select>
+          <button id="refresh" class="btn" style="background:#FBB03B; border:1px solid #E19A2E; color:#222;">Refrescar</button>
+          <button id="exportToggle" class="btn">Exportar</button>
+        </div>
+      </div>
+      <div id="state" class="muted">Cargando pagos pendientes...</div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800; margin-bottom:8px;">Pagos</div>
+      <div id="list" class="list"></div>
+    </div>
+  </div>
+
+  <!-- Modal Exportación Personalizada -->
+  <div id="export-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:#fff; width:min(720px,95vw); border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.2);">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #eee;">
+        <h3 style="margin:0; font-weight:800; color:#222;">Exportar campos</h3>
+        <button id="export-close" class="btn" style="background:transparent; border:1px solid #ddd;">×</button>
+      </div>
+      <div style="padding:16px;">
+        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
+          <button id="export-select-all" class="btn" style="border:1px solid #d9dde3;">Marcar todo</button>
+          <button id="export-select-none" class="btn" style="border:1px solid #d9dde3;">Desmarcar</button>
+          <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+            <label for="export-preset" class="muted">Preset:</label>
+            <select id="export-preset" style="padding:8px 10px; border:1px solid #d9dde3; border-radius:8px;">
+              <option value="custom">Personalizado</option>
+              <option value="hotel">Hotel</option>
+            </select>
+            <button id="export-apply-preset" class="btn" style="border:1px solid #d9dde3;">Aplicar</button>
+          </div>
+        </div>
+        <div id="export-fields" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:8px;">
+          <!-- Checkboxes renderizados por JS -->
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+          <button id="export-do-txt" class="btn" style="border:1px solid #d9dde3;">Exportar TXT</button>
+          <button id="export-do-csv" class="btn" style="background:#FBB03B; border:1px solid #E19A2E; color:#222;">Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASES = (function(){
+      const arr = [];
+      // 1) Producción oficial
+      try { if (window.getAuthApiBase) { const b = window.getAuthApiBase(); if (b) arr.push(b); } } catch(_){ }
+      // 2) Override manual (debug)
+      try { const manual = localStorage.getItem('buenohotel_api_base'); if (manual) arr.push(manual); } catch(_){ }
+      // 3) Mismo origen (por si hay proxy /api)
+      try { arr.push(new URL('/api', window.location.origin).origin); } catch(_){ }
+      // 4) Localhost
+      arr.push('http://localhost:3000');
+      return [...new Set(arr)];
+    })();
+
+    // Mapa id -> nombre de evento para mostrar etiquetas amigables
+    let EVENTS_NAME_MAP = {};
+    const getEventLabel = (id) => {
+      if (!id) return '-';
+      return EVENTS_NAME_MAP[id] || id;
+    };
+
+    function authHeaders(){
+      const t = (window.auth && window.auth.getAuthToken) ? window.auth.getAuthToken() : null;
+      return t ? { 'Authorization': `Bearer ${t}` } : {};
+    }
+
+    // Cache de registros para exportes que requieren detalles
+    const REG_CACHE = {};
+    async function getRegistroDetailCached(registroId){
+      if (!registroId) return null;
+      if (REG_CACHE[registroId]) return REG_CACHE[registroId];
+      let lastErr = null;
+      for (const base of API_BASES){
+        try{
+          const { resp, data } = await fetchJson(`${base}/api/reservas/${encodeURIComponent(registroId)}`, { headers: authHeaders() });
+          if (!resp.ok) throw new Error(data?.message || `HTTP ${resp.status}`);
+          const det = data?.data || data;
+          REG_CACHE[registroId] = det;
+          return det;
+        } catch(e){ lastErr = e; continue; }
+      }
+      console.warn('No se pudo cargar registro para export', registroId, lastErr);
+      return null;
+    }
+
+    function diffNoches(entrada, salida){
+      const d1 = new Date(entrada); const d2 = new Date(salida);
+      if (isNaN(d1) || isNaN(d2)) return '';
+      const ms = d2 - d1; if (ms <= 0) return 0;
+      return Math.round(ms / (1000*60*60*24));
+    }
+
+    function calcularEdad(fechaNac){
+      if (!fechaNac) return '';
+      const fn = new Date(fechaNac);
+      if (isNaN(fn)) return '';
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - fn.getFullYear();
+      const m = hoy.getMonth() - fn.getMonth();
+      if (m < 0 || (m === 0 && hoy.getDate() < fn.getDate())) edad--;
+      return edad;
+    }
+
+    async function exportHotel(baseFormat){
+      // Columnas requeridas por el hotel
+      const headers = ['Tipo de Habitación','Categoría','Nombre y apellido','Fecha de entrada','Fecha de salida','Edad','Noches','Número de cédula o pasaporte','Número de teléfono','Email'];
+      const rows = getCurrentlyFiltered();
+      // Cargar detalles de cada registro (de forma única)
+      const ids = [...new Set(rows.map(r=>r.registroId).filter(Boolean))];
+      await Promise.all(ids.map(getRegistroDetailCached));
+      const out = rows.map(r => {
+        const det = REG_CACHE[r.registroId] || {};
+        const detalles = det?.detalles || {};
+        const tipoHab = detalles.tipoHabitacion || detalles.habitacionTipo || '';
+        const categoria = detalles.categoria || detalles.categoriaHabitacion || '';
+        // Nombre + Apellido
+        const nombre = (r.usuario && (r.usuario.nombreCompleto || [r.usuario.nombre, r.usuario.apellido].filter(Boolean).join(' ').trim())) || detalles.nombreCompleto || '';
+        const entrada = detalles.fechaEntrada || detalles.checkIn || '';
+        const salida = detalles.fechaSalida || detalles.checkOut || '';
+        const edad = detalles.edad || calcularEdad(detalles.fechaNacimiento || det?.fechaNacimiento);
+        const noches = detalles.noches || diffNoches(entrada, salida);
+        const doc = detalles.documento || detalles.cedula || detalles.pasaporte || det?.documento || '';
+        const tel = (r.usuario && r.usuario.telefono) || detalles.telefono || det?.telefono || '';
+        const email = (r.usuario && r.usuario.email) || detalles.email || det?.email || '';
+        return [tipoHab, categoria, nombre, entrada, salida, edad, noches, doc, tel, email].map(v => v==null? '': v);
+      });
+      const ts = new Date();
+      const nameBase = `hotel_export_${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}`;
+      if (baseFormat === 'csv'){
+        const csvRows = [headers.join(',')].concat(out.map(vals => vals.map(s=>{
+          const str = String(s);
+          return /[",\n]/.test(str) ? '"'+str.replace(/"/g,'""')+'"' : str;
+        }).join(',')));
+        downloadBlob(csvRows.join('\n'), `${nameBase}.csv`, 'text/csv;charset=utf-8');
+      } else {
+        const lines = [headers.join('\t')].concat(out.map(vals => vals.map(s=> String(s).replace(/\n/g,' ')).join('\t')));
+        downloadBlob(lines.join('\n'), `${nameBase}.txt`, 'text/plain;charset=utf-8');
+      }
+    }
+
+    async function fetchJson(url, options={}){
+      const resp = await fetch(url, options);
+      const data = await resp.json().catch(()=>({}));
+      return { resp, data };
+    }
+
+    async function getPaymentsByEstado(estado){
+      let lastErr = null;
+      for (const base of API_BASES){
+        try{
+          const params = new URLSearchParams();
+          if (estado) params.set('estado', estado);
+          const userSel = document.getElementById('userFilter').value;
+          const eventSel = document.getElementById('eventFilter').value;
+          if (userSel) params.set('userId', userSel);
+          if (eventSel) params.set('eventoId', eventSel);
+          const qs = params.toString() ? `?${params.toString()}` : '';
+          const { resp, data } = await fetchJson(`${base}/api/reservas/pagos${qs}`, { headers: authHeaders() });
+          if (!resp.ok) throw new Error(data?.message || `HTTP ${resp.status}`);
+          return data?.data || [];
+        } catch(e){ lastErr = e; continue; }
+      }
+      throw lastErr || new Error('No se pudo obtener pagos');
+    }
+
+    // Estado y caché en memoria de la lista actual
+    let CACHE = [];
+    async function loadData(){
+      const stateEl = document.getElementById('state');
+      const list = document.getElementById('list');
+      try {
+        stateEl.textContent = 'Cargando pagos...';
+        const estado = document.getElementById('estadoFilter').value || 'pendiente';
+        const items = await getPaymentsByEstado(estado);
+        CACHE = Array.isArray(items) ? items : [];
+        stateEl.textContent = `${CACHE.length} pago(s) encontrado(s)`;
+        renderList(CACHE);
+      } catch (e) {
+        console.error('Admin: loadData error', e);
+        stateEl.textContent = `Error cargando pagos: ${e?.message || e}`;
+        list.innerHTML = '';
+      }
+    }
+
+    async function loadUsersForFilter(){
+      const sel = document.getElementById('userFilter');
+      if (!sel) return;
+      let lastErr = null;
+      for (const base of API_BASES){
+        try{
+          const { resp, data } = await fetchJson(`${base}/api/users?limit=500`, { headers: authHeaders() });
+          if (!resp.ok) throw new Error(data?.message || `HTTP ${resp.status}`);
+          const users = data?.data || [];
+          users.sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
+          users.forEach(u=>{
+            const opt = document.createElement('option');
+            opt.value = u.id;
+            const full = [u.nombre, u.apellido].filter(Boolean).join(' ').trim();
+            opt.textContent = full || u.email || u.id;
+            sel.appendChild(opt);
+          });
+          return;
+        } catch(e){ lastErr = e; continue; }
+      }
+      console.warn('No se pudieron cargar usuarios', lastErr);
+      // Fallback: derivar usuarios desde los pagos (estado=todos)
+      try {
+        const items = await getPaymentsByEstado('todos');
+        const map = new Map();
+        items.forEach(it=>{
+          const uid = it.usuarioId || it.usuario?.id;
+          if (!uid) return;
+          const nombre = it.usuario?.nombreCompleto || [it.usuario?.nombre, it.usuario?.apellido].filter(Boolean).join(' ').trim();
+          const display = nombre || it.usuario?.email || uid;
+          if (!map.has(uid)) map.set(uid, display);
+        });
+        const arr = Array.from(map.entries()).map(([id, name])=>({id, name})).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+        arr.forEach(u=>{
+          const opt = document.createElement('option');
+          opt.value = u.id;
+          opt.textContent = u.name || u.id;
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        console.warn('Fallback de usuarios desde pagos falló', e);
+      }
+    }
+
+    async function loadEventsForFilter(){
+      const sel = document.getElementById('eventFilter');
+      if (!sel) return;
+      try {
+        const resp = await fetch('https://zp27hv7zkk.execute-api.us-east-1.amazonaws.com/prod/eventos');
+        const json = await resp.json();
+        const arr = JSON.parse(json.body || '[]');
+        const events = arr.map(ev=>{
+          const id = (ev && typeof ev.id==='object' && ev.id.S) ? ev.id.S : (ev?.id || '');
+          const nombre = (ev && typeof ev.nombre==='object' && ev.nombre.S) ? ev.nombre.S : (ev?.nombre || '');
+          return { id, nombre };
+        }).filter(e=>e.id);
+        events.sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
+        EVENTS_NAME_MAP = {};
+        events.forEach(e=>{
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.nombre || e.id;
+          sel.appendChild(opt);
+          EVENTS_NAME_MAP[e.id] = e.nombre || e.id;
+        });
+      } catch(e){ 
+        console.warn('No se pudieron cargar eventos para filtro', e);
+        // Fallback: derivar eventos desde los pagos (estado=todos)
+        try {
+          const items = await getPaymentsByEstado('todos');
+          const set = new Set();
+          items.forEach(it=>{ if (it.eventoId) set.add(it.eventoId); });
+          const arr = Array.from(set).sort();
+          EVENTS_NAME_MAP = {};
+          arr.forEach(id=>{
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = id;
+            sel.appendChild(opt);
+            EVENTS_NAME_MAP[id] = id; // sin nombre disponible, usar id
+          });
+        } catch (e2) {
+          console.warn('Fallback de eventos desde pagos falló', e2);
+        }
+      }
+    }
+
+    async function updatePagoEstado(registroId, pagoId, estado){
+      let lastErr = null;
+      for (const base of API_BASES){
+        try{
+          const { resp, data } = await fetchJson(`${base}/api/reservas/${encodeURIComponent(registroId)}/pagos/${encodeURIComponent(pagoId)}/estado`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify({ estado })
+          });
+          if (!resp.ok) throw new Error(data?.message || `HTTP ${resp.status}`);
+          return data?.data || data;
+        } catch(e){ lastErr = e; continue; }
+      }
+      throw lastErr || new Error('No se pudo actualizar el estado');
+    }
+
+    // Helpers para resaltar coincidencias en la lista
+    function escapeHtml(str){
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+    function highlight(str, q){
+      const s = String(str || '');
+      const query = String(q || '').trim();
+      if (!query) return escapeHtml(s);
+      try {
+        const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        return escapeHtml(s).replace(re, (m)=>`<mark>${escapeHtml(m)}</mark>`);
+      } catch(_) {
+        return escapeHtml(s);
+      }
+    }
+
+    function renderList(items){
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      if (!items.length){
+        list.innerHTML = '<div class="muted">No hay resultados con los filtros aplicados.</div>';
+        return null;
+      }
+      const queryRaw = document.getElementById('search').value || '';
+      const q = queryRaw.toLowerCase().trim();
+      const f = document.getElementById('estadoFilter').value;
+
+      const filtered = items.filter(it => {
+        const est = String(it?.pago?.estado || '').toLowerCase();
+        const matchesE = (f==='todos') || (est===f);
+        // Campos para búsqueda: nombre, email, evento, método, tipo, referencia, monto, registroId
+        const nombre = (it?.usuario?.nombreCompleto || '').toLowerCase();
+        const email = (it?.usuario?.email || '').toLowerCase();
+        const evento = String(getEventLabel(it?.eventoId) || it?.eventoId || '').toLowerCase();
+        const metodo = String(it?.pago?.metodo || '').toLowerCase();
+        const tipo = String(it?.pago?.tipo || '').toLowerCase();
+        const ref = String(it?.pago?.referencia || '').toLowerCase();
+        const montoNum = Number(it?.pago?.monto || 0);
+        const montoStr = String(montoNum);
+        const montoCur = montoNum.toLocaleString('es-DO',{style:'currency',currency:'DOP'}).toLowerCase();
+        const regId = String(it?.registroId || '').toLowerCase();
+        const hayTexto = [nombre, email, evento, metodo, tipo, ref, montoStr, montoCur, regId].join(' ');
+        const matchesQ = !q || hayTexto.includes(q);
+        return matchesE && matchesQ;
+      });
+
+      // Cache de totales por registro
+      const totalsCache = {};
+      async function getTotals(registroId){
+        if (!registroId) return null;
+        if (totalsCache[registroId]) return totalsCache[registroId];
+        let lastErr = null;
+        for (const base of API_BASES){
+          try{
+            const { resp, data } = await fetchJson(`${base}/api/reservas/${encodeURIComponent(registroId)}`, { headers: authHeaders() });
+            if (!resp.ok) throw new Error(data?.message || `HTTP ${resp.status}`);
+            const det = data?.data || data;
+            const pagos = Array.isArray(det?.pagos) ? det.pagos : [];
+            const aprobados = pagos.filter(p => String((p?.estado||'')).toLowerCase()==='aprobado');
+            const totalAprobado = aprobados.reduce((s,p)=> s + Number(p?.monto||0), 0);
+            const montoTotal = Number(det?.montoTotal || det?.detalles?.precioTotal || det?.detalles?.montoTotal || det?.total || 0) || 0;
+            const out = { totalAprobado, montoTotal };
+            totalsCache[registroId] = out;
+            return out;
+          } catch(e){ lastErr = e; continue; }
+        }
+        console.warn('No se pudo obtener totales para', registroId, lastErr);
+        return null;
+      }
+
+      filtered.forEach(it => {
+        const est = String(it?.pago?.estado || 'pendiente').toLowerCase();
+        const badgeClass = est==='aprobado' ? 'approved' : (est==='cancelado' ? 'canceled' : 'pending');
+        const row = document.createElement('div');
+        row.className = 'row';
+        const montoFmt = Number(it?.pago?.monto||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'});
+        const userDisplay = (it.usuario && (it.usuario.nombreCompleto || it.usuario.email)) ? (it.usuario.nombreCompleto || it.usuario.email) : (it.usuarioId || '');
+        const eventLabel = getEventLabel(it.eventoId);
+        row.innerHTML = `
+          <div>
+            <div style="font-weight:700;color:#111;">Registro: ${highlight(it.registroId, queryRaw)}</div>
+            <div class="muted">Evento: ${highlight(eventLabel||'-', queryRaw)}</div>
+            ${ userDisplay ? `<div class="muted">Usuario: ${highlight(userDisplay, queryRaw)}</div>` : '' }
+            <div class="muted" data-observaciones style="margin-top:4px; display:none;"></div>
+          </div>
+          <div>
+            <div><strong>Monto:</strong> ${highlight(montoFmt, queryRaw)}</div>
+            <div class="muted">Método: ${highlight(it?.pago?.metodo||'-', queryRaw)}</div>
+          </div>
+          <div>
+            <div><strong>Ref:</strong> ${highlight(it?.pago?.referencia||'-', queryRaw)}</div>
+            <div class="muted">Fecha: ${new Date(it?.pago?.fecha||Date.now()).toLocaleString('es-DO')}</div>
+          </div>
+          <div>
+            <div class="badges" style="margin-bottom:6px;"><span class="badge ${badgeClass}">${est}</span></div>
+            <div class="muted" data-totals>Calculando totales...</div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-approve" data-act="approve">Aprobar</button>
+            <button class="btn btn-cancel" data-act="cancel">Cancelar</button>
+          </div>
+        `;
+        const approveBtn = row.querySelector('[data-act="approve"]');
+        const cancelBtn = row.querySelector('[data-act="cancel"]');
+        approveBtn.addEventListener('click', async ()=>{
+          approveBtn.disabled = cancelBtn.disabled = true;
+          try { await updatePagoEstado(it.registroId, it.pago.id, 'aprobado'); await loadData(); } catch(e){ alert(e.message||e); } finally { approveBtn.disabled = cancelBtn.disabled = false; }
+        });
+        cancelBtn.addEventListener('click', async ()=>{
+          approveBtn.disabled = cancelBtn.disabled = true;
+          try { await updatePagoEstado(it.registroId, it.pago.id, 'cancelado'); await loadData(); } catch(e){ alert(e.message||e); } finally { approveBtn.disabled = cancelBtn.disabled = false; }
+        });
+        list.appendChild(row);
+        // Cargar totales por registro y pintar
+        (async () => {
+          const totalsEl = row.querySelector('[data-totals]');
+          try{
+            const totals = await getTotals(it.registroId);
+            if (!totals){ totalsEl.textContent = 'Totales no disponibles'; return; }
+            const { totalAprobado, montoTotal } = totals;
+            const prog = (montoTotal>0) ? Math.min(100, Math.round((totalAprobado/montoTotal)*100)) : 0;
+            totalsEl.innerHTML = `
+              <div><strong>Aprobado:</strong> ${totalAprobado.toLocaleString('es-DO',{style:'currency',currency:'DOP'})}${montoTotal?` / <strong>${montoTotal.toLocaleString('es-DO',{style:'currency',currency:'DOP'})}</strong>`:''}</div>
+              ${montoTotal?`<div style="height:6px;background:#f1f1f1;border-radius:999px;overflow:hidden;margin-top:4px;"><div style="height:100%;width:${prog}%;background:#22c55e;"></div></div>`:''}
+            `;
+          }catch(e){ totalsEl.textContent = 'Totales no disponibles'; }
+          // Observaciones
+          try {
+            const det = await getRegistroDetailCached(it.registroId);
+            const obsEl = row.querySelector('[data-observaciones]');
+            const obs = (det?.detalles?.observaciones || '').toString();
+            if (obsEl && obs){
+              const short = obs.length>180 ? obs.slice(0,180)+'…' : obs;
+              obsEl.textContent = `Observaciones: ${short}`;
+              obsEl.title = obs;
+              obsEl.style.display = '';
+            }
+          } catch(_){}
+        })();
+      });
+    }
+
+    // Obtiene los ítems actualmente filtrados como se muestran en pantalla (buscador + estado ya aplicado en el fetch)
+    function getCurrentlyFiltered(){
+      const items = CACHE || [];
+      const queryRaw = document.getElementById('search').value || '';
+      const q = queryRaw.trim().toLowerCase();
+      const filtered = items.filter(it => {
+        const matchesE = true;
+        if (!q) return matchesE;
+        const nombre = (it.usuario && (it.usuario.nombreCompleto || '')) || '';
+        const email = (it.usuario && (it.usuario.email || '')) || '';
+        const evento = String(getEventLabel(it?.eventoId) || it?.eventoId || '').toLowerCase();
+        const metodo = String(it?.pago?.metodo || '').toLowerCase();
+        const tipo = String(it?.pago?.tipo || '').toLowerCase();
+        const ref = String(it?.pago?.referencia || '').toLowerCase();
+        const montoNum = Number(it?.pago?.monto || 0);
+        const montoStr = String(montoNum);
+        const montoCur = montoNum.toLocaleString('es-DO',{style:'currency',currency:'DOP'}).toLowerCase();
+        const regId = String(it?.registroId || '').toLowerCase();
+        const hayTexto = [nombre, email, evento, metodo, tipo, ref, montoStr, montoCur, regId].join(' ');
+        const matchesQ = !q || hayTexto.includes(q);
+        return matchesE && matchesQ;
+      });
+      return filtered;
+    }
+
+    function downloadBlob(content, filename, type="text/plain;charset=utf-8"){ 
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+    }
+
+    async function exportToCSV(){
+      const rows = getCurrentlyFiltered();
+      const headers = ['RegistroId','Usuario','Evento','EventoId','Monto','Metodo','Estado','Fecha','Referencia','TotalAprobado','MontoTotal','Observaciones'];
+      const csvRows = [headers.join(',')];
+      const ids = [...new Set(rows.map(r=>r.registroId).filter(Boolean))];
+      await Promise.all(ids.map(getRegistroDetailCached));
+      rows.forEach(it => {
+        const userDisplay = (it.usuario && (it.usuario.nombreCompleto || it.usuario.email)) ? (it.usuario.nombreCompleto || it.usuario.email) : (it.usuarioId || '');
+        const eventLabel = getEventLabel(it.eventoId);
+        const monto = Number(it?.pago?.monto||0);
+        const estado = String(it?.pago?.estado||'').toLowerCase();
+        const fecha = new Date(it?.pago?.fecha||Date.now()).toISOString();
+        const ref = it?.pago?.referencia || '';
+        const totalAprobado = (it.totalAprobado!=null) ? it.totalAprobado : '';
+        const montoTotal = (it.montoTotal!=null) ? it.montoTotal : '';
+        const det = REG_CACHE[it.registroId] || {};
+        const obs = (det?.detalles?.observaciones || '').toString();
+        const vals = [
+          it.registroId,
+          userDisplay,
+          eventLabel,
+          it.eventoId||'',
+          monto,
+          it?.pago?.metodo||'',
+          estado,
+          fecha,
+          ref,
+          totalAprobado,
+          montoTotal,
+          obs
+        ].map(v => {
+          const s = String(v==null?'':v);
+          if (/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+          return s;
+        });
+        csvRows.push(vals.join(','));
+      });
+      const ts = new Date();
+      const name = `pagos_export_${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}.csv`;
+      downloadBlob(csvRows.join('\n'), name, 'text/csv;charset=utf-8');
+    }
+
+    async function exportToTXT(){
+      const rows = getCurrentlyFiltered();
+      const headers = ['RegistroId','Usuario','Evento','EventoId','Monto','Metodo','Estado','Fecha','Referencia','TotalAprobado','MontoTotal','Observaciones'];
+      const lines = [headers.join('\t')];
+      const ids = [...new Set(rows.map(r=>r.registroId).filter(Boolean))];
+      await Promise.all(ids.map(getRegistroDetailCached));
+      rows.forEach(it => {
+        const userDisplay = (it.usuario && (it.usuario.nombreCompleto || it.usuario.email)) ? (it.usuario.nombreCompleto || it.usuario.email) : (it.usuarioId || '');
+        const eventLabel = getEventLabel(it.eventoId);
+        const monto = Number(it?.pago?.monto||0);
+        const estado = String(it?.pago?.estado||'').toLowerCase();
+        const fecha = new Date(it?.pago?.fecha||Date.now()).toISOString();
+        const ref = it?.pago?.referencia || '';
+        const totalAprobado = (it.totalAprobado!=null) ? it.totalAprobado : '';
+        const montoTotal = (it.montoTotal!=null) ? it.montoTotal : '';
+        const det = REG_CACHE[it.registroId] || {};
+        const obs = (det?.detalles?.observaciones || '').toString();
+        const vals = [
+          it.registroId,
+          userDisplay,
+          eventLabel,
+          it.eventoId||'',
+          monto,
+          it?.pago?.metodo||'',
+          estado,
+          fecha,
+          ref,
+          totalAprobado,
+          montoTotal,
+          obs
+        ].map(v => String(v==null?'':v).replace(/\n/g,' '));
+        lines.push(vals.join('\t'));
+      });
+      const ts = new Date();
+      const name = `pagos_export_${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}.txt`;
+      downloadBlob(lines.join('\n'), name, 'text/plain;charset=utf-8');
+    }
+
+    // ===== Exportación personalizada =====
+    const EXPORT_FIELD_DEFS = [
+      { id:'RegistroId', label:'RegistroId', getter:(it,det)=> it.registroId },
+      { id:'Usuario', label:'Usuario', getter:(it)=> (it.usuario && (it.usuario.nombreCompleto || it.usuario.email)) ? (it.usuario.nombreCompleto || it.usuario.email) : (it.usuarioId || '') },
+      { id:'Evento', label:'Evento', getter:(it)=> getEventLabel(it.eventoId) },
+      { id:'EventoId', label:'EventoId', getter:(it)=> it.eventoId||'' },
+      { id:'Monto', label:'Monto', getter:(it)=> Number(it?.pago?.monto||0) },
+      { id:'Metodo', label:'Metodo', getter:(it)=> it?.pago?.metodo||'' },
+      { id:'Estado', label:'Estado', getter:(it)=> String(it?.pago?.estado||'').toLowerCase() },
+      { id:'Fecha', label:'Fecha ISO', getter:(it)=> new Date(it?.pago?.fecha||Date.now()).toISOString() },
+      { id:'Referencia', label:'Referencia', getter:(it)=> it?.pago?.referencia||'' },
+      { id:'TotalAprobado', label:'TotalAprobado', getter:(it)=> (it.totalAprobado!=null)? it.totalAprobado : '' },
+      { id:'MontoTotal', label:'MontoTotal', getter:(it)=> (it.montoTotal!=null)? it.montoTotal : '' },
+      // Detalles del registro
+      { id:'Observaciones', label:'Observaciones', getter:(it,det)=> (det?.detalles?.observaciones||'').toString() },
+      { id:'TipoHabitacion', label:'Tipo de Habitación', getter:(it,det)=> det?.detalles?.tipoHabitacion||'' },
+      { id:'Categoria', label:'Categoría', getter:(it,det)=> det?.detalles?.categoria||'' },
+      { id:'FechaEntrada', label:'Fecha de entrada', getter:(it,det)=> det?.detalles?.fechaEntrada||'' },
+      { id:'FechaSalida', label:'Fecha de salida', getter:(it,det)=> det?.detalles?.fechaSalida||'' },
+      { id:'Edad', label:'Edad', getter:(it,det)=> det?.detalles?.edad||'' },
+      { id:'Noches', label:'Noches', getter:(it,det)=> (function(){ const e=det?.detalles?.fechaEntrada; const s=det?.detalles?.fechaSalida; const d1=new Date(e), d2=new Date(s); if(isNaN(d1)||isNaN(d2)) return ''; const ms=d2-d1; return ms>0? Math.round(ms/(1000*60*60*24)):0; })() },
+      { id:'Documento', label:'Documento', getter:(it,det)=> det?.detalles?.documento || det?.documento || '' },
+      { id:'Telefono', label:'Teléfono', getter:(it,det)=> (it.usuario && it.usuario.telefono) || det?.detalles?.telefono || det?.telefono || '' },
+      { id:'Email', label:'Email', getter:(it,det)=> (it.usuario && it.usuario.email) || det?.detalles?.email || det?.email || '' }
+    ];
+    const EXPORT_LS_KEY = 'buenohotel_admin_export_fields';
+    function getSavedExportFields(){
+      try { const v = localStorage.getItem(EXPORT_LS_KEY); if (v) return JSON.parse(v); } catch(_) {}
+      return null;
+    }
+    function saveExportFields(selectedIds){
+      try { localStorage.setItem(EXPORT_LS_KEY, JSON.stringify(selectedIds||[])); } catch(_) {}
+    }
+
+    async function exportCustom(format){
+      const rows = getCurrentlyFiltered();
+      const selected = Array.from(document.querySelectorAll('#export-fields input[type="checkbox"]:checked')).map(c=>c.value);
+      if (!selected.length){ alert('Selecciona al menos un campo.'); return; }
+      saveExportFields(selected);
+      const defs = EXPORT_FIELD_DEFS.filter(f=> selected.includes(f.id));
+      const headers = defs.map(d=> d.label);
+      const ids = [...new Set(rows.map(r=>r.registroId).filter(Boolean))];
+      await Promise.all(ids.map(getRegistroDetailCached));
+      const matrix = rows.map(it=>{
+        const det = REG_CACHE[it.registroId] || {};
+        return defs.map(d=> d.getter(it, det));
+      });
+      const ts = new Date();
+      const name = `export_${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}`;
+      if (format === 'csv'){
+        const csvRows = [headers.join(',')].concat(matrix.map(vals => vals.map(s=>{
+          const str = String(s);
+          return /[",\n]/.test(str) ? '"'+str.replace(/"/g,'""')+'"' : str;
+        }).join(',')));
+        downloadBlob(csvRows.join('\n'), `${name}.csv`, 'text/csv;charset=utf-8');
+      } else {
+        const lines = [headers.join('\t')].concat(matrix.map(vals => vals.map(s=> String(s).replace(/\n/g,' ')).join('\t')));
+        downloadBlob(lines.join('\n'), `${name}.txt`, 'text/plain;charset=utf-8');
+      }
+    }
+
+    function openExportCustom(){
+      const modal = document.getElementById('export-modal');
+      const box = document.getElementById('export-fields');
+      const saved = getSavedExportFields();
+      const selectedSet = new Set(Array.isArray(saved) && saved.length ? saved : EXPORT_FIELD_DEFS.map(ff=>ff.id));
+      box.innerHTML = EXPORT_FIELD_DEFS.map(f=>`
+        <label style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" value="${f.id}" ${selectedSet.has(f.id)?'checked':''}>
+          <span>${f.label}</span>
+        </label>
+      `).join('');
+      modal.style.display = 'flex';
+    }
+
+    document.getElementById('export-do-txt').addEventListener('click', ()=> exportCustom('txt'));
+    document.getElementById('export-do-csv').addEventListener('click', ()=> exportCustom('csv'));
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Admin guard: si no es admin, redirigir
+      const user = window.auth.getUserData && window.auth.getUserData();
+      const isAdmin = user && String(user.rol||'').toLowerCase()==='admin';
+      if (!isAdmin){ window.location.href = 'index.html'; return; }
+      // Quick access floating button to perfil
+      try {
+        if (!document.getElementById('perfil-fab')){
+          const fab = document.createElement('a');
+          fab.id = 'perfil-fab';
+          fab.href = 'dashboard.html';
+          fab.setAttribute('data-requires-auth','');
+          fab.textContent = 'Mi Perfil';
+          fab.style.cssText = 'position:fixed;right:22px;bottom:22px;background:#FBB03B;color:#222;padding:12px 16px;border-radius:999px;box-shadow:0 8px 22px rgba(0,0,0,.18);font-weight:800;text-decoration:none;z-index:9999;';
+          document.body.appendChild(fab);
+        }
+      } catch(_) {}
+      // Events
+      const refreshBtn = document.getElementById('refresh');
+      document.getElementById('refresh').addEventListener('click', loadData);
+      document.getElementById('search').addEventListener('input', ()=> renderList(CACHE));
+      document.getElementById('estadoFilter').addEventListener('change', loadData);
+      document.getElementById('userFilter').addEventListener('change', loadData);
+      document.getElementById('eventFilter').addEventListener('change', loadData);
+      // Export dropdown handlers
+      const exportToggle = document.getElementById('exportToggle');
+      exportToggle.addEventListener('click', (e)=>{
+        e.preventDefault();
+        openExportCustom();
+      });
+      // Cerrar modal exportación (X, backdrop, ESC)
+      const exportModal = document.getElementById('export-modal');
+      const exportClose = document.getElementById('export-close');
+      if (exportClose) {
+        exportClose.addEventListener('click', ()=>{ exportModal.style.display = 'none'; });
+      }
+      exportModal.addEventListener('click', (e)=>{
+        if (e.target === exportModal) { exportModal.style.display = 'none'; }
+      });
+      document.addEventListener('keydown', (e)=>{
+        if (e.key === 'Escape' && exportModal.style.display === 'flex') { exportModal.style.display = 'none'; }
+      });
+      // Marcar/Desmarcar en modal
+      document.getElementById('export-select-all').addEventListener('click', ()=>{
+        document.querySelectorAll('#export-fields input[type="checkbox"]').forEach(cb=> cb.checked = true);
+      });
+      document.getElementById('export-select-none').addEventListener('click', ()=>{
+        document.querySelectorAll('#export-fields input[type="checkbox"]').forEach(cb=> cb.checked = false);
+      });
+      // Presets
+      const HOTEL_PRESET = new Set(['TipoHabitacion','Categoria','Usuario','FechaEntrada','FechaSalida','Edad','Noches','Documento','Telefono','Email']);
+      function applyPreset(name){
+        const all = Array.from(document.querySelectorAll('#export-fields input[type="checkbox"]'));
+        if (name==='hotel'){
+          all.forEach(cb=> cb.checked = HOTEL_PRESET.has(cb.value));
+        } else {
+          // Personalizado no cambia selección
+        }
+      }
+      document.getElementById('export-apply-preset').addEventListener('click', ()=>{
+        const sel = document.getElementById('export-preset');
+        applyPreset(sel.value);
+      });
+      // Cargar opciones
+      loadUsersForFilter();
+      loadEventsForFilter();
+      // Default all filters to 'Todos'
+      const estadoSelEl = document.getElementById('estadoFilter');
+      const userSelEl = document.getElementById('userFilter');
+      const eventSelEl = document.getElementById('eventFilter');
+      if (estadoSelEl) estadoSelEl.value = 'todos';
+      if (userSelEl) userSelEl.value = '';
+      if (eventSelEl) eventSelEl.value = '';
+      // Initial
+      refreshBtn.disabled = false;
+      loadData();
+    });
+  </script>
+</body>
+</html>

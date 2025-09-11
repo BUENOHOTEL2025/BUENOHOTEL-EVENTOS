@@ -1,0 +1,12 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "eventos-buenohotel-api"
+resolve_s3 = true
+s3_prefix = "eventos-buenohotel-api"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DomainName=\"api.buenohotel.com.do\" CertificateArn=\"arn:aws:acm:us-east-1:319516349800:certificate/9e1f8259-5ef1-4de3-a2d9-14f5fb86df6e\" AllowedOrigin=\"https://eventos.buenohotel.com.do\" EnvEmailApiBase=\"/buenohotel/eventos/EMAIL_API_BASE\" EnvFrontendUrl=\"/buenohotel/eventos/FRONTEND_URL\" EnvJwtSecret=\"/buenohotel/eventos/JWT_SECRET\" EnvAzulMerchantId=\"/buenohotel/eventos/AZUL_MERCHANT_ID\" EnvAzulAuthKey=\"/buenohotel/eventos/AZUL_AUTH_KEY\" EnvAzulApiBase=\"/buenohotel/eventos/AZUL_API_BASE\" EnvAzulCurrency=\"/buenohotel/eventos/AZUL_CURRENCY\" EnvPayReturnUrl=\"/buenohotel/eventos/PAY_RETURN_URL\" EnvPayNotifyUrl=\"/buenohotel/eventos/PAY_NOTIFY_URL\""
+image_repositories = []
+disable_rollback = true

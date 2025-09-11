@@ -1,0 +1,149 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: API de Eventos BuenoHotel en AWS Lambda + API Gateway
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: nodejs18.x
+    Architectures:
+    - arm64
+    Environment:
+      Variables:
+        NODE_ENV: production
+  Api:
+    Cors:
+      AllowOrigin:
+        Fn::Sub: '''${AllowedOrigin}'''
+      AllowHeaders: '''Content-Type,Authorization'''
+      AllowMethods: '''GET,POST,PUT,PATCH,DELETE,OPTIONS'''
+Parameters:
+  DomainName:
+    Type: String
+    Default: api.buenohotel.com.do
+  CertificateArn:
+    Type: String
+    Description: ARN del certificado ACM para el dominio personalizado (en us-east-1)
+  AllowedOrigin:
+    Type: String
+    Default: https://eventos.buenohotel.com.do
+  EnvEmailApiBase:
+    Type: String
+    Default: /buenohotel/eventos/EMAIL_API_BASE
+  EnvFrontendUrl:
+    Type: String
+    Default: /buenohotel/eventos/FRONTEND_URL
+  EnvJwtSecret:
+    Type: String
+    Default: /buenohotel/eventos/JWT_SECRET
+  EnvAzulMerchantId:
+    Type: String
+    Default: /buenohotel/eventos/AZUL_MERCHANT_ID
+  EnvAzulAuthKey:
+    Type: String
+    Default: /buenohotel/eventos/AZUL_AUTH_KEY
+  EnvAzulApiBase:
+    Type: String
+    Default: /buenohotel/eventos/AZUL_API_BASE
+  EnvAzulCurrency:
+    Type: String
+    Default: /buenohotel/eventos/AZUL_CURRENCY
+  EnvAzulMerchantName:
+    Type: String
+    Default: /buenohotel/eventos/AZUL_MERCHANT_NAME
+  EnvPayReturnUrl:
+    Type: String
+    Default: /buenohotel/eventos/PAY_RETURN_URL
+  EnvPayNotifyUrl:
+    Type: String
+    Default: /buenohotel/eventos/PAY_NOTIFY_URL
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eventos-buenohotel-api
+      Handler: lambda.handler
+      CodeUri: ApiFunction
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action:
+          - ssm:GetParameter
+          - ssm:GetParameters
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          - dynamodb:Scan
+          - dynamodb:DescribeTable
+          Resource: '*'
+      Environment:
+        Variables:
+          EMAIL_API_BASE_PARAM:
+            Ref: EnvEmailApiBase
+          FRONTEND_URL_PARAM:
+            Ref: EnvFrontendUrl
+          JWT_SECRET_PARAM:
+            Ref: EnvJwtSecret
+          AZUL_MERCHANT_ID_PARAM:
+            Ref: EnvAzulMerchantId
+          AZUL_AUTH_KEY_PARAM:
+            Ref: EnvAzulAuthKey
+          AZUL_API_BASE_PARAM:
+            Ref: EnvAzulApiBase
+          AZUL_CURRENCY_PARAM:
+            Ref: EnvAzulCurrency
+          AZUL_MERCHANT_NAME_PARAM:
+            Ref: EnvAzulMerchantName
+          PAY_RETURN_URL_PARAM:
+            Ref: EnvPayReturnUrl
+          PAY_NOTIFY_URL_PARAM:
+            Ref: EnvPayNotifyUrl
+      Events:
+        Proxy:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        RootGet:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+    Metadata:
+      SamResourceId: ApiFunction
+  ApiGatewayDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName:
+        Ref: DomainName
+      EndpointConfiguration:
+        Types:
+        - EDGE
+      CertificateArn:
+        Ref: CertificateArn
+      SecurityPolicy: TLS_1_2
+  BasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: ApiGatewayDomain
+    Properties:
+      DomainName:
+        Ref: DomainName
+      RestApiId:
+        Ref: ServerlessRestApi
+      Stage:
+        Ref: ServerlessRestApiProdStage
+Outputs:
+  ApiUrl:
+    Description: URL de la API por defecto
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
+  CustomApiUrl:
+    Description: URL de la API con dominio personalizado
+    Value:
+      Fn::Sub: https://${DomainName}

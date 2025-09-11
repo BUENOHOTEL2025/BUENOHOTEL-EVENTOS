@@ -1,0 +1,29 @@
+{
+  "name": "eventos-buenohotel",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de eventos para BuenoHotel",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "eventos",
+    "buenohotel",
+    "node",
+    "express",
+    "dynamodb"
+  ],
+  "author": "BuenoHotel Team",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BUENOHOTEL2025/BUENOHOTEL-EVENTOS.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BUENOHOTEL2025/BUENOHOTEL-EVENTOS/issues"
+  },
+  "homepage": "https://github.com/BUENOHOTEL2025/BUENOHOTEL-EVENTOS#readme"
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar contraseña - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background:#f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; }
+    .main-content { min-height: calc(100vh - 200px); display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+    .auth-container { max-width:520px; width:100%; background:#fff; border-radius:12px; padding:32px; box-shadow:0 4px 20px rgba(0,0,0,.08); border:1px solid #eee; }
+    .auth-title { text-align:center; color:#222; margin-bottom:8px; font-size:1.8rem; font-weight:800; }
+    .auth-subtitle { text-align:center; color:#555; margin-bottom:24px; font-size:0.98rem; }
+    .form-group { margin-bottom:18px; }
+    .form-group label { display:block; margin-bottom:8px; color:#444; font-weight:600; }
+    .form-control { width:100%; padding:14px 16px; border:1px solid #ddd; border-radius:6px; font-size:1rem; }
+    .form-control:focus { border-color:#FBB03B; outline:none; box-shadow:0 0 0 2px rgba(251,176,59,.2); }
+    .btn-primary { background:#FBB03B; color:#222; border:none; padding:14px 22px; border-radius:6px; font-weight:800; cursor:pointer; width:100%; transition:.3s; text-transform:uppercase; letter-spacing:.5px; }
+    .btn-primary:hover { background:#e6a02c; box-shadow:0 4px 12px rgba(0,0,0,.1); }
+    .auth-footer { text-align:center; margin-top:16px; color:#666; }
+    .auth-footer a { color:#FBB03B; font-weight:700; text-decoration:none; }
+    .auth-footer a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+  <script src="js/auth.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <div class="main-content">
+    <div class="auth-container">
+      <h1 class="auth-title">¿Olvidaste tu contraseña?</h1>
+      <p class="auth-subtitle">Ingresa tu correo y, si existe una cuenta asociada, te enviaremos un enlace para restablecer tu contraseña.</p>
+      <form id="forgotForm">
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input id="email" name="email" type="email" class="form-control" required placeholder="tucorreo@ejemplo.com" autocomplete="email">
+        </div>
+        <button type="submit" class="btn-primary" id="submitBtn">Enviar enlace</button>
+      </form>
+      <p class="auth-footer" style="margin-top:20px;">
+        <a href="login.html">Volver a iniciar sesión</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      const form = document.getElementById('forgotForm');
+      const btn = document.getElementById('submitBtn');
+
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        const email = (document.getElementById('email').value || '').trim().toLowerCase();
+        if (!email) {
+          showToast({ title:'Correo requerido', message:'Ingresa tu correo electrónico', type:'error', duration:2200 });
+          return;
+        }
+        const original = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = 'Enviando…';
+        try {
+          const { success, message } = await window.requestPasswordReset(email);
+          if (success) {
+            showToast({ title:'Enlace enviado', message: message || 'Si el correo existe, recibirás un enlace de restablecimiento en pocos minutos.', type:'success', duration:3600 });
+          } else {
+            showToast({ title:'Aviso', message: message || 'Si el correo existe, recibirás un enlace de restablecimiento.', type:'error', duration:3200 });
+          }
+        } catch (err) {
+          showToast({ title:'Error', message: err?.message || 'No se pudo procesar tu solicitud', type:'error', duration:3000 });
+        } finally {
+          btn.disabled = false; btn.innerHTML = original;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
