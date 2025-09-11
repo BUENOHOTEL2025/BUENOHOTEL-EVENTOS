@@ -867,20 +867,36 @@ function openRegistroModal(evento, req){
     // Construir payload para backend
     // monto efectivo
     const precioTotal = Number(dGet(evento?.precio_por_persona) || 0);
-    const selectedMontoVal = (function(){
+    let selectedMontoVal = (function(){
       const sel = adicionales.montoPago;
       if (String(sel) === 'OTRO') return Number(adicionales.montoPagoOtro || 0);
-      return Number(sel || 0);
+      if (sel != null && sel !== '') return Number(sel);
+      return NaN; // sin campo
     })();
-    // Validación temprana de mínimo RD$1,500
-    if (isNaN(selectedMontoVal) || selectedMontoVal < 1500){
-      if (window.showToast) window.showToast({ title:'Monto insuficiente', message:'El abono mínimo es RD$1,500.00.', type:'warning' });
-      const montoEl = body.querySelector('#montoPago') || body.querySelector('#montoPagoOtro');
-      const helper = body.querySelector('#montoPago-helper');
-      if (helper){ helper.style.color = '#b30000'; helper.textContent = 'El abono mínimo es RD$1,500.00.'; }
-      if (montoEl){ try{ montoEl.focus(); montoEl.scrollIntoView({behavior:'smooth', block:'center'}); }catch(_){ } }
-      submitBtn.disabled = false; submitBtn.textContent = 'Confirmar Registro';
-      return;
+    // Si no hay campo de monto y el método es tarjeta, usar precio del evento
+    if (metodoPago === 'tarjeta' && (isNaN(selectedMontoVal) || selectedMontoVal <= 0)){
+      selectedMontoVal = precioTotal || 0;
+    }
+    // Validación de montos
+    if (metodoPago === 'transferencia'){
+      // Transferencia requiere abono mínimo RD$1,500
+      if (isNaN(selectedMontoVal) || selectedMontoVal < 1500){
+        if (window.showToast) window.showToast({ title:'Monto insuficiente', message:'El abono mínimo es RD$1,500.00 para transferencias.', type:'warning' });
+        const montoEl = body.querySelector('#montoPago') || body.querySelector('#montoPagoOtro');
+        const helper = body.querySelector('#montoPago-helper');
+        if (helper){ helper.style.color = '#b30000'; helper.textContent = 'El abono mínimo es RD$1,500.00.'; }
+        if (montoEl){ try{ montoEl.focus(); montoEl.scrollIntoView({behavior:'smooth', block:'center'}); }catch(_){ } }
+        submitBtn.disabled = false; submitBtn.textContent = 'Confirmar Registro';
+        return;
+      }
+    } else {
+      // Tarjeta: debe existir un monto válido (>0). Si no hay precio configurado, detener.
+      if (isNaN(selectedMontoVal) || selectedMontoVal <= 0){
+        const msg = 'Este evento no tiene un precio configurado para procesar el pago.';
+        if (window.showToast) window.showToast({ title:'Monto inválido', message: msg, type:'warning' });
+        submitBtn.disabled = false; submitBtn.textContent = 'Confirmar Registro';
+        return;
+      }
     }
 
     const payload = {
@@ -918,7 +934,7 @@ function openRegistroModal(evento, req){
       }
     };
     // Validación dinámica para monto OTRO si corresponde
-    if (String(adicionales.montoPago) === 'OTRO'){
+    if (metodoPago === 'transferencia' && String(adicionales.montoPago) === 'OTRO'){
       const minVal = 1500; // mínimo fijo RD$1,500
       const maxVal = precioTotal || Number.MAX_SAFE_INTEGER;
       if (!(selectedMontoVal >= minVal && selectedMontoVal <= maxVal)){
@@ -993,14 +1009,21 @@ function openRegistroModal(evento, req){
         function toAbsImg(u){
           try { const s=String(u||''); if (!s) return ''; if (/^https?:\/\//i.test(s)) return s; return new URL(s, 'https://eventos.buenohotel.com.do/').toString(); } catch(_){ return ''; }
         }
-        const hotelImage = encodeURIComponent(toAbsImg(imgsArr[0] || ''));
+        // Importante: NO pre-encode; URLSearchParams hará el encoding una sola vez
+        const hotelImage = toAbsImg(imgsArr[0] || '');
         // Fecha del evento (checkIn)
         const checkInISO = (eventStartDate || __eventStartDate || '').split('T')[0];
-        // Cantidad de personas (por ahora 1)
-        const AdultsQty = 1;
-        // Precio total a cobrar (en DOP)
-        const TotalPrice = Number(selectedMontoVal||0);
-        const Currency = 'DOP';
+        // Cantidad de personas (por ahora 1; si agregamos campo, usarlo)
+        const AdultsQty = Number(adicionales.cantidadPersonas||1) || 1;
+        // Precio total seleccionado en DOP
+        const totalDOP = Number(selectedMontoVal||0);
+        // Ecommerce espera USD y convierte internamente a DOP (ver PaymentFormComponent.getFormattedPrice)
+        const FX_KEY = 'bh_fx_rate_usd';
+        let FX = 61; // default
+        try { const st = localStorage.getItem(FX_KEY); if (st) FX = Number(st) || FX; } catch(_){ }
+        const totalUSD = FX>0 ? Math.round((totalDOP/FX)*100)/100 : totalDOP;
+        const TotalPrice = totalUSD;
+        const Currency = 'USD';
         // OrderNumber: usar id devuelto por backend (registroId/ id)
         const orderNumber = String(
           json?.data?.registroId || json?.data?.id || json?.id || json?.registroId || ''
@@ -1008,13 +1031,20 @@ function openRegistroModal(evento, req){
         // Fallback si falta: usar fecha+usuario para no romper, aunque lo ideal es id del registro
         const OrderNumber = encodeURIComponent(orderNumber || `${Date.now()}-${payload.usuarioId||'user'}`);
         const params = new URLSearchParams();
+        // Compatibilidad: mientras Ecommerce migra a EventName, mandamos ambos
         params.set('EventName', eventName);
+        params.set('TourName', eventName);
         params.set('Currency', Currency);
         if (hotelImage) params.set('hotelImage', hotelImage);
         if (checkInISO) params.set('checkIn', checkInISO);
         params.set('AdultsQty', String(AdultsQty));
         params.set('TotalPrice', String(TotalPrice));
         params.set('OrderNumber', OrderNumber);
+        // Campos informativos opcionales
+        const hotelName = String(dGet(evento?.lugar)||'');
+        if (hotelName) params.set('hotelName', hotelName);
+        const Location = '';
+        if (Location) params.set('Location', Location);
         const redirectUrl = `${ecommerceBase}?${params.toString()}`;
         window.location.href = redirectUrl;
       }
