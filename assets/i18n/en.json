@@ -1,0 +1,21 @@
+{
+  "APP": {
+    "TITLE": "BuenoHotel - Book Your Stay",
+    "MENU": {
+      "HOME": "Home",
+      "ROOMS": "Rooms",
+      "SERVICES": "Services",
+      "ABOUT": "About Us",
+      "CONTACT": "Contact"
+    },
+    "CURRENCY": {
+      "DOP": "Dominican Peso (DOP)",
+      "USD": "US Dollar (USD)"
+    },
+    "BUTTONS": {
+      "BOOK_NOW": "Book Now",
+      "LEARN_MORE": "Learn More",
+      "CONTACT_US": "Contact Us"
+    }
+  }
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es" class="bh-remote-chrome">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultado de Pago - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css?v=20260923c" />
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20260926x">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Favicon / App Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="shortcut icon" href="assets/logo/logo-32.png?v=20260921j">
+  <style>
+    body { background: #f4f4f4; font-family: Roboto, Arial, Helvetica, sans-serif; }
+    .container { max-width: 720px; margin: 40px auto; padding: 24px; }
+    .card { background:#fff; border:1px solid #eee; border-radius:12px; padding: 18px 20px; box-shadow:0 6px 20px rgba(0,0,0,.06); }
+    .title { font-size: 1.4rem; font-weight:800; color:#222; margin: 10px 0 6px; }
+    .muted { color:#666; }
+    .ok { color:#1f7a3d; }
+    .bad { color:#a11313; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; padding:10px 22px; border:0; border-radius:20px; font-weight:700; font-size:0.98rem; font-family:Arial, Helvetica, sans-serif; cursor:pointer; text-decoration:none; }
+    .btn-primary { background:#fbb03b; color:#222; }
+    .btn-primary:hover { background:#e19a2e; color:#222; }
+    .btn-link { background:#fff; border:1px solid #ddd; color:#222; }
+    .box { margin-top: 14px; padding:12px; background:#f9fafb; border:1px solid #eee; border-radius:8px; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+  <script src="js/auth.js?v=20260923c"></script>
+  <script src="https://buenohotel.com/js/config.js?v=20260929a"></script>
+  <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261002a"></script>
+  <script src="js/navbar.js?v=20260919m"></script>
+  <script>
+    function parseQuery(){
+      const out = {}; const sp = new URLSearchParams(location.search);
+      sp.forEach((v,k)=>{ out[k] = v; });
+      return out;
+    }
+    async function confirmPayment(){
+      const stateEl = document.getElementById('state');
+      const resultEl = document.getElementById('result');
+      try {
+        // Asegurar sesión (necesaria para /confirm)
+        if (!window.auth || !window.auth.isAuthenticated || !window.auth.isAuthenticated()){
+          stateEl.innerHTML = '<div class="bad">Tu sesión no está activa. Inicia sesión para ver el resultado del pago.</div>';
+          return;
+        }
+        const token = window.auth.getAuthToken();
+        const API_BASE = (window.getAuthApiBase ? window.getAuthApiBase() : (new URL('/api', location.origin).origin));
+        const params = parseQuery();
+        const resp = await fetch(`${API_BASE}/api/pagos/azul/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(params)
+        });
+        const data = await resp.json().catch(()=>({}));
+        if (!resp.ok){ throw new Error(data?.message || `HTTP ${resp.status}`); }
+        stateEl.style.display = 'none';
+        const estado = (data?.data?.estado || '').toLowerCase();
+        const ok = estado === 'aprobado';
+        resultEl.innerHTML = `
+          <div class="title">${ ok ? '¡Pago aprobado!' : (estado==='cancelado' ? 'Pago cancelado' : 'Pago pendiente') }</div>
+          <div class="muted">Registro: ${data?.data?.registroId || '-'}</div>
+          <div class="muted">Pago: ${data?.data?.pagoId || '-'}</div>
+          <div class="box">
+            <button class="btn btn-primary" onclick="location.href='mis-reservas.html'">Ver mis reservas</button>
+            <button class="btn btn-link" onclick="location.href='index.html'">Ir al inicio</button>
+          </div>
+        `;
+      } catch (e) {
+        console.error('confirmPayment', e);
+        stateEl.innerHTML = `<div class="bad">No se pudo confirmar el pago: ${e?.message || ''}</div>`;
+      }
+    }
+    document.addEventListener('DOMContentLoaded', confirmPayment);
+  </script>
+
+  <div class="container">
+    <div class="card">
+      <div id="state" class="muted">Confirmando tu pago…</div>
+      <div id="result"></div>
+    </div>
+  </div>
+</body>
+</html>

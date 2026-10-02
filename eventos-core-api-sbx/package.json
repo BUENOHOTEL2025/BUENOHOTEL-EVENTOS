@@ -1,0 +1,30 @@
+{
+  "name": "eventos-core-api",
+  "version": "1.0.0",
+  "description": "API para la gestión de eventos de BuenoHotel",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "cert:generar-xml": "node certificacion-dgii/generar-xml-sin-firmar.js",
+    "cert:enviar": "node certificacion-dgii/enviar-set-firmados.js",
+    "cert:verificar-firmados": "node certificacion-dgii/enviar-set-firmados.js --dry-run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.908.0",
+    "@aws-sdk/lib-dynamodb": "^3.908.0",
+    "@aws-sdk/util-dynamodb": "^3.908.0",
+    "@vendia/serverless-express": "^4.12.6",
+    "cors": "^2.8.5",
+    "dgii-ecf": "^1.8.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "multer": "^2.2.0",
+    "qrcode": "^1.5.4",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

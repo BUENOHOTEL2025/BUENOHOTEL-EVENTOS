@@ -1,0 +1,354 @@
+
+{
+  "project": "BuenoHotel Eventos",
+  "roles": [
+    "cliente",
+    "admin"
+  ],
+  "environments": {
+    "prod": {
+      "notes": "Usar solo para validación y operaciones reales. Evitar crear data de prueba.",
+      "required": true
+    },
+    "sandbox": {
+      "notes": "Preferido para pruebas completas y creación/edición/borrado de datos.",
+      "required": false
+    }
+  },
+  "principles": {
+    "no_duplication_rule": "Si un flujo se valida por UI, no repetirlo en api_only. api_only es solo para endpoints sin UI o diagnósticos.",
+    "post_change": "Ejecutar post_change_smoke después de cada cambio.",
+    "pre_release": "Ejecutar full_regression antes de cambios grandes o releases."
+  },
+  "configuration": {
+    "core_api_base": {
+      "source_priority": [
+        "window.getAuthApiBase()",
+        "localStorage.buenohotel_api_base (override manual)",
+        "window.location.origin (proxy /api si existe)",
+        "http://localhost:3000 (dev)"
+      ],
+      "override_howto": [
+        "localStorage.setItem('buenohotel_api_base', '<CORE_API_BASE>');",
+        "location.reload();"
+      ]
+    },
+    "admin_eventos_api": {
+      "notes": "Admin eventos usa endpoints dedicados (ADMIN_EVENTOS_API_URL / ADMIN_EVENTOS_UPLOAD_URL) y no depende de API_BASES.",
+      "known_invoke": "https://h0q597no4j.execute-api.us-east-1.amazonaws.com"
+    }
+  },
+  "test_suites": {
+    "post_change_smoke": {
+      "target_duration_minutes": "5-10",
+      "steps": [
+        {
+          "id": "smoke_auth_login",
+          "area": "auth",
+          "type": "ui",
+          "role": "cliente",
+          "path": "login.html",
+          "action": "Iniciar sesión con usuario válido.",
+          "pass": "Redirige a dashboard y no hay errores en consola."
+        },
+        {
+          "id": "smoke_session_persist",
+          "area": "auth",
+          "type": "ui",
+          "role": "cliente",
+          "action": "Refrescar la página.",
+          "pass": "La sesión se mantiene (token) y navbar muestra menú de usuario."
+        },
+        {
+          "id": "smoke_admin_access",
+          "area": "admin",
+          "type": "ui",
+          "role": "admin",
+          "path": "admin.html",
+          "action": "Entrar al panel admin.",
+          "pass": "Carga panel sin 401/403 inesperados. Si no eres admin, debe bloquear."
+        },
+        {
+          "id": "smoke_admin_load_pagos",
+          "area": "admin_pagos",
+          "type": "ui",
+          "role": "admin",
+          "action": "Ver lista de pagos y conteos. Aplicar un filtro simple (estado).",
+          "pass": "Lista se renderiza y filtros cambian resultados sin errores."
+        },
+        {
+          "id": "smoke_admin_export_csv",
+          "area": "admin_export",
+          "type": "ui",
+          "role": "admin",
+          "action": "Exportar CSV.",
+          "pass": "Archivo descarga; columnas incluyen Edad y Cédula/Pasaporte; Observaciones vacío exporta N/A."
+        }
+      ],
+      "api_only": [
+        {
+          "id": "smoke_api_root_routing",
+          "area": "routing",
+          "type": "api_only",
+          "method": "GET",
+          "url": "<CORE_API_BASE>/",
+          "pass": "Responde JSON (no 404).",
+          "when": "Solo si hay síntomas de routing/mapping (404 general) o luego de cambios en API Gateway/domains."
+        }
+      ]
+    },
+    "full_regression": {
+      "target_duration_minutes": "20-40",
+      "ui": {
+        "auth_cliente": [
+          {
+            "id": "auth_protected_routes",
+            "role": "cliente",
+            "paths": [
+              "dashboard.html",
+              "mis-reservas.html",
+              "admin.html"
+            ],
+            "action": "En incógnito (sin sesión), abrir rutas protegidas.",
+            "pass": "Redirige a login o bloquea acceso. admin.html debe estar restringido."
+          },
+          {
+            "id": "auth_forgot_password",
+            "role": "cliente",
+            "path": "forgot.html",
+            "action": "Solicitar restablecimiento con un correo.",
+            "pass": "Muestra mensaje de éxito/controlado (sin crash)."
+          },
+          {
+            "id": "auth_reset_password",
+            "role": "cliente",
+            "path": "reset.html",
+            "action": "Completar reset con token válido.",
+            "pass": "Permite establecer contraseña y luego login con la nueva."
+          }
+        ],
+        "perfil_cliente": [
+          {
+            "id": "perfil_ver_datos",
+            "role": "cliente",
+            "path": "dashboard.html",
+            "action": "Abrir Mi Perfil y validar que los campos del perfil se muestran con los datos actuales (nombre, apellido, teléfono, tipo doc, documento, fecha nacimiento si aplica).",
+            "pass": "Los datos coinciden con la sesión y los campos están en modo solo lectura inicialmente."
+          },
+          {
+            "id": "perfil_editar_cancelar",
+            "role": "cliente",
+            "path": "dashboard.html",
+            "action": "Entrar a Editar Información, cambiar 1-2 campos y luego Cancelar.",
+            "pass": "Los campos vuelven al valor original, se deshabilitan y no se guardan cambios."
+          },
+          {
+            "id": "perfil_editar_guardar",
+            "role": "cliente",
+            "path": "dashboard.html",
+            "action": "Entrar a Editar Información, cambiar teléfono/documento/fecha nacimiento (si aplica) y Guardar Cambios.",
+            "pass": "Muestra confirmación de éxito; al refrescar la página los cambios persisten y el perfil sigue consistente."
+          },
+          {
+            "id": "perfil_cambiar_contrasena",
+            "role": "cliente",
+            "path": "dashboard.html",
+            "action": "En la sección Cambiar contraseña, actualizar contraseña (si el flujo está habilitado). Luego probar login con la nueva contraseña.",
+            "pass": "La contraseña se actualiza y el login funciona con la nueva."
+          },
+          {
+            "id": "perfil_impacta_export_documento_edad",
+            "role": "admin",
+            "paths": [
+              "dashboard.html",
+              "admin.html"
+            ],
+            "action": "Luego de actualizar Documento/Fecha Nacimiento en el perfil del cliente, ir al Admin y exportar registros de ese usuario.",
+            "pass": "Si en el registro faltaban datos, el export usa el perfil actualizado y refleja Edad/Cédula-Pasaporte correctamente."
+          }
+        ],
+        "registro_cliente": [
+          {
+            "id": "registro_evento_no_requiere_iglesia",
+            "role": "cliente",
+            "path": "index.html",
+            "action": "Seleccionar un evento con 'Requiere iglesia' desactivado (OFF). Realizar un registro completando todos los campos requeridos (incluye documento, fecha nacimiento si aplica, teléfono, email, etc.).",
+            "pass": "El formulario permite completar y enviar el registro; no pide campo de iglesia; se genera el registro y se obtiene un identificador/código (si aplica)."
+          },
+          {
+            "id": "registro_evento_requiere_iglesia",
+            "role": "cliente",
+            "path": "index.html",
+            "action": "Seleccionar un evento con 'Requiere iglesia' activado (ON). Realizar un registro completando campos, confirmando que el campo/selección de iglesia es obligatorio.",
+            "pass": "El formulario requiere iglesia para continuar; al completarlo se crea el registro correctamente."
+          }
+        ],
+        "reservas_cliente": [
+          {
+            "id": "reservas_list",
+            "role": "cliente",
+            "path": "mis-reservas.html",
+            "action": "Cargar mis reservas.",
+            "pass": "Lista coincide con usuario; no hay errores en consola."
+          },
+          {
+            "id": "reservas_refleja_estado_admin",
+            "role": "cliente",
+            "path": "mis-reservas.html",
+            "action": "Luego de que un admin cambie estados/pagos (aprobado/pendiente/cancelado o abonos), refrescar Mis Reservas.",
+            "pass": "El estado y los montos reflejan los cambios del admin (incluyendo abonos y total aprobado) sin inconsistencias."
+          },
+          {
+            "id": "pago_resultado",
+            "role": "cliente",
+            "path": "pago-resultado.html",
+            "action": "Navegar a resultado de pago (según flujo real o simulación controlada).",
+            "pass": "Estado se presenta consistente (aprobado/pendiente/cancelado) y navegación posterior funciona."
+          },
+          {
+            "id": "pasarela_azul_y_fallback_whatsapp",
+            "role": "cliente",
+            "paths": [
+              "mis-reservas.html",
+              "pago-resultado.html"
+            ],
+            "action": "Iniciar pago por pasarela Azul desde el flujo del cliente. Validar si abre la pasarela correctamente. Si el flujo usa fallback, validar que muestra mensaje y/o redirige a WhatsApp con la información del registro (nombre, evento, código/registroId, monto, etc.).",
+            "pass": "La pasarela Azul se abre cuando corresponde. Si no aplica o falla, el mensaje/fallback a WhatsApp contiene información pertinente del registro y no se pierde el contexto."
+          }
+        ],
+        "admin_pagos": [
+          {
+            "id": "admin_filters",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Probar filtros: estado, usuario, evento, búsqueda.",
+            "pass": "Resultados y conteos cambian correctamente; export respeta filtros."
+          },
+          {
+            "id": "admin_filter_by_new_user_registros",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Luego de crear registros nuevos con un usuario cliente, filtrar por ese usuario y confirmar que aparecen los registros/pagos nuevos.",
+            "pass": "Los registros nuevos se muestran al filtrar por el usuario; el evento y el registroId/código coinciden."
+          },
+          {
+            "id": "admin_update_pago_estado",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Cambiar estado de 2-3 pagos (aprobado/pendiente/cancelado).",
+            "pass": "Se refleja inmediatamente y persiste al refrescar."
+          },
+          {
+            "id": "admin_monto_aprobado_recalcula",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Cambiar estados (aprobado/pendiente/cancelado) y verificar que el 'TotalAprobado' / monto aprobado se recalcula adecuadamente para los registros afectados.",
+            "pass": "El monto aprobado cambia acorde al estado; al refrescar se mantiene y coincide con la suma de pagos aprobados."
+          },
+          {
+            "id": "admin_abonos_add_pago",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Probar el proceso de abonar: agregar un pago/abono a un registro (si la UI lo permite) y verificar su estado inicial.",
+            "pass": "El abono se registra correctamente, aparece en el panel y afecta el total/monto aprobado según el estado."
+          }
+        ],
+        "admin_export": [
+          {
+            "id": "export_csv_with_filters",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Aplicar filtro específico (evento + estado) y exportar CSV.",
+            "pass": "El archivo incluye solo filas filtradas; Observaciones vacío = N/A; Edad/Documento presentes si existen."
+          },
+          {
+            "id": "export_txt_with_filters",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Mismo filtro y exportar TXT.",
+            "pass": "Mismas filas/columnas esperadas en formato tabulado."
+          },
+          {
+            "id": "export_custom",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Export personalizado: seleccionar campos (incluye Observaciones, Documento, Edad) y exportar.",
+            "pass": "Headers correctos y valores coherentes; no rompe el formato CSV/TXT."
+          },
+          {
+            "id": "export_hotel",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Export hotel (CSV o TXT).",
+            "pass": "Columnas hotel correctas: tipo hab, categoría, nombre, fechas, edad, noches, documento, teléfono, email."
+          }
+        ],
+        "admin_eventos": [
+          {
+            "id": "admin_event_create",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Crear evento con mínimos (nombre + fecha entrada) y guardar.",
+            "pass": "Aparece en lista y persiste al recargar."
+          },
+          {
+            "id": "admin_event_edit",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Editar campos (precio, lugar, secciones, etc.) y guardar.",
+            "pass": "Cambios persisten y UI no se rompe."
+          },
+          {
+            "id": "admin_event_delete",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Eliminar un evento de prueba.",
+            "pass": "Desaparece y no vuelve al recargar."
+          },
+          {
+            "id": "admin_event_upload_images",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Subir portada y 1-2 imágenes del lugar.",
+            "pass": "Inputs reciben rutas (finalPath); no hay errores; se puede guardar el evento."
+          },
+          {
+            "id": "admin_event_toggle_church",
+            "role": "admin",
+            "path": "admin.html",
+            "action": "Alternar 'Requiere iglesia' ON/OFF.",
+            "pass": "Se mantiene tras refrescar; si falla servidor, al menos guarda local y muestra aviso."
+          }
+        ]
+      },
+      "api_only": {
+        "diagnostics": [
+          {
+            "id": "diag_user_by_id",
+            "type": "api_only",
+            "method": "GET",
+            "url": "<CORE_API_BASE>/api/usuarios/<USER_ID>",
+            "headers": {
+              "Authorization": "Bearer <ADMIN_TOKEN>"
+            },
+            "pass": "Responde 200 y trae perfil (sin password).",
+            "when": "Solo si export vuelve a traer Edad/Documento vacío o hay sospecha de backend."
+          },
+          {
+            "id": "diag_custom_domain_mapping",
+            "type": "api_only",
+            "method": "GET",
+            "url": "https://core-api.buenohotel.com.do/",
+            "pass": "Responde JSON igual que <CORE_API_BASE>/.",
+            "when": "Solo si quieren eliminar override y depender del dominio."
+          }
+        ]
+      }
+    }
+  },
+  "notes": [
+    "Roles soportados: admin y cliente.",
+    "Preferir sandbox para full_regression; en prod hacer solo smoke.",
+    "API-only está diseñado para no duplicar UI; usarlo solo como diagnóstico."
+  ]
+}

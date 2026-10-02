@@ -1,0 +1,22 @@
+SI "instalar-limpio.bat" NO FUNCIONA
+====================================
+
+Estas dentro de:
+  C:\Users\claud\OneDrive\Desktop\dgi\bh-paso4-secuencias-300
+
+Ejecuta EXACTAMENTE (con el punto y la barra):
+
+  .\instalar-limpio.bat
+
+O sin el bat, copia y pega esto:
+
+  rmdir /s /q node_modules
+  del package-lock.json
+  npm install
+  npm run firmar-todos
+  npm run enviar-api
+
+MEJOR: copia TODO el contenido de bh-paso4-secuencias-300
+dentro de dgi\ (no dejes una carpeta adentro), y trabaja desde:
+
+  C:\Users\claud\OneDrive\Desktop\dgi

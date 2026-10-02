@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" class="bh-remote-chrome">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eventos - Bueno Hotel</title>
+  <meta name="description" content="Descubre los próximos eventos y retiros en Bueno Hotel. Reserva tu lugar en nuestros eventos especiales.">
+  <!-- Favicon / App Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="shortcut icon" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="stylesheet" href="styles.css?v=20260923c">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20260926x">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header dinámico -->
+  <div id="site-header"></div>
+  <script src="js/auth.js?v=20260923c"></script>
+  <script src="https://buenohotel.com/js/config.js?v=20260929a"></script>
+  <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261002a"></script>
+  <script src="js/navbar.js?v=20260919m"></script>
+
+  <!-- Banner principal con fondo dinámico -->
+  <section class="banner" id="hero-banner" style="position:relative; overflow:hidden; min-height:280px;">
+    <div id="hero-bg-slider" style="position:absolute; inset:0; z-index:0;">
+      <div class="hero-bg-slide" style="position:absolute; inset:0; background:linear-gradient(135deg, #1a365d 0%, #2d3748 100%); opacity:1;"></div>
+    </div>
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.45); z-index:1;"></div>
+    <div style="position:relative; z-index:2; text-align:center; padding:40px 20px;">
+      <h2 class="banner-brand">
+        <img src="assets/logo/logo-white.png?v=20260907q" alt="Buenohotel" class="banner-brand-logo" width="207" height="55" />
+      </h2>
+      <p class="banner-section-label">Eventos</p>
+      <p style="color:#fff; font-size:1.2rem; font-weight:400; margin:0; opacity:0.95;">Cada destino es una experiencia. Cada viaje, una historia.</p>
+    </div>
+  </section>
+
+  <main>
+    <!-- Sección de próximos eventos -->
+    <section id="proximos-section">
+      <h2>Próximos Eventos</h2>
+      <div id="proximos-container"></div>
+    </section>
+
+    <!-- Sección de galería -->
+    <section id="galeria-section">
+      <h2>Galería de Eventos</h2>
+      <div id="galeria-container" class="gallery-grid"></div>
+    </section>
+  </main>
+
+  <!-- Modal de evento -->
+  <div id="evento-modal" class="evento-modal">
+    <div class="evento-modal-content">
+      <span class="evento-modal-close">&times;</span>
+      <div class="evento-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Scripts principales -->
+  <script src="main.js?v=20260930c"></script>
+</body>
+</html>

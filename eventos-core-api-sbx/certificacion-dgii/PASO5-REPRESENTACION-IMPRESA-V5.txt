@@ -1,0 +1,40 @@
+PASO 5 — Representación impresa (FORMATO DGII) v5
+===================================================
+
+Cambios v5:
+  - Razón Social Emisor fija: BUENOHOTEL, S.R.L.
+  - PDF automático con npm run paso5 (Puppeteer)
+  - Carpeta pdf\ con los 11 PDF listos para subir al portal
+
+Modelos DGII:
+  1.1  → tipos 31, 41, 43, 44, 45, 46, 47
+  1.5  → tipo 33
+  1.6  → tipo 34
+  2.1  → tipo 32 >= RD$250mil
+  2.2  → tipo 32 < RD$250mil
+
+OPCIÓN A — Subir PDF ya generados (recomendado):
+  Carpeta pdf\ → subir cada archivo al campo correspondiente en CerteCF Paso 5.
+
+OPCIÓN B — Regenerar (si cambian los XML firmados):
+  npm install
+  npm run paso5
+  → salida\representacion-impresa\pdf\
+
+Requisito para regenerar: XML firmados en salida\ecf-firmados\
+
+Verificar en cada PDF:
+  Razón Social Emisor: BUENOHOTEL, S.R.L.
+
+Mapeo portal → archivo PDF:
+  tipo 31          tipo-31.pdf           E310000000204
+  tipo 32 >= 250k  tipo-32-ge-250.pdf    E320000000206
+  tipo 32 < 250k   tipo-32-lt-250.pdf    E320000000211
+  tipo 33          tipo-33.pdf           E330000000201
+  tipo 34          tipo-34.pdf           E340000000202
+  tipo 41          tipo-41.pdf           E410000000201
+  tipo 43          tipo-43.pdf           E430000000210
+  tipo 44          tipo-44.pdf           E440000000207
+  tipo 45          tipo-45.pdf           E450000000201
+  tipo 46          tipo-46.pdf           E460000000209
+  tipo 47          tipo-47.pdf           E470000000208

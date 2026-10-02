@@ -1,0 +1,706 @@
+      <!DOCTYPE html>
+<html lang="es" class="bh-remote-chrome">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css?v=20260923c">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20260926x">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Flatpickr: datepicker moderno con mes/año desplegable -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+  <!-- Favicon / App Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="shortcut icon" href="assets/logo/logo-32.png?v=20260921j">
+  <style>
+    /* ===== GENERAL ===== */
+/* --- CONTENEDOR PRINCIPAL --- */
+.auth-container {
+  max-width: 700px !important;
+  width: 90%;
+  margin: 50px auto;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+/* --- LOGO CENTRADO --- */
+.auth-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.auth-logo img {
+  height: 85px;
+  width: auto;
+}
+
+/* --- TITULOS --- */
+.auth-title {
+  text-align: center !important;
+  margin-bottom: 5px;
+  font-size: 2.3rem;
+  font-weight: 800;
+}
+
+.auth-subtitle {
+  text-align: center;
+  font-size: 1.15rem;
+  margin-bottom: 30px;
+  color: #666;
+}
+
+/* --- FORMULARIO --- */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;               /* Espaciado real entre inputs */
+  margin-bottom: 20px;
+}
+
+.form-group {
+  width: 100%;
+}
+
+/* Inputs */
+.form-control {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  background: #fafafa;
+  font-size: 1rem;
+  transition: all .2s;
+}
+
+.form-control:focus {
+  border-color: #FBB03B;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(251,176,59,0.15);
+}
+
+/* --- DOCUMENTO: NO CHOCA --- */
+.doc-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 12px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+
+  .auth-container {
+    padding: 28px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; /* 1 columna en móvil */
+    gap: 16px;
+  }
+
+  .doc-row {
+    grid-template-columns: 1fr; /* se apilan */
+  }
+}
+
+
+
+  </style>
+</head>
+<body>
+  <!-- Shared navbar placeholder -->
+  <div id="site-header"></div>
+  <script src="js/auth.js?v=20260923c"></script>
+  <script src="https://buenohotel.com/js/config.js?v=20260929a"></script>
+  <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261002a"></script>
+  <script src="js/navbar.js?v=20260919m"></script>
+
+  <div class="auth-container">
+    <div class="auth-logo">
+      <img src="assets/logo/icono-buenohotel.png?v=20260926m" alt="BuenoHotel" style="height:72px;width:auto;display:inline-block;">
+    </div>
+    <h1 class="auth-title">Crear Cuenta</h1>
+    <h2 style="text-align: center; color: #555; margin-bottom: 30px; font-weight: 600;">Registro básico</h2>
+    
+    <div id="error-message" class="error-message"></div>
+    
+    <form id="register-form">
+      <div id="error-message" class="error-message" style="display: none; color: #d32f2f; background-color: #fde7e7; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 0.95rem;"></div>
+      
+      <h3 style="color: #333; margin: 30px 0 20px; font-size: 1.4rem;">Información Personal</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombre *</label>
+          <input type="text" id="nombre" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="apellido">Apellido *</label>
+          <input type="text" id="apellido" class="form-control" required>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Correo Electrónico *</label>
+          <input type="email" id="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña *</label>
+          <input type="password" id="password" class="form-control" minlength="6" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="telefono">Teléfono *</label>
+          <input type="tel" id="telefono" class="form-control" placeholder="809-555-1234" required>
+        </div>
+        <div class="form-group">
+          <label for="tipoDocumento">Documento *</label>
+          <div class="doc-row">
+            <select id="tipoDocumento" class="form-control" style="max-width:180px;">
+              <option value="cedula">Cédula</option>
+              <option value="pasaporte">Pasaporte</option>
+            </select>
+            <input type="text" id="documento" class="form-control" placeholder="001-0000000-1" required>
+          </div>
+          
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fechaNacimiento">Fecha de Nacimiento *</label>
+          <input type="text" id="fechaNacimiento" class="form-control" placeholder="Ej: 15 de enero de 1990" autocomplete="bday">
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:600;color:#444;">
+            <input type="checkbox" id="usarEdad"> No puedo usar ese formato. Ingresar edad directamente
+          </label>
+          <input type="number" id="edad" class="form-control" placeholder="Edad" min="1" max="120" style="margin-top:8px; display:none;" disabled>
+          <small style="display:block;color:#666;margin-top:6px;">Puedes escribir la fecha manualmente (15 de enero de 1990) o usar el calendario. Si lo prefieres, marca la casilla para poner tu edad.</small>
+        </div>
+      </div>
+
+      <!-- Church Information (Conditional) -->
+      <div id="church-fields" style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid #eee;">
+        <h3 style="color: #333; margin-bottom: 15px;">Información de la Iglesia</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="iglesia">Iglesia a la que perteneces *</label>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div>
+                <input type="radio" id="iglesia1" name="iglesia" value="Iglesia Buenas Nuevas" style="margin-right:8px;">
+                <label for="iglesia1">Iglesia Buenas Nuevas</label>
+              </div>
+              <div>
+                <input type="radio" id="iglesia2" name="iglesia" value="Otra" style="margin-right:8px;">
+                <label for="iglesia2">Otra</label>
+                <input type="text" id="otraIglesia" class="form-control" placeholder="Especifica el nombre de la iglesia" style="margin-top:8px; display:none;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Event-specific fields will be added here when registering for an event -->
+      
+      <div class="form-group" style="text-align: center; margin-top: 40px;">
+        <button type="submit" class="btn-primary" style="padding: 15px 40px; font-size: 1.1rem; font-weight: 700; background: #FBB03B; border: none; border-radius: 30px; cursor: pointer; transition: all 0.3s ease;">
+          Completar Registro
+        </button>
+        <p style="margin-top: 20px; color: #666;">
+          ¿Ya tienes una cuenta? <a href="login.html" style="color: #FBB03B; font-weight: 600; text-decoration: none;">Inicia sesión aquí</a>
+        </p>
+      </div>
+    </form>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Detectar origen del backend usando helper global (auth.js)
+      const API_BASE = (window.getAuthApiBase ? window.getAuthApiBase() : ((location.port === '5500') ? 'http://localhost:3000' : ''));
+      
+      // Check if church fields should be shown (based on URL parameter or event selection)
+      const urlParams = new URLSearchParams(window.location.search);
+      const eventId = urlParams.get('eventId');
+      
+      // Get event data (in a real app, this would be an API call)
+      function getEventData(eventId) {
+        // For demo, we'll use localStorage. In production, fetch from your API
+        try {
+          const events = JSON.parse(localStorage.getItem('events') || '[]');
+          return events.find(e => e.id === eventId) || {};
+        } catch (e) {
+          console.error('Error loading event data:', e);
+          return {};
+        }
+      }
+      
+      // Toggle church fields based on event settings
+      function setupChurchFields(eventData) {
+        const churchFields = document.getElementById('church-fields');
+        const iglesiaRadios = document.querySelectorAll('input[name="iglesia"]');
+        const otraIglesiaInput = document.getElementById('otraIglesia');
+        
+        // Show/hide church fields based on event settings
+        if (eventData.requireChurch) {
+          churchFields.style.display = 'block';
+          
+          // Handle radio button changes
+          iglesiaRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+              otraIglesiaInput.style.display = this.value === 'Otra' ? 'block' : 'none';
+              if (this.value !== 'Otra') otraIglesiaInput.value = '';
+            });
+          });
+          
+          // Add required attribute to church fields
+          iglesiaRadios[0].required = true;
+        } else {
+          churchFields.style.display = 'none';
+        }
+      }
+      
+      // Check if we're registering for a specific event
+      if (eventId) {
+        const eventData = getEventData(eventId);
+        setupChurchFields(eventData);
+      }
+      
+      // Elementos
+      const passwordInput = document.getElementById('password');
+      const telefonoInput = document.getElementById('telefono');
+      const registerForm = document.getElementById('register-form');
+      const fechaNacimientoEl = document.getElementById('fechaNacimiento');
+      const usarEdadEl = document.getElementById('usarEdad');
+      const edadEl = document.getElementById('edad');
+
+      // ====== Datepicker (flatpickr) por defecto ======
+      let fpInstance = null;
+      (function initDOB(){
+        try {
+          const ensureFlatpickr = () => new Promise((resolve) => {
+            if (window.flatpickr) return resolve();
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js';
+            script.onload = resolve;
+            document.head.appendChild(script);
+          });
+          const ensureLocaleES = () => new Promise((resolve) => {
+            if (!window.flatpickr) return resolve();
+            const sES = document.createElement('script');
+            sES.src = 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js';
+            sES.onload = resolve;
+            document.head.appendChild(sES);
+          });
+          (async () => {
+            await ensureFlatpickr();
+            await ensureLocaleES();
+            if (window.flatpickr && fechaNacimientoEl){
+              try { window.flatpickr.localize(window.flatpickr.l10ns.es); } catch(_){ }
+              fpInstance = window.flatpickr(fechaNacimientoEl, {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: "j \\d\\e F \\d\\e Y",
+                allowInput: true,
+                maxDate: 'today',
+                defaultDate: null,
+                monthSelectorType: 'dropdown',
+                disableMobile: true
+              });
+            }
+          })();
+        } catch(_){ /* no-op */ }
+      })();
+
+      // ====== Toggle Edad <-> Fecha: si marcan, ingresan edad y se calcula la fecha ======
+      function ageToBirthDateISO(age){
+        const a = parseInt(age, 10);
+        if (!Number.isFinite(a) || a <= 0 || a > 120) return '';
+        const today = new Date();
+        const y = today.getFullYear() - a;
+        // Mantener mes y día actuales como aproximación
+        const m = today.getMonth();
+        const d = today.getDate();
+        const born = new Date(y, m, d);
+        const iso = `${born.getFullYear()}-${String(born.getMonth()+1).padStart(2,'0')}-${String(born.getDate()).padStart(2,'0')}`;
+        return iso;
+      }
+
+      function setFechaNacimientoValue(iso){
+        if (!fechaNacimientoEl) return;
+        fechaNacimientoEl.value = iso || '';
+        // Reflejar en flatpickr si existe
+        try {
+          if (fpInstance) fpInstance.setDate(iso || null, true, 'Y-m-d');
+        } catch(_){ }
+      }
+
+      // Parsear fecha en español "15 de enero de 1990" o variantes comunes y dd/mm/aaaa
+      function parseSpanishDateToISO(text){
+        if (!text) return '';
+        const s = String(text).trim().toLowerCase().replace(/\s+/g,' ');
+        const meses = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+        // 15 de enero de 1990 / 15 enero 1990
+        let m = s.match(/^(\d{1,2})\s*(?:de\s*)?([a-zñ]+)\s*(?:de\s*)?(\d{4})$/i);
+        if (m){
+          const d = parseInt(m[1],10);
+          const mes = meses[m[2]]; const y = parseInt(m[3],10);
+          if (mes){ return `${y}-${String(mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+        }
+        // dd/mm/aaaa o dd-mm-aaaa
+        m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        if (m){
+          const d = parseInt(m[1],10); const mes = parseInt(m[2],10); const y = parseInt(m[3],10);
+          if (mes>=1 && mes<=12 && d>=1 && d<=31) return `${y}-${String(mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        }
+        return '';
+      }
+
+      if (usarEdadEl){
+        usarEdadEl.addEventListener('change', function(){
+          const useAge = !!this.checked;
+          if (edadEl){
+            edadEl.style.display = useAge ? 'block' : 'none';
+            edadEl.disabled = !useAge;
+            if (useAge) edadEl.focus();
+          }
+          if (fechaNacimientoEl){
+            fechaNacimientoEl.disabled = useAge;
+            if (!useAge){
+              // Al volver al calendario, no forzamos ninguna fecha
+              setFechaNacimientoValue(fechaNacimientoEl.value);
+            }
+          }
+        });
+      }
+
+      if (edadEl){
+        edadEl.addEventListener('input', function(){
+          if (!usarEdadEl || !usarEdadEl.checked) return;
+          const iso = ageToBirthDateISO(this.value);
+          setFechaNacimientoValue(iso);
+        });
+      }
+      // Normalizar manualmente al perder el foco si no usan edad
+      if (fechaNacimientoEl){
+        fechaNacimientoEl.addEventListener('blur', function(){
+          if (usarEdadEl && usarEdadEl.checked) return; // si usa edad, ignorar
+          const val = this.value.trim();
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(val)){
+            const iso = parseSpanishDateToISO(val);
+            if (iso){ setFechaNacimientoValue(iso); }
+          }
+        });
+      }
+
+      // ========== Toast UI + sonido ==========
+      const toastContainer = document.getElementById('toast-container');
+      const styleEl = document.createElement('style');
+      styleEl.innerHTML = `
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 300px; max-width: 380px; padding: 14px 16px; border-radius: 12px; color: #1a1a1a; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: flex; gap: 12px; align-items: flex-start; border-left: 6px solid; animation: slideIn .25s ease-out; }
+        .toast-success { border-color: #22c55e; }
+        .toast-error { border-color: #ef4444; }
+        .toast-title { font-weight: 700; margin-bottom: 4px; }
+        .toast-body { font-size: 14px; color: #333; }
+        .toast-icon { font-size: 18px; line-height: 1; margin-top: 2px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+      `;
+      document.head.appendChild(styleEl);
+
+      function playSuccessSound() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          // Doble tono armónico con decaimiento más largo (~0.9s)
+          const o1 = ctx.createOscillator();
+          const o2 = ctx.createOscillator();
+          const g = ctx.createGain();
+          o1.type = 'sine';
+          o2.type = 'sine';
+          o1.frequency.setValueAtTime(880, ctx.currentTime);   // A5
+          o2.frequency.setValueAtTime(1320, ctx.currentTime);  // E6 (armónico)
+          g.gain.setValueAtTime(0.0001, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+          o1.connect(g); o2.connect(g); g.connect(ctx.destination);
+          o1.start(); o2.start();
+          o1.stop(ctx.currentTime + 0.92); o2.stop(ctx.currentTime + 0.92);
+        } catch (e) { /* no-op */ }
+      }
+
+      function showToast({ title = 'Notificación', message = '', type = 'success', duration = 3000 } = {}) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        const icon = '';
+        toast.innerHTML = `
+          <div class="toast-icon">${icon}</div>
+          <div>
+            <div class="toast-title">${title}</div>
+            <div class="toast-body">${message}</div>
+          </div>
+        `;
+        toastContainer.appendChild(toast);
+        if (type === 'success') playSuccessSound();
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-6px)'; }, duration - 150);
+        setTimeout(() => toast.remove(), duration);
+      }
+
+      // Toast con cuenta regresiva antes de redirigir
+      function showCountdownToast({ title = 'Registro exitoso', seconds = 3, type = 'success' } = {}) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        const icon = '';
+        const bodyId = `toast-body-${Date.now()}`;
+        toast.innerHTML = `
+          <div class="toast-icon">${icon}</div>
+          <div>
+            <div class="toast-title">${title}</div>
+            <div id="${bodyId}" class="toast-body">Será redirigido al login en ${seconds} segundos…</div>
+          </div>
+        `;
+        toastContainer.appendChild(toast);
+        if (type === 'success') playSuccessSound();
+        let remaining = seconds;
+        const bodyEl = toast.querySelector(`#${bodyId}`);
+        const interval = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(interval);
+          } else if (bodyEl) {
+            bodyEl.textContent = `Será redirigido al login en ${remaining} segundos…`;
+          }
+        }, 1000);
+        // El toast se cierra solo un poco después
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-6px)'; }, (seconds * 1000) + 400);
+        setTimeout(() => { clearInterval(interval); toast.remove(); }, (seconds * 1000) + 700);
+      }
+
+      // Validación mínima de contraseña
+      if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+          if (this.value.length < 6) this.setCustomValidity('La contraseña debe tener al menos 6 caracteres');
+          else this.setCustomValidity('');
+        });
+      }
+
+      // Máscara visual de teléfono: +1(xxx) xxx-xxxx (solo visual)
+      function formatPhoneVisual(digits) {
+        // Mantener solo dígitos
+        const d = digits.replace(/\D/g, '').replace(/^1/, ''); // quitar prefijo 1 si viene
+        const a = d.substring(0, 3);
+        const b = d.substring(3, 6);
+        const c = d.substring(6, 10);
+        if (d.length <= 3) return `+1(${a}`;
+        if (d.length <= 6) return `+1(${a}) ${b}`;
+        return `+1(${a}) ${b}-${c}`;
+      }
+
+      function normalizeToE164(value) {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length >= 11 && digits.startsWith('1')) return `+1${digits.slice(-10)}`;
+        return digits.length >= 10 ? `+1${digits.slice(-10)}` : `+1${digits}`; // fallback
+      }
+
+      if (telefonoInput) {
+        telefonoInput.addEventListener('input', function() {
+          const digits = this.value.replace(/\D/g, '');
+          this.value = formatPhoneVisual(digits);
+          // Cursor al final para simplicidad
+          this.setSelectionRange(this.value.length, this.value.length);
+        });
+        // Inicializar si trae valor
+        telefonoInput.value = formatPhoneVisual(telefonoInput.value || '');
+      }
+      // === Documento: tipo + máscara/validación visual ===
+      const tipoDocumentoEl = document.getElementById('tipoDocumento');
+      const documentoEl = document.getElementById('documento');
+      const docHintEl = document.getElementById('docHint');
+      function formatCedulaVisual(raw){
+        const d = String(raw||'').replace(/\D/g,'').slice(0,11);
+        if (d.length <= 3) return d;
+        if (d.length <= 10) return `${d.slice(0,3)}-${d.slice(3)}`;
+        return `${d.slice(0,3)}-${d.slice(3,10)}-${d.slice(10,11)}`;
+      }
+      function applyDocMask(){
+        if (!documentoEl) return;
+        const tipo = (tipoDocumentoEl?.value||'cedula').toLowerCase();
+        if (tipo === 'cedula'){
+          documentoEl.value = formatCedulaVisual(documentoEl.value);
+          documentoEl.maxLength = 13; // 11 dígitos + 2 guiones
+          documentoEl.pattern = "\\d{3}-\\d{7}-\\d{1}";
+          documentoEl.placeholder = "001-0000000-1";
+          if (docHintEl) docHintEl.textContent = 'Formato cédula: 000-0000000-0';
+        } else {
+          let v = (documentoEl.value||'');
+          v = v.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,20);
+          documentoEl.value = v;
+          documentoEl.removeAttribute('pattern');
+          documentoEl.removeAttribute('maxLength');
+          documentoEl.placeholder = "ABC123456";
+          if (docHintEl) docHintEl.textContent = 'Pasaporte alfanumérico (5-20 caracteres)';
+        }
+        // Validación adicional: evitar todos los caracteres iguales (ej: 1-11111111-1 o AAAAAA)
+        try {
+          const raw = String(documentoEl.value||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+          const minLen = (tipo === 'cedula') ? 11 : 5;
+          const allSame = raw.length >= minLen && /^([A-Z0-9])\1+$/.test(raw);
+          if (allSame) {
+            documentoEl.setCustomValidity('El documento no puede tener todos los caracteres iguales.');
+          } else {
+            documentoEl.setCustomValidity('');
+          }
+        } catch(_) { documentoEl.setCustomValidity(''); }
+      }
+      if (tipoDocumentoEl && documentoEl){
+        tipoDocumentoEl.addEventListener('change', applyDocMask);
+        ['input','keyup','blur'].forEach(evt => documentoEl.addEventListener(evt, applyDocMask));
+        documentoEl.addEventListener('paste', ()=> setTimeout(applyDocMask, 0));
+        // Inicializa según la opción actual
+        setTimeout(applyDocMask, 0);
+      }
+      if (registerForm) {
+        registerForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          // Mostrar mensaje de carga
+          const submitBtn = this.querySelector('button[type="submit"]');
+          const originalBtnText = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = 'Procesando...';
+
+          try {
+            // Get basic form data
+            const formData = {
+              nombre: document.getElementById('nombre')?.value.trim() || '',
+              apellido: document.getElementById('apellido')?.value.trim() || '',
+              email: document.getElementById('email')?.value.trim() || '',
+              password: document.getElementById('password')?.value || '',
+              telefono: document.getElementById('telefono')?.value.trim() || '',
+              tipoDocumento: document.getElementById('tipoDocumento')?.value || 'cedula',
+              documento: document.getElementById('documento')?.value.trim() || '',
+              fechaNacimiento: fechaNacimientoEl?.value || '',
+              edad: usarEdadEl?.checked ? (edadEl?.value || '') : ''
+            };
+
+            // Add event ID if present
+            if (eventId) {
+              formData.eventoId = eventId;
+              
+              // Add church information if required
+              const churchFields = document.getElementById('church-fields');
+              if (churchFields && churchFields.style.display !== 'none') {
+                const iglesiaSeleccionada = document.querySelector('input[name="iglesia"]:checked')?.value;
+                if (iglesiaSeleccionada) {
+                  formData.iglesia = iglesiaSeleccionada === 'Otra' 
+                    ? document.getElementById('otraIglesia')?.value.trim() 
+                    : iglesiaSeleccionada;
+                }
+              }
+            }
+
+            // Validar campos requeridos
+            if (!formData.nombre) throw new Error('El nombre es requerido');
+            if (!formData.apellido) throw new Error('El apellido es requerido');
+            if (!formData.email) throw new Error('El correo electrónico es requerido');
+            if (!formData.password || formData.password.length < 6) throw new Error('La contraseña debe tener al menos 6 caracteres');
+            if (!formData.telefono) throw new Error('El teléfono es requerido');
+            if (!formData.documento) throw new Error('El documento (cédula o pasaporte) es requerido');
+            // Validación visual extra según tipo
+            if (formData.tipoDocumento === 'cedula'){
+              if (!/^\d{3}-\d{7}-\d{1}$/.test(formData.documento)) throw new Error('La cédula debe tener el formato 000-0000000-0');
+            } else {
+              if (!/^[A-Za-z0-9]{5,20}$/.test(formData.documento.replace(/\s/g,''))) throw new Error('El pasaporte debe ser alfanumérico (5-20 caracteres)');
+            }
+            // Reglas: o fecha de nacimiento o edad (si marcó la casilla)
+            if (usarEdadEl?.checked) {
+              const age = parseInt(formData.edad, 10);
+              if (!Number.isFinite(age) || age < 1 || age > 120) {
+                throw new Error('Por favor ingresa una edad válida entre 1 y 120');
+              }
+              // Si quieres, aquí podríamos calcular un DOB aproximado y enviarlo también
+              // Dejamos fechaNacimiento vacío y mandamos edad
+              formData.fechaNacimiento = '';
+            } else {
+              if (!formData.fechaNacimiento) throw new Error('La fecha de nacimiento es requerida');
+              // Si no está en Y-m-d, intenta español o dd/mm/aaaa
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.fechaNacimiento)) {
+                const isoEs = parseSpanishDateToISO(formData.fechaNacimiento);
+                if (isoEs){
+                  formData.fechaNacimiento = isoEs;
+                } else {
+                  const tryDate = Date.parse(formData.fechaNacimiento);
+                  if (!Number.isFinite(tryDate)) throw new Error('Formato de fecha inválido. Usa el calendario o escribe como "15 de enero de 1990"');
+                  const d = new Date(tryDate);
+                  const mm = String(d.getMonth()+1).padStart(2,'0');
+                  const dd = String(d.getDate()).padStart(2,'0');
+                  formData.fechaNacimiento = `${d.getFullYear()}-${mm}-${dd}`;
+                }
+              }
+            }
+
+            // Llamada real al backend
+            // Normalizar teléfono a E.164 antes de enviar (visual se queda en input)
+            formData.telefono = normalizeToE164(formData.telefono);
+
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData)
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              // Caso especial: email duplicado desde backend (409)
+              if (response.status === 409) {
+                const loginUrl = data?.actions?.login || 'login.html';
+                const forgotUrl = data?.actions?.forgot || 'forgot.html';
+                showToast({
+                  title: 'Correo ya registrado',
+                  message: `Este correo ya tiene una cuenta. <a href="${loginUrl}" style="color:#1e73be;font-weight:700;">Inicia sesión</a> o <a href="${forgotUrl}" style="color:#1e73be;font-weight:700;">restablece tu contraseña</a>.`,
+                  type: 'error',
+                  duration: 6500
+                });
+                throw new Error('Este correo ya está registrado. Usa los enlaces del aviso para continuar.');
+              }
+              const apiError = data?.message || data?.errors?.[0]?.message || 'Error al registrar la cuenta';
+              throw new Error(apiError);
+            }
+
+            const redirectMs = 3100;
+            const secs = Math.floor(redirectMs / 1000);
+            showCountdownToast({ title: 'Registro exitoso', seconds: secs, type: 'success' });
+            setTimeout(() => { window.location.href = 'login.html'; }, redirectMs);
+            
+          } catch (err) {
+            console.error('Error en el registro:', err);
+            const msg = err.message || 'Error al registrar la cuenta';
+            const errorMessageEl = document.getElementById('error-message');
+            if (errorMessageEl) {
+              errorMessageEl.textContent = msg;
+              errorMessageEl.style.display = 'block';
+              showToast({ title: 'Error', message: msg, type: 'error', duration: 3200 });
+            } else {
+              showToast({ title: 'Error', message: msg, type: 'error', duration: 3200 });
+            }
+          } finally {
+            // Restaurar botón
+            // Restaurar el botón
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnText;
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

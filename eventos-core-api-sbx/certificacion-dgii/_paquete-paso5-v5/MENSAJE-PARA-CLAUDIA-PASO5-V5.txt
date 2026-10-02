@@ -1,0 +1,26 @@
+Claudia — Paso 5 v5 (BUENOHOTEL + PDF automático + PDFs incluidos)
+
+Descarga:
+  https://booking.buenohotel.com.do/dgii/bh-paso5-formato-dgii-v5.zip
+
+  Alternativa:
+  https://eventos.buenohotel.com.do/descargas-dgii/bh-paso5-formato-dgii-v5.zip
+
+  1) Descomprime SOBRE dgi\
+  2) Carpeta pdf\ → sube los 11 PDF al portal Paso 5 (sin npm)
+
+Si quieres REGENERAR los PDF en tu PC:
+
+  OPCIÓN A (recomendada):
+    Doble clic en ejecutar-paso5-pdf.bat
+    (instala dependencias solo la primera vez)
+
+  OPCIÓN B (manual):
+    npm install          ← OBLIGATORIO la primera vez
+    npm run paso5
+
+Los PDF ya dicen:
+  Razón Social Emisor: BUENOHOTEL, S.R.L.
+
+Salida regenerada:
+  salida\representacion-impresa\pdf\

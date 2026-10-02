@@ -1,0 +1,41 @@
+PASO 5 — Representación impresa (11 PDF)
+========================================
+
+Qué pide DGII:
+  Una representación impresa (PDF) por TIPO de comprobante del Paso 4,
+  con QR y código de seguridad correctos. Total de archivos < 10 MB.
+
+Generar en la PC de Claudia (dgi\):
+
+  npm run paso5-generar
+
+Salida: salida\representacion-impresa\
+  - index.html (índice de los 11)
+  - tipo-31.html … tipo-32-lt-250.html
+
+Convertir a PDF:
+  1. Abrir cada .html en Chrome/Edge
+  2. Ctrl+P → Guardar como PDF
+  3. Nombre sugerido: tipo-31.pdf, tipo-32-ge-250.pdf, etc.
+
+Subir al portal (campo → PDF → e-NCF Paso 4 offset +200):
+
+  Representación tipo 31          → tipo-31.pdf      (E310000000204)
+  Representación tipo 32 >= 250k  → tipo-32-ge-250.pdf (E320000000206)
+  Representación tipo 33          → tipo-33.pdf      (E330000000201)
+  Representación tipo 34          → tipo-34.pdf      (E340000000202)
+  Representación tipo 41          → tipo-41.pdf      (E410000000201)
+  Representación tipo 43          → tipo-43.pdf      (E430000000210)
+  Representación tipo 44          → tipo-44.pdf      (E440000000207)
+  Representación tipo 45          → tipo-45.pdf      (E450000000201)
+  Representación tipo 46          → tipo-46.pdf      (E460000000209)
+  Representación tipo 47          → tipo-47.pdf      (E470000000208)
+  Representación tipo 32 < 250k   → tipo-32-lt-250.pdf (E320000000211)
+
+IMPORTANTE:
+  - Usar XML de salida\ecf-firmados\ (firmados con P12 en Paso 4).
+  - El QR tipo 32 < 250k usa consultatimbrefc (fc.dgii.gov.do).
+  - Los demás usan consultatimbre (ecf.dgii.gov.do).
+  - Código de seguridad = primeros 6 caracteres del SignatureValue.
+
+Requisito legal: la representación debe cumplir Ley 32-23 y formato e-CF DGII.

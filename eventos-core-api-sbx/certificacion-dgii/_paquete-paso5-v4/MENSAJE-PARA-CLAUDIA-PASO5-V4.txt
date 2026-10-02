@@ -1,0 +1,20 @@
+Claudia — Paso 5 v4 (mismo formato v2 + razón social emisor)
+
+Cambio mínimo: igual que la versión anterior que DGII aprobó en formato,
+solo se agregó la línea visible "Razón Social Emisor:" arriba-izquierda.
+
+Descarga:
+  https://booking.buenohotel.com.do/dgii/bh-paso5-formato-dgii-v4.zip
+
+  Alternativa:
+  https://eventos.buenohotel.com.do/descargas-dgii/bh-paso5-formato-dgii-v4.zip
+
+  1) Descomprime SOBRE dgi\
+  2) npm install
+  3) npm run paso5-generar
+  4) Ctrl+P → PDF → subir 11 archivos al portal Paso 5
+
+Verificar en cada PDF que diga:
+  Razón Social Emisor: (nombre del XML firmado)
+
+Todo lo demás igual que la versión anterior.

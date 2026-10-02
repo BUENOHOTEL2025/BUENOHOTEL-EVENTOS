@@ -1,0 +1,38 @@
+Hola,
+
+Ya están los 29 XML firmados. El siguiente paso es enviarlos a DGII (certificación Paso 2). Como el envío requiere su certificado digital en su computadora, necesito que usted ejecute un programa pequeño que le preparé.
+
+¿QUÉ HACE?
+Sube los 29 comprobantes firmados a DGII. NO firma nada de nuevo; solo usa su .p12 para identificarse ante DGII (como cuando entra a la Oficina Virtual).
+
+¿QUÉ NECESITA?
+1. Node.js en su PC (si no lo tiene): https://nodejs.org — descargar la versión LTS e instalar.
+2. Su certificado .p12 y su clave (los mismos de la App de Firma DGII).
+
+¿CÓMO LO HACE?
+
+OPCIÓN A — Descargar carpeta desde la web
+Le envío un ZIP con la carpeta "certificacion-dgii", o puede descargarla desde S3 en:
+  eventos-core-api-sbx/certificacion-dgii/
+
+Dentro debe tener:
+  - salida/rfce-firmados/  (sus 4 XML firmados)
+  - salida/ecf-firmados/   (sus 25 XML firmados)
+  - ejecutar-envio-dgii.bat
+  - INSTRUCCIONES-DUEÑA.txt
+
+OPCIÓN B — Si ya tiene los XML firmados en su PC
+Copie los 25 ECF firmados a:  certificacion-dgii\salida\ecf-firmados\
+Copie los 4 RFCE firmados a:  certificacion-dgii\salida\rfce-firmados\
+
+PASOS (5 minutos de configuración + ~10 min de envío)
+1. Abrir INSTRUCCIONES-DUEÑA.txt y seguir el Paso 1:
+   - Copiar .env.cert.example → .env.cert
+   - Poner la ruta de su .p12 y su contraseña
+2. Doble clic en ejecutar-envio-dgii.bat
+3. Esperar a que termine (verá "Aceptado" en cada comprobante)
+4. Enviarme captura del final o el archivo de salida\envio-resultados\
+
+Si algo falla, captura de pantalla de la ventana negra y me escribe.
+
+Gracias.

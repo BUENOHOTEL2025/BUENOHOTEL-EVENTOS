@@ -1,0 +1,84 @@
+{
+  "generadoEn": "2026-07-01T18:45:35.836Z",
+  "origen": "131631088-01072026143856.xlsx",
+  "total": 11,
+  "registros": [
+    {
+      "archivo": "131631088E310000000004.xml",
+      "encf": "E310000000004",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "18283"
+    },
+    {
+      "archivo": "131631088E310000000005.xml",
+      "encf": "E310000000005",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "83320"
+    },
+    {
+      "archivo": "131631088E310000000007.xml",
+      "encf": "E310000000007",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "228460.5"
+    },
+    {
+      "archivo": "131631088E310000000034.xml",
+      "encf": "E310000000034",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "25000000"
+    },
+    {
+      "archivo": "131631088E330000000001.xml",
+      "encf": "E330000000001",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "400000"
+    },
+    {
+      "archivo": "131631088E340000000002.xml",
+      "encf": "E340000000002",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "566695"
+    },
+    {
+      "archivo": "131631088E340000000015.xml",
+      "encf": "E340000000015",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "0"
+    },
+    {
+      "archivo": "131631088E440000000007.xml",
+      "encf": "E440000000007",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "432000"
+    },
+    {
+      "archivo": "131631088E440000000010.xml",
+      "encf": "E440000000010",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "170150"
+    },
+    {
+      "archivo": "131631088E450000000001.xml",
+      "encf": "E450000000001",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "35400"
+    },
+    {
+      "archivo": "131631088E450000000008.xml",
+      "encf": "E450000000008",
+      "rncComprador": "131631088",
+      "rncEmisor": "131880681",
+      "montoTotal": "105000"
+    }
+  ]
+}

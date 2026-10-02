@@ -1,0 +1,23 @@
+﻿{
+  "name": "buenohotel-dgii-paso5-v7",
+  "version": "7.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "parchear-xml": "node parchear-xml-sin-firmar.js",
+    "firmar-todos": "node firmar-todos.js",
+    "enviar-api": "node enviar-set-firmados.js",
+    "enviar-api-pendientes": "node enviar-set-firmados.js --omitir-aceptados",
+    "paso5-generar": "node generar-representacion-paso5.js",
+    "paso5-pdf": "node exportar-pdf-paso5.js",
+    "paso5": "node generar-representacion-paso5.js && node exportar-pdf-paso5.js",
+    "corregir-qr": "node parchear-xml-sin-firmar.js && node firmar-todos.js && node enviar-set-firmados.js && node generar-representacion-paso5.js && node exportar-pdf-paso5.js"
+  },
+  "dependencies": {
+    "dgii-ecf": "^1.8.0",
+    "dotenv": "^16.0.3",
+    "puppeteer": "^24.0.0",
+    "qrcode": "^1.5.4",
+    "xlsx": "^0.18.5"
+  }
+}

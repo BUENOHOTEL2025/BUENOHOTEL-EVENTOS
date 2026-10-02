@@ -1,0 +1,25 @@
+Hola Claudia,
+
+Paso 4 DGII — Simulación e-CF (29 comprobantes, secuencias NUEVAS).
+
+Descarga e instala sobre tu carpeta dgi\:
+
+https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/dgii-paso4-simulacion-v1.zip
+
+1) Descomprime SOBRE dgi\ (reemplaza archivos si pide).
+2) Verifica .env.cert con tu .p12 (igual pasos anteriores).
+3) En CMD dentro de dgi\:
+
+   npm run firmar-todos
+   npm run enviar-api
+
+4) Cuando API = 25/25 → portal Paso 4:
+   Subir 4 FC32 <250k desde salida\ecf-firmados\
+   (E320111, E320112, E320113, E320114 — ver manifest omitidosEnvioApi)
+
+5) Guardar PDF de cada comprobante (necesario para Paso 5).
+
+NO uses App Firma DGII.
+NO reutilices comprobantes del Paso 2.
+
+Gracias.

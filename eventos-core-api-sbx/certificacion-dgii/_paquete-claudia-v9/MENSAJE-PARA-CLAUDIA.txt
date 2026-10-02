@@ -1,0 +1,22 @@
+Hola Claudia,
+
+Buenas noticias: de los 25 comprobantes del Paso 2 DGII, ya están aceptados 22. Solo faltan 3 notas de crédito/débito.
+
+Te envío un paquete actualizado. Por favor haz esto en tu PC (C:\Users\claud\OneDrive\Desktop\dgi):
+
+1) Descarga o copia el ZIP "dgii-claudia-notas-v9.zip" y descomprímelo SOBRE la carpeta dgi (reemplaza los archivos que pida).
+
+2) Verifica que tengas el archivo .env.cert con la ruta de tu .p12 y la contraseña (si ya lo tenías del envío anterior, no lo cambies).
+
+3) Doble clic en: ejecutar-notas-pendientes.bat
+
+   Eso firma 6 archivos con tu certificado (sin la App de Firma DGII) y los envía a DGII en el orden correcto.
+
+4) Al terminar debe decir "Notas: 3/3 Aceptadas". Envíame captura de pantalla o el archivo JSON de salida\envio-resultados\
+
+IMPORTANTE:
+- NO uses la App de Firma DGII para estos archivos.
+- NO ejecutes ejecutar-envio-dgii.bat (ese era para los 29 completos).
+- Si algo falla, captura de la ventana negra y me escribes.
+
+Gracias.

@@ -1,0 +1,56 @@
+BUENOHOTEL — Comandos certificacion-dgii (Paso 2 DGII)
+======================================================
+
+PRIMERA VEZ (solo una vez)
+  npm install
+
+CONFIGURACION
+  Copiar .env.cert.example → .env.cert
+  Completar ruta .p12 y clave
+
+PARCHEAR XML (si descargó v2 sin correcciones)
+  npm run parchear-xml
+
+VALIDAR XML SIN FIRMAR (opcional, antes de firmar)
+  npm run validar-sin-firmar
+
+GENERAR RFCE DESDE ECF 32 FIRMADOS (después de firmar los 4 ECF 32)
+  npm run generar-rfce
+
+RENOMBRAR FIRMADOS (quitar sufijo _140615 del firmador DGII)
+  npm run renombrar-firmados
+  npm run renombrar-firmados -- --dry-run
+
+VERIFICAR FIRMADOS LISTOS PARA ENVIAR (25 vía API)
+  npm run verificar
+
+ENVIO PRUEBA (solo 1 RFCE + 1 ECF firmados)
+  npm run enviar-prueba
+
+ENVIO COMPLETO (25 comprobantes: 4 RFCE + 21 ECF)
+  npm run enviar
+
+REENVIO (omitir ya Aceptados)
+  npm run enviar-pendientes
+
+NOTAS PENDIENTES (error 614 — referencia + nota en cadena)
+  npm run firmar-p12 -- --pendientes-notas
+  npm run enviar-notas
+
+GENERAR XML DESDE EXCEL (solo programador, requiere Excel en raiz)
+  npm run generar-xml
+
+DESCARGAS S3 (Claudia)
+  XML parcheados: dgii-xml-sin-firmar-v3.zip
+  Herramientas:   dgii-herramientas-v4.zip
+
+RESULTADOS
+  salida\envio-resultados\envio-XXXX.json
+
+COMANDOS CMD UTILES
+  findstr /C:"<eNCF>" salida\ecf-sin-firmar\131631088E330000000001.xml
+  dir /b salida\ecf-firmados\*.xml | find /c /v ""
+
+IMPORTANTE
+  Los 4 ECF FC32 <250k (011-014) NO van por API Recepcion — solo RFCE (ya Aceptados).
+  Después de parchear XML: vaciar ecf-firmados, re-firmar todos los ecf-sin-firmar.

@@ -1,0 +1,41 @@
+FIX E460010 + E470010 — Claudia
+================================
+
+PROBLEMA: Su parchear-xml-sin-firmar.js es VIEJO.
+Ese script convertia E460/E470 a 2 decimales (350.00) y DGII exige 4 (350.0000).
+
+PASO 1 — Reemplazar en C:\Users\claud\OneDrive\Desktop\dgi\
+
+  Descargar ZIP:
+  https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/dgii-fix-e460-e470-v3.zip
+
+  Contiene:
+    parchear-xml-sin-firmar.js   (nuevo)
+    validar-xml-sin-firmar.js    (nuevo — detecta precios mal)
+    131631088E460000000010.xml
+    131631088E470000000010.xml
+
+  Copiar los 2 XML a:  salida\ecf-sin-firmar\
+  Copiar los 2 .js a la raiz de dgi\
+
+PASO 2 — Verificar ANTES de firmar
+
+  cd C:\Users\claud\OneDrive\Desktop\dgi
+  npm run preparar
+
+  Debe decir: OK — 25 XML validados
+  Si dice error en E460010 o E470010 → no siga, vuelva a copiar el ZIP.
+
+  Comprobar a mano:
+  findstr "350.0000" salida\ecf-sin-firmar\131631088E460000000010.xml
+  findstr "1500.0000" salida\ecf-sin-firmar\131631088E470000000010.xml
+
+PASO 3 — Lote completo
+
+  npm run reenviar-api-25
+
+  Meta: 25/25 Aceptados en el JSON.
+
+PASO 4 — Portal (solo si 25/25)
+
+  4 FC32 desde ecf-firmados\ → Facturas consumo < 250Mil

@@ -1,0 +1,62 @@
+BUENOHOTEL — Paso 3: Aprobaciones Comerciales (ACECF)
+======================================================
+
+OBJETIVO
+  Enviar 11 aprobaciones comerciales al portal CerteCF.
+  Meta: 11/11 Aprobaciones comerciales aceptadas.
+
+REQUISITOS
+  - Paso 2 completado (25 API + portal FC32).
+  - Mismo certificado .p12 de BUENOHOTEL (RNC 131631088).
+  - Archivo .env.cert configurado (igual que Paso 2).
+
+PASO A PASO
+----------
+
+1) PORTAL DGII — Descargar datos
+   - Entrar a CerteCF → Paso 3: Pruebas de Datos Aprobaciones Comerciales.
+   - Clic en "DESCARGAR APROBACIONES COMERCIALES".
+   - Guardar el .xlsx en la raíz del proyecto (junto al Excel del Paso 2):
+     Eventos\131631088-01072026143856.xlsx
+   - El script lee la hoja ACEECF_Generadas automáticamente.
+
+2) VERIFICAR CARPETA
+   - Abrir CMD o PowerShell en certificacion-dgii\
+   - Debe existir .env.cert con ruta al .p12 y clave.
+
+3) GENERAR XML SIN FIRMAR
+   npm run generar-acecf
+
+   Salida: salida\acecf-sin-firmar\ (11 archivos)
+
+4) FIRMAR CON P12 (NO usar App Firma DGII)
+   npm run firmar-acecf
+
+   Salida: salida\acecf-firmados\ (11 archivos)
+
+5) VERIFICAR ANTES DE ENVIAR (opcional)
+   npm run verificar-acecf
+
+6) ENVIAR A DGII
+   npm run enviar-acecf
+
+   Reporte: salida\acecf-resultados\envio-acecf-XXXX.json
+
+7) PORTAL — Confirmar
+   - Refrescar Paso 3 en CerteCF.
+   - Debe mostrar: 11/11 Aprobaciones comerciales aceptadas.
+
+TODO EN UN SOLO COMANDO
+   npm run paso3
+
+   O doble clic en: ejecutar-paso3.bat
+
+IMPORTANTE
+  - No modificar montos ni fechas del CSV del portal.
+  - FechaHoraAprobacionComercial debe coincidir con el Excel descargado.
+  - Firmar siempre con P12 (preserva <eNCF>).
+  - Enviar los 11 en una sola ejecución.
+
+SERVICIOS DGII
+  Autenticación:     https://ecf.dgii.gov.do/CerteCF/Autenticacion
+  Aprobación comercial: https://ecf.dgii.gov.do/CerteCF/AprobacionComercial

@@ -1,0 +1,28 @@
+Hola Claudia,
+
+Paso 3 DGII — Aprobaciones Comerciales (11 comprobantes).
+
+Los XML ya están generados. Solo debes firmarlos con tu certificado y enviarlos.
+
+1) Descarga el ZIP:
+   https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/dgii-acecf-paso3-v1.zip
+
+2) Descomprime SOBRE tu carpeta dgi\certificacion-dgii (reemplaza si pide).
+
+3) Verifica que .env.cert siga con tu .p12 y contraseña (igual Paso 2).
+
+4) Abre CMD en certificacion-dgii y ejecuta:
+   npm run firmar-acecf
+   npm run enviar-acecf
+
+   O doble clic en: ejecutar-paso3-firmar-enviar.bat
+
+5) Refresca el portal CerteCF Paso 3 — debe mostrar 11/11 aprobaciones aceptadas.
+
+IMPORTANTE:
+- NO uses la App de Firma DGII.
+- NO modifiques los XML de salida\acecf-sin-firmar\.
+
+Si algo falla, captura de la ventana y me escribes.
+
+Gracias.

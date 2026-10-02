@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RFCE>
+  <Encabezado>
+    <Version>1.0</Version>
+    <IdDoc>
+      <TipoeCF>32</TipoeCF>
+      <eNCF>E320000000313</eNCF>
+      <TipoIngresos>01</TipoIngresos>
+      <TipoPago>1</TipoPago>
+    </IdDoc>
+    <Emisor>
+      <RNCEmisor>131631088</RNCEmisor>
+      <RazonSocialEmisor>BUENOHOTEL, S.R.L.</RazonSocialEmisor>
+      <FechaEmision>01-04-2020</FechaEmision>
+    </Emisor>
+    <Comprador>
+      <RNCComprador>131880681</RNCComprador>
+      <RazonSocialComprador>DOCUMENTOS ELECTRONICOS DE 03</RazonSocialComprador>
+    </Comprador>
+    <Totales>
+      <MontoGravadoTotal>95000.00</MontoGravadoTotal>
+      <MontoGravadoI1>95000.00</MontoGravadoI1>
+      <TotalITBIS>17100.00</TotalITBIS>
+      <TotalITBIS1>17100.00</TotalITBIS1>
+      <MontoTotal>112100.00</MontoTotal>
+    </Totales>
+  </Encabezado>
+</RFCE>

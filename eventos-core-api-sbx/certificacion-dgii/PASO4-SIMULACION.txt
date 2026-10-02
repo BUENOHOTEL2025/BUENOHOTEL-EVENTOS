@@ -1,0 +1,64 @@
+BUENOHOTEL — Paso 4: Simulación e-CF
+=====================================
+
+DIFERENCIA CON PASO 2
+---------------------
+  Paso 2: DGII da Excel para descargar.
+  Paso 4: NO hay descarga — ustedes generan comprobantes de simulación.
+  Usamos el mismo formato del Paso 2 con SECUENCIAS NUEVAS (+100).
+
+META PORTAL
+-----------
+  4 tipo 31 | 2 tipo 32 >=250k | 1 tipo 33 | 2x34,41,43,44,45,46,47
+  4 tipo 32 RFCE | 4 FC32 <250k por portal
+
+TOTAL: 25 API + 4 portal = 29 comprobantes
+
+SECUENCIAS (ejemplo)
+--------------------
+  Paso 2          Paso 4
+  E310000000004 → E310000000104
+  E320000000011 → E320000000111
+  (ver lib/paso4EncfMap.js)
+
+FLUJO — PROGRAMADOR
+-------------------
+  cd certificacion-dgii
+
+  1) Generar Excel + XML:
+     npm run paso4-generar-xml
+
+  2) Parchear y validar:
+     npm run paso4-preparar
+
+  3) Subir XML sin firmar a S3 para Claudia (o zip)
+
+FLUJO — CLAUDIA (con .env.cert)
+-------------------------------
+  1) Integrar paquete en carpeta dgi\
+
+  2) Firmar 29 + enviar 25 API:
+     npm run firmar-todos
+     npm run enviar-api
+
+  3) Portal — cuando API = 25/25:
+     Subir 4 FC32 <250k desde ecf-firmados/
+     (archivos omitidosEnvioApi en manifest.json)
+
+  4) Guardar PDF de cada comprobante (Paso 5)
+
+REGLAS
+------
+  - NO reutilizar eNCF del Paso 2
+  - NO App Firma DGII — solo P12
+  - Enviar los 25 API en un solo lote
+  - RFCE antes que FC32 portal
+
+ARCHIVOS
+--------
+  Excel: 131631088-paso4-simulacion.xlsx
+  XML:   salida/ecf-sin-firmar/ + salida/rfce-sin-firmar/
+
+S3
+--
+  https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/

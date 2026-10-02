@@ -1,0 +1,641 @@
+{
+  "generadoEn": "2026-07-01T02:00:17.936Z",
+  "excel": "131631088-26062026133112.xlsx",
+  "instruccionesFirma": "Firmar cada XML con la App de Firma Digital DGII. Guardar los firmados en certificacion-dgii/salida/ecf-firmados/ y rfce-firmados/",
+  "ecf": [
+    {
+      "archivo": "131631088E330000000001.xml",
+      "casoPrueba": "131631088E330000000001",
+      "tipoeCF": "33",
+      "encf": "E330000000001",
+      "hoja": "ECF",
+      "montoTotal": "400000.00",
+      "ncfModificado": "E320000000006",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E320000000006.xml",
+      "casoPrueba": "131631088E320000000006",
+      "tipoeCF": "32",
+      "encf": "E320000000006",
+      "hoja": "ECF",
+      "montoTotal": "413785.30",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E340000000002.xml",
+      "casoPrueba": "131631088E340000000002",
+      "tipoeCF": "34",
+      "encf": "E340000000002",
+      "hoja": "ECF",
+      "montoTotal": "566695.00",
+      "ncfModificado": "E310000000034",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E340000000015.xml",
+      "casoPrueba": "131631088E340000000015",
+      "tipoeCF": "34",
+      "encf": "E340000000015",
+      "hoja": "ECF",
+      "montoTotal": "0.00",
+      "ncfModificado": "E410000000001",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E310000000034.xml",
+      "casoPrueba": "131631088E310000000034",
+      "tipoeCF": "31",
+      "encf": "E310000000034",
+      "hoja": "ECF",
+      "montoTotal": "25000000.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E410000000001.xml",
+      "casoPrueba": "131631088E410000000001",
+      "tipoeCF": "41",
+      "encf": "E410000000001",
+      "hoja": "ECF",
+      "montoTotal": "11800.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E310000000007.xml",
+      "casoPrueba": "131631088E310000000007",
+      "tipoeCF": "31",
+      "encf": "E310000000007",
+      "hoja": "ECF",
+      "montoTotal": "228460.50",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E310000000005.xml",
+      "casoPrueba": "131631088E310000000005",
+      "tipoeCF": "31",
+      "encf": "E310000000005",
+      "hoja": "ECF",
+      "montoTotal": "83320.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E310000000004.xml",
+      "casoPrueba": "131631088E310000000004",
+      "tipoeCF": "31",
+      "encf": "E310000000004",
+      "hoja": "ECF",
+      "montoTotal": "18283.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E320000000011.xml",
+      "casoPrueba": "131631088E320000000011",
+      "tipoeCF": "32",
+      "encf": "E320000000011",
+      "hoja": "ECF",
+      "montoTotal": "40120.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    },
+    {
+      "archivo": "131631088E320000000012.xml",
+      "casoPrueba": "131631088E320000000012",
+      "tipoeCF": "32",
+      "encf": "E320000000012",
+      "hoja": "ECF",
+      "montoTotal": "47200.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    },
+    {
+      "archivo": "131631088E320000000013.xml",
+      "casoPrueba": "131631088E320000000013",
+      "tipoeCF": "32",
+      "encf": "E320000000013",
+      "hoja": "ECF",
+      "montoTotal": "112100.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    },
+    {
+      "archivo": "131631088E320000000014.xml",
+      "casoPrueba": "131631088E320000000014",
+      "tipoeCF": "32",
+      "encf": "E320000000014",
+      "hoja": "ECF",
+      "montoTotal": "11918.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    },
+    {
+      "archivo": "131631088E320000000004.xml",
+      "casoPrueba": "131631088E320000000004",
+      "tipoeCF": "32",
+      "encf": "E320000000004",
+      "hoja": "ECF",
+      "montoTotal": "567375.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E410000000008.xml",
+      "casoPrueba": "131631088E410000000008",
+      "tipoeCF": "41",
+      "encf": "E410000000008",
+      "hoja": "ECF",
+      "montoTotal": "17565.78",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E430000000010.xml",
+      "casoPrueba": "131631088E430000000010",
+      "tipoeCF": "43",
+      "encf": "E430000000010",
+      "hoja": "ECF",
+      "montoTotal": "3960.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E430000000011.xml",
+      "casoPrueba": "131631088E430000000011",
+      "tipoeCF": "43",
+      "encf": "E430000000011",
+      "hoja": "ECF",
+      "montoTotal": "9150.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E440000000010.xml",
+      "casoPrueba": "131631088E440000000010",
+      "tipoeCF": "44",
+      "encf": "E440000000010",
+      "hoja": "ECF",
+      "montoTotal": "170150.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E440000000007.xml",
+      "casoPrueba": "131631088E440000000007",
+      "tipoeCF": "44",
+      "encf": "E440000000007",
+      "hoja": "ECF",
+      "montoTotal": "432000.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E450000000008.xml",
+      "casoPrueba": "131631088E450000000008",
+      "tipoeCF": "45",
+      "encf": "E450000000008",
+      "hoja": "ECF",
+      "montoTotal": "105000.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E450000000001.xml",
+      "casoPrueba": "131631088E450000000001",
+      "tipoeCF": "45",
+      "encf": "E450000000001",
+      "hoja": "ECF",
+      "montoTotal": "35400.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E460000000009.xml",
+      "casoPrueba": "131631088E460000000009",
+      "tipoeCF": "46",
+      "encf": "E460000000009",
+      "hoja": "ECF",
+      "montoTotal": "117500.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E460000000010.xml",
+      "casoPrueba": "131631088E460000000010",
+      "tipoeCF": "46",
+      "encf": "E460000000010",
+      "hoja": "ECF",
+      "montoTotal": "170150.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E470000000008.xml",
+      "casoPrueba": "131631088E470000000008",
+      "tipoeCF": "47",
+      "encf": "E470000000008",
+      "hoja": "ECF",
+      "montoTotal": "17850.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    },
+    {
+      "archivo": "131631088E470000000010.xml",
+      "casoPrueba": "131631088E470000000010",
+      "tipoeCF": "47",
+      "encf": "E470000000010",
+      "hoja": "ECF",
+      "montoTotal": "348000.00",
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado"
+    }
+  ],
+  "rfce": [
+    {
+      "archivo": "131631088E320000000014.xml",
+      "casoPrueba": "131631088E320000000014",
+      "tipoeCF": "32",
+      "encf": "E320000000014",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    },
+    {
+      "archivo": "131631088E320000000011.xml",
+      "casoPrueba": "131631088E320000000011",
+      "tipoeCF": "32",
+      "encf": "E320000000011",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    },
+    {
+      "archivo": "131631088E320000000013.xml",
+      "casoPrueba": "131631088E320000000013",
+      "tipoeCF": "32",
+      "encf": "E320000000013",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    },
+    {
+      "archivo": "131631088E320000000012.xml",
+      "casoPrueba": "131631088E320000000012",
+      "tipoeCF": "32",
+      "encf": "E320000000012",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    }
+  ],
+  "ordenEnvio": [
+    {
+      "paso": 1,
+      "tipo": "RFCE",
+      "archivo": "131631088E320000000014.xml",
+      "casoPrueba": "131631088E320000000014",
+      "tipoeCF": "32",
+      "encf": "E320000000014",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    },
+    {
+      "paso": 2,
+      "tipo": "RFCE",
+      "archivo": "131631088E320000000011.xml",
+      "casoPrueba": "131631088E320000000011",
+      "tipoeCF": "32",
+      "encf": "E320000000011",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    },
+    {
+      "paso": 3,
+      "tipo": "RFCE",
+      "archivo": "131631088E320000000013.xml",
+      "casoPrueba": "131631088E320000000013",
+      "tipoeCF": "32",
+      "encf": "E320000000013",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    },
+    {
+      "paso": 4,
+      "tipo": "RFCE",
+      "archivo": "131631088E320000000012.xml",
+      "casoPrueba": "131631088E320000000012",
+      "tipoeCF": "32",
+      "encf": "E320000000012",
+      "hoja": "RFCE",
+      "nota": "Enviar resumen a fc.dgii.gov.do/CerteCF/RecepcionFC antes de la factura 32 íntegra"
+    },
+    {
+      "archivo": "131631088E320000000006.xml",
+      "casoPrueba": "131631088E320000000006",
+      "tipoeCF": "32",
+      "encf": "E320000000006",
+      "hoja": "ECF",
+      "montoTotal": 413785.3,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 5,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E330000000001.xml",
+      "casoPrueba": "131631088E330000000001",
+      "tipoeCF": "33",
+      "encf": "E330000000001",
+      "hoja": "ECF",
+      "montoTotal": 400000,
+      "ncfModificado": "E320000000006",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 6,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E310000000034.xml",
+      "casoPrueba": "131631088E310000000034",
+      "tipoeCF": "31",
+      "encf": "E310000000034",
+      "hoja": "ECF",
+      "montoTotal": 25000000,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 7,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E340000000002.xml",
+      "casoPrueba": "131631088E340000000002",
+      "tipoeCF": "34",
+      "encf": "E340000000002",
+      "hoja": "ECF",
+      "montoTotal": 566695,
+      "ncfModificado": "E310000000034",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 8,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E410000000001.xml",
+      "casoPrueba": "131631088E410000000001",
+      "tipoeCF": "41",
+      "encf": "E410000000001",
+      "hoja": "ECF",
+      "montoTotal": 11800,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 9,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E340000000015.xml",
+      "casoPrueba": "131631088E340000000015",
+      "tipoeCF": "34",
+      "encf": "E340000000015",
+      "hoja": "ECF",
+      "montoTotal": 0,
+      "ncfModificado": "E410000000001",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 10,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E310000000007.xml",
+      "casoPrueba": "131631088E310000000007",
+      "tipoeCF": "31",
+      "encf": "E310000000007",
+      "hoja": "ECF",
+      "montoTotal": 228460.5,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 11,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E310000000005.xml",
+      "casoPrueba": "131631088E310000000005",
+      "tipoeCF": "31",
+      "encf": "E310000000005",
+      "hoja": "ECF",
+      "montoTotal": 83320,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 12,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E310000000004.xml",
+      "casoPrueba": "131631088E310000000004",
+      "tipoeCF": "31",
+      "encf": "E310000000004",
+      "hoja": "ECF",
+      "montoTotal": 18283,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 13,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E320000000004.xml",
+      "casoPrueba": "131631088E320000000004",
+      "tipoeCF": "32",
+      "encf": "E320000000004",
+      "hoja": "ECF",
+      "montoTotal": 567375,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 14,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E410000000008.xml",
+      "casoPrueba": "131631088E410000000008",
+      "tipoeCF": "41",
+      "encf": "E410000000008",
+      "hoja": "ECF",
+      "montoTotal": 17565.78,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 15,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E430000000010.xml",
+      "casoPrueba": "131631088E430000000010",
+      "tipoeCF": "43",
+      "encf": "E430000000010",
+      "hoja": "ECF",
+      "montoTotal": 3960,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 16,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E430000000011.xml",
+      "casoPrueba": "131631088E430000000011",
+      "tipoeCF": "43",
+      "encf": "E430000000011",
+      "hoja": "ECF",
+      "montoTotal": 9150,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 17,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E440000000010.xml",
+      "casoPrueba": "131631088E440000000010",
+      "tipoeCF": "44",
+      "encf": "E440000000010",
+      "hoja": "ECF",
+      "montoTotal": 170150,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 18,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E440000000007.xml",
+      "casoPrueba": "131631088E440000000007",
+      "tipoeCF": "44",
+      "encf": "E440000000007",
+      "hoja": "ECF",
+      "montoTotal": 432000,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 19,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E450000000008.xml",
+      "casoPrueba": "131631088E450000000008",
+      "tipoeCF": "45",
+      "encf": "E450000000008",
+      "hoja": "ECF",
+      "montoTotal": 105000,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 20,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E450000000001.xml",
+      "casoPrueba": "131631088E450000000001",
+      "tipoeCF": "45",
+      "encf": "E450000000001",
+      "hoja": "ECF",
+      "montoTotal": 35400,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 21,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E460000000009.xml",
+      "casoPrueba": "131631088E460000000009",
+      "tipoeCF": "46",
+      "encf": "E460000000009",
+      "hoja": "ECF",
+      "montoTotal": 117500,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 22,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E460000000010.xml",
+      "casoPrueba": "131631088E460000000010",
+      "tipoeCF": "46",
+      "encf": "E460000000010",
+      "hoja": "ECF",
+      "montoTotal": 170150,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 23,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E470000000008.xml",
+      "casoPrueba": "131631088E470000000008",
+      "tipoeCF": "47",
+      "encf": "E470000000008",
+      "hoja": "ECF",
+      "montoTotal": 17850,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 24,
+      "tipo": "ECF"
+    },
+    {
+      "archivo": "131631088E470000000010.xml",
+      "casoPrueba": "131631088E470000000010",
+      "tipoeCF": "47",
+      "encf": "E470000000010",
+      "hoja": "ECF",
+      "montoTotal": 348000,
+      "ncfModificado": "",
+      "nota": "Enviar a CerteCF/Recepcion una vez firmado",
+      "paso": 25,
+      "tipo": "ECF"
+    }
+  ],
+  "omitidosEnvioApi": [
+    {
+      "archivo": "131631088E320000000011.xml",
+      "casoPrueba": "131631088E320000000011",
+      "tipoeCF": "32",
+      "encf": "E320000000011",
+      "hoja": "ECF",
+      "montoTotal": "40120.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    },
+    {
+      "archivo": "131631088E320000000012.xml",
+      "casoPrueba": "131631088E320000000012",
+      "tipoeCF": "32",
+      "encf": "E320000000012",
+      "hoja": "ECF",
+      "montoTotal": "47200.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    },
+    {
+      "archivo": "131631088E320000000013.xml",
+      "casoPrueba": "131631088E320000000013",
+      "tipoeCF": "32",
+      "encf": "E320000000013",
+      "hoja": "ECF",
+      "montoTotal": "112100.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    },
+    {
+      "archivo": "131631088E320000000014.xml",
+      "casoPrueba": "131631088E320000000014",
+      "tipoeCF": "32",
+      "encf": "E320000000014",
+      "hoja": "ECF",
+      "montoTotal": "11918.00",
+      "ncfModificado": "",
+      "nota": "No enviar ECF íntegro por API — solo RFCE (resumen B2C). RFCE ya aceptado.",
+      "omitirEnvioApi": true
+    }
+  ],
+  "pendientesReenvio": [
+    "E330000000001",
+    "E340000000002",
+    "E340000000015"
+  ],
+  "actualizadoEn": "2026-07-01T02:00:18.201Z"
+}

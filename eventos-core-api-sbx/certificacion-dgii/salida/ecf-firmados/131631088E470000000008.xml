@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ECF>
+  <Encabezado>
+    <Version>1.0</Version>
+    <IdDoc>
+      <TipoeCF>47</TipoeCF>
+      <ENCF>E470000000008</ENCF>
+      <FechaVencimientoSecuencia>31-12-2028</FechaVencimientoSecuencia>
+      <TipoPago>1</TipoPago>
+      <TablaFormasPago>
+        <FormaDePago>
+          <FormaPago>1</FormaPago>
+          <MontoPago>14350.00</MontoPago>
+        </FormaDePago>
+      </TablaFormasPago>
+    </IdDoc>
+    <Emisor>
+      <RNCEmisor>131631088</RNCEmisor>
+      <RazonSocialEmisor>DOCUMENTOS ELECTRONICOS DE 02</RazonSocialEmisor>
+      <NombreComercial>DOCUMENTOS ELECTRONICOS DE 02</NombreComercial>
+      <DireccionEmisor>AVE. ISABEL AGUIAR NO. 269, ZONA INDUSTRIAL DE HERRERA</DireccionEmisor>
+      <Municipio>010100</Municipio>
+      <Provincia>010000</Provincia>
+      <TablaTelefonoEmisor>
+        <TelefonoEmisor>809-472-7676</TelefonoEmisor>
+        <TelefonoEmisor>809-491-1918</TelefonoEmisor>
+      </TablaTelefonoEmisor>
+      <CorreoEmisor>DOCUMENTOSELECTRONICOSDE0612345678969789+9000000000000000000000000000001@123.COM</CorreoEmisor>
+      <WebSite>www.facturaelectronica.com</WebSite>
+      <NumeroFacturaInterna>123456789016</NumeroFacturaInterna>
+      <NumeroPedidoInterno>123456789016</NumeroPedidoInterno>
+      <FechaEmision>01-12-2018</FechaEmision>
+    </Emisor>
+    <Comprador>
+      <IdentificadorExtranjero>131880681</IdentificadorExtranjero>
+      <RazonSocialComprador>DOCUMENTOS ELECTRONICOS DE 03</RazonSocialComprador>
+    </Comprador>
+    <Transporte>
+      <PaisDestino>ESTADOS UNIDOS</PaisDestino>
+    </Transporte>
+    <Totales>
+      <MontoExento>17850.00</MontoExento>
+      <MontoTotal>17850.00</MontoTotal>
+      <MontoPeriodo>17850.00</MontoPeriodo>
+      <ValorPagar>17850.00</ValorPagar>
+      <TotalISRRetencion>4819.50</TotalISRRetencion>
+    </Totales>
+  </Encabezado>
+  <DetallesItems>
+    <Item>
+      <NumeroLinea>1</NumeroLinea>
+      <IndicadorFacturacion>4</IndicadorFacturacion>
+      <Retencion>
+        <IndicadorAgenteRetencionoPercepcion>1</IndicadorAgenteRetencionoPercepcion>
+        <MontoISRRetenido>945.00</MontoISRRetenido>
+      </Retencion>
+      <NombreItem>Asesoria Legal P/H</NombreItem>
+      <IndicadorBienoServicio>2</IndicadorBienoServicio>
+      <CantidadItem>100.00</CantidadItem>
+      <UnidadMedida>19</UnidadMedida>
+      <PrecioUnitarioItem>35.00</PrecioUnitarioItem>
+      <MontoItem>3500.00</MontoItem>
+    </Item>
+    <Item>
+      <NumeroLinea>2</NumeroLinea>
+      <IndicadorFacturacion>4</IndicadorFacturacion>
+      <Retencion>
+        <IndicadorAgenteRetencionoPercepcion>1</IndicadorAgenteRetencionoPercepcion>
+        <MontoISRRetenido>3132.00</MontoISRRetenido>
+      </Retencion>
+      <NombreItem>Asesoria Legal P/H</NombreItem>
+      <IndicadorBienoServicio>2</IndicadorBienoServicio>
+      <CantidadItem>80.00</CantidadItem>
+      <UnidadMedida>19</UnidadMedida>
+      <PrecioUnitarioItem>145.00</PrecioUnitarioItem>
+      <MontoItem>11600.00</MontoItem>
+    </Item>
+    <Item>
+      <NumeroLinea>3</NumeroLinea>
+      <IndicadorFacturacion>4</IndicadorFacturacion>
+      <Retencion>
+        <IndicadorAgenteRetencionoPercepcion>1</IndicadorAgenteRetencionoPercepcion>
+        <MontoISRRetenido>742.50</MontoISRRetenido>
+      </Retencion>
+      <NombreItem>Asesoria Legal P/H</NombreItem>
+      <IndicadorBienoServicio>2</IndicadorBienoServicio>
+      <CantidadItem>50.00</CantidadItem>
+      <UnidadMedida>19</UnidadMedida>
+      <PrecioUnitarioItem>55.00</PrecioUnitarioItem>
+      <MontoItem>2750.00</MontoItem>
+    </Item>
+  </DetallesItems>
+  <FechaHoraFirma>26-06-2026 14:33:17</FechaHoraFirma>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+      <Reference URI="">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <DigestValue>fPaVe/sqh6lq70yPs2bK+xpQlWfkZbzdbO2IZPJD1kY=</DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue>KIPo8NNFdU4LPwfoA34RIJAgu3m7aOjNxv5+If5toXNsQnetcI1Ocws9oJEZKT6JYlwlLdTg5OU6vUV5ikLvJT95l/+Zw/fxn3Wk+5yVl+4EWQfJf5lsZEkO29f+DHjdKNMiLm/J3Ihls2Ik1hkHt6wUqzCL/mmNETjE1SJibTs4iB8CKzZfAshXJsOtD6QlD5eA1V21the6N6b8ezgNEccc/kxg3sOtwNIew3h2sBIVa/7bLus5xyahDqV5S0jPjuTPP2TYQPZdFIFREJLpnk9ISrxMKuOLgfqyy6AL5qYde1vtEOJsWqjwrQvl3PTWSlKXnVOVv2AaYSAIjIraqw==</SignatureValue>
+    <KeyInfo>
+      <X509Data>
+        <X509Certificate>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</X509Certificate>
+      </X509Data>
+    </KeyInfo>
+  </Signature>
+</ECF>

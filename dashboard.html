@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+<html lang="es" class="bh-remote-chrome">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Cuenta - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css?v=20260923c">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20260926x">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Favicon / App Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="icon" href="assets/logo/icono-buenohotel.png?v=20260926m">
+  <style>
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .welcome-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .welcome-section h1 {
+      color: #222;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .welcome-section p {
+      color: #555;
+      font-size: 1.1rem;
+    }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+    }
+    .sidebar {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+      height: fit-content;
+    }
+    .user-profile {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 20px;
+    }
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #FBB03B;
+      color: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 0 auto 10px;
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+    .user-email {
+      color: #777;
+      font-size: 0.9rem;
+    }
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .nav-item {
+      margin-bottom: 5px;
+    }
+    .nav-link {
+      display: block;
+      padding: 12px 15px;
+      color: #444;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: #FBB03B;
+      color: #222;
+      font-weight: 600;
+    }
+    .main-content {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 30px;
+    }
+    .section-title {
+      color: #222;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #FBB03B;
+    }
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .event-card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .event-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .event-details {
+      padding: 15px;
+    }
+    .event-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0 0 10px;
+      color: #222;
+    }
+    .event-date {
+      color: #FBB03B;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .event-description {
+      color: #666;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #FBB03B;
+      color: #222;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: background 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #e6a12c;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #FBB03B;
+      color: #FBB03B;
+    }
+    .btn-outline:hover {
+      background: rgba(251, 176, 59, 0.1);
+    }
+    .no-events {
+      text-align: center;
+      padding: 40px 20px;
+      color: #777;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <!-- Shared navbar placeholder -->
+  <div id="site-header"></div>
+  <script src="js/auth.js?v=20260923c"></script>
+  <script src="https://buenohotel.com/js/config.js?v=20260929a"></script>
+  <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261002a"></script>
+  <script src="js/navbar.js?v=20260919m"></script>
+
+  <div class="dashboard-container">
+    <div class="welcome-section">
+      <h1>Bienvenido de vuelta, <span id="user-first-name">Usuario</span></h1>
+      <p>Gestiona tus eventos y reservas en un solo lugar</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <aside class="sidebar">
+        <div class="user-profile">
+          <div class="user-avatar" id="user-avatar">U</div>
+          <div class="user-name" id="user-full-name">Usuario</div>
+          <div class="user-email" id="user-email">usuario@ejemplo.com</div>
+        </div>
+        <ul class="nav-menu">
+          <li class="nav-item"><a href="dashboard.html" class="nav-link active" data-requires-auth>Mis Eventos</a></li>
+          <li class="nav-item"><a href="mis-reservas.html" class="nav-link">Mis Reservas</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="sidebar-logout">Cerrar Sesión</a></li>
+        </ul>
+      </aside>
+
+      <main class="main-content">
+        <h2 class="section-title">Mis Próximos Eventos</h2>
+        
+        <div class="events-grid" id="user-events">
+          <!-- Los eventos se cargarán aquí dinámicamente -->
+          <div class="no-events">No tienes eventos próximos. <a href="index.html">¡Explora nuestros eventos!</a></div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 50px;">Eventos Recomendados</h2>
+        
+        <div class="events-grid" id="recommended-events">
+          <!-- Los eventos recomendados se cargarán aquí dinámicamente -->
+        </div>
+
+        <h2 class="section-title" style="margin: 50px auto 20px; text-align:center; font-size:2rem; color:#333; max-width:1200px; width:95%;">Mi Perfil</h2>
+        <div class="profile-sections" style="display:flex; justify-content:center; width:100%;">
+          <div class="profile-card" style="border:1px solid #eee; border-radius:12px; padding:24px; margin:0 auto 30px; max-width:1200px; width:95%; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            <form id="profile-form">
+              <div class="pf-section" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap:30px; max-width:1200px; margin:0 auto; width:100%;">
+                <div style="padding:15px;">
+                  <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Nombre</label>
+                    <input type="text" id="pf-nombre" name="nombre" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
+                  </div>
+                  <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Apellido</label>
+                    <input type="text" id="pf-apellido" name="apellido" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
+                  </div>
+                  <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Correo Electrónico</label>
+                    <input type="email" id="pf-email" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; background-color: #f4f4f4; font-size:1rem;" disabled>
+                    <small style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;">El correo no se puede modificar</small>
+                  </div>
+                </div>
+                <div>
+                  <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Teléfono</label>
+                    <input type="tel" id="pf-telefono" name="telefono" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
+                    <small id="pf-telefono-preview" style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;"></small>
+                  </div>
+                  <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Tipo de Documento</label>
+                    <select id="pf-tipoDocumento" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
+                      <option value="cedula">Cédula</option>
+                      <option value="pasaporte">Pasaporte</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Número de Documento</label>
+                    <input type="text" id="pf-documento" name="documento" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" placeholder="001-0000000-1" disabled>
+                    <small id="pf-docHint" style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;">Formato cédula: 000-0000000-0</small>
+                  </div>
+                  <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Fecha de Nacimiento</label>
+                    <input type="text" id="pf-fechaNacimiento" name="fechaNacimiento" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" placeholder="dd/mm/yyyy" inputmode="numeric" disabled>
+                    <small style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;">Formato: dd/mm/yyyy</small>
+                  </div>
+                </div>
+              </div>
+              <div id="pf-section-actions" style="margin-top:24px; display:flex; gap:12px; padding-top:12px; border-top:1px solid #eee;">
+                <button type="button" class="btn btn-outline" id="btn-profile-edit" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:6px; font-weight:500; font-size:1rem; cursor:pointer; transition:all 0.2s; border:1px solid #FBB03B; color:#FBB03B; background:transparent;">
+                  Editar Información
+                </button>
+                <button type="button" class="btn btn-outline" id="btn-profile-cancel" style="display:none; align-items:center; gap:8px; padding:10px 20px; border-radius:6px; font-weight:500; font-size:1rem; cursor:pointer; transition:all 0.2s; border:1px solid #dc3545; color:#dc3545; background:transparent;">
+                  Cancelar
+                </button>
+                <button type="button" class="btn" id="btn-profile-save" style="display:none; align-items:center; gap:8px; padding:10px 20px; border-radius:6px; font-weight:500; font-size:1rem; cursor:pointer; transition:all 0.2s; border:none; color:white; background-color:#FBB03B;">
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="profile-card" style="border:1px solid #eee; border-radius:8px; padding:16px;">
+            <h3 style="margin-top:0; color:#333;">Cambiar contraseña</h3>
+            <form id="password-form">
+              <div class="pf-section">
+                <div class="pf-row" style="padding-top:0;">
+                  <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:14px;">
+                    <div>
+                      <label>Contraseña actual</label>
+                      <input type="password" id="pf-old" name="oldPassword" class="input" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;" required disabled>
+                    </div>
+                    <div>
+                      <label>Nueva contraseña</label>
+                      <input type="password" id="pf-new" name="newPassword" class="input" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;" minlength="6" required disabled>
+                      <small style="display:block; color:#777; margin-top:6px;">Mínimo 6 caracteres</small>
+                    </div>
+                    <div>
+                      <label>Confirmar nueva contraseña</label>
+                      <input type="password" id="pf-confirm" name="confirmNewPassword" class="input" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;" minlength="6" required disabled>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="pf-pass-actions" style="margin-top:14px; display:flex; gap:10px;">
+                <button type="button" class="btn btn-outline" id="btn-pass-edit" title="Actualizar datos" style="display:inline-flex; align-items:center; gap:6px;">
+                  Editar
+                </button>
+                <button type="button" class="btn btn-outline" id="btn-pass-cancel" title="Cancelar" style="display:none; align-items:center; gap:6px;">
+                  Cancelar
+                </button>
+                <button type="button" class="btn" id="btn-pass-save" title="Guardar" style="display:none; align-items:center; gap:6px;">
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Cargar datos del usuario
+    document.addEventListener('DOMContentLoaded', function() {
+      const userData = window.auth.getUserData();
+      
+      if (!userData) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Mostrar información del usuario
+      document.getElementById('user-first-name').textContent = userData.nombre || 'Usuario';
+      document.getElementById('user-full-name').textContent = `${userData.nombre || ''} ${userData.apellido || ''}`.trim() || 'Usuario';
+      document.getElementById('user-email').textContent = userData.email || '';
+      
+      // Mostrar inicial del nombre en el avatar
+      const avatar = document.getElementById('user-avatar');
+      if (userData.nombre) {
+        avatar.textContent = userData.nombre.charAt(0).toUpperCase();
+      }
+      
+      // Configurar botones de cierre de sesión
+      const logoutButtons = document.querySelectorAll('#logout-btn, #sidebar-logout');
+      logoutButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.auth.logout();
+        });
+      });
+      
+      // Toast de bienvenida
+      if (typeof showToast === 'function') {
+        const nombre = userData.nombre || 'Usuario';
+        showToast({ title: 'Bienvenido', message: `Hola ${nombre}, nos alegra verte de vuelta.`, type: 'success', duration: 1800 });
+      }
+
+      // Enlace al Panel Admin (solo para administradores)
+      try {
+        if (window.auth && typeof window.auth.isAdmin === 'function' && window.auth.isAdmin()) {
+          const menu = document.querySelector('.sidebar .nav-menu');
+          if (menu && !menu.querySelector('#nav-admin-link')) {
+            const li = document.createElement('li');
+            li.className = 'nav-item';
+            li.innerHTML = '<a id="nav-admin-link" href="admin.html" class="nav-link" data-requires-auth>Panel Admin</a>';
+            // Insertar antes del botón Cerrar Sesión
+            const logoutLi = menu.querySelector('#sidebar-logout')?.closest('li');
+            if (logoutLi) menu.insertBefore(li, logoutLi); else menu.appendChild(li);
+          }
+        }
+      } catch(_) {}
+
+      // Base de API (prod/local) usando helper compartido
+      const API_BASE = (window.getAuthApiBase ? window.getAuthApiBase() : '');
+
+      // Cargar eventos del usuario
+      cargarEventosUsuario();
+      cargarEventosRecomendados();
+
+      // Prefill perfil
+      const pfNombre = document.getElementById('pf-nombre');
+      const pfApellido = document.getElementById('pf-apellido');
+      const pfTelefono = document.getElementById('pf-telefono');
+      const pfTipoDoc = document.getElementById('pf-tipoDocumento');
+      const pfDocumento = document.getElementById('pf-documento');
+      const pfDocHint = document.getElementById('pf-docHint');
+      const pfFechaNac = document.getElementById('pf-fechaNacimiento');
+      // Teléfono: edición libre (sin máscara). Se normaliza al guardar.
+      function normalizeToE164(value){
+        const digits = String(value||'').replace(/\D/g,'');
+        const last10 = digits.slice(-10);
+        return last10 ? `+1${last10}` : '';
+      }
+      // Documento visual mask
+      // Fecha de nacimiento helpers (dd/mm/yyyy <-> ISO)
+      function isoToDDMMYYYY(iso){
+        if (!iso) return '';
+        const s = String(iso).trim();
+        // Aceptar 'yyyy-mm-dd' o ISO completo
+        let y, m, d;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+          [y,m,d] = s.split('-');
+        } else {
+          const dt = new Date(s);
+          if (isNaN(dt)) return '';
+          y = String(dt.getUTCFullYear());
+          m = String(dt.getUTCMonth()+1).padStart(2,'0');
+          d = String(dt.getUTCDate()).padStart(2,'0');
+        }
+        return `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${String(y)}`;
+      }
+      function ddmmyyyyToISO(ddmmyyyy){
+        const m = String(ddmmyyyy||'').trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (!m) return '';
+        const d = parseInt(m[1],10), mo = parseInt(m[2],10), y = parseInt(m[3],10);
+        if (mo < 1 || mo > 12 || d < 1 || d > 31) return '';
+        return `${String(y).padStart(4,'0')}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      }
+      function attachDateMask(el){
+        if (!el) return;
+        el.addEventListener('input', ()=>{
+          let v = el.value.replace(/[^0-9]/g,'').slice(0,8);
+          if (v.length >= 5) v = `${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4,8)}`;
+          else if (v.length >= 3) v = `${v.slice(0,2)}/${v.slice(2)}`;
+          el.value = v;
+        });
+      }
+      function formatCedulaVisual(raw){
+        const d = String(raw||'').replace(/\D/g,'').slice(0,11);
+        if (d.length <= 3) return d;
+        if (d.length <= 10) return `${d.slice(0,3)}-${d.slice(3)}`;
+        return `${d.slice(0,3)}-${d.slice(3,10)}-${d.slice(10,11)}`;
+      }
+      function applyDocMask(){
+        const tipo = (pfTipoDoc?.value||'cedula').toLowerCase();
+        if (tipo === 'cedula'){
+          pfDocumento.value = formatCedulaVisual(pfDocumento.value);
+          pfDocumento.maxLength = 13;
+          pfDocumento.pattern = "\\d{3}-\\d{7}-\\d{1}";
+          pfDocumento.placeholder = '001-0000000-1';
+          if (pfDocHint) pfDocHint.textContent = 'Formato cédula: 000-0000000-0';
+        } else {
+          let v = (pfDocumento.value||'');
+          v = v.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,20);
+          pfDocumento.value = v;
+          pfDocumento.removeAttribute('pattern');
+          pfDocumento.removeAttribute('maxLength');
+          pfDocumento.placeholder = 'ABC123456';
+          if (pfDocHint) pfDocHint.textContent = 'Pasaporte alfanumérico (5-20 caracteres)';
+        }
+      }
+      if (pfNombre) pfNombre.value = userData.nombre || '';
+      if (pfApellido) pfApellido.value = userData.apellido || '';
+      if (pfTelefono) {
+        pfTelefono.value = userData.telefono || '';
+        // Edición libre, de izquierda a derecha (por defecto). Sin máscara en tiempo real.
+        try { pfTelefono.style.removeProperty('direction'); pfTelefono.style.removeProperty('text-align'); } catch(_) {}
+        // Crear/adjuntar vista previa formateada
+        (function ensurePhonePreview(){
+          try {
+            let preview = document.getElementById('pf-telefono-preview');
+            if (!preview) {
+              preview = document.createElement('small');
+              preview.id = 'pf-telefono-preview';
+              preview.style.display = 'block';
+              preview.style.marginTop = '6px';
+              preview.style.color = '#666';
+              pfTelefono.insertAdjacentElement('afterend', preview);
+            }
+            function formatPreview(v){
+              const d = String(v||'').replace(/\D/g,'');
+              const a = d.slice(-10);
+              if (!a) return '';
+              const p1 = a.substring(0,3);
+              const p2 = a.substring(3,6);
+              const p3 = a.substring(6,10);
+              if (a.length <= 3) return `+1(${p1}`;
+              if (a.length <= 6) return `+1(${p1}) ${p2}`;
+              return `+1(${p1}) ${p2}-${p3}`;
+            }
+            function updatePreview(){ preview.textContent = formatPreview(pfTelefono.value); }
+            updatePreview();
+            pfTelefono.addEventListener('input', updatePreview);
+          } catch(_) {}
+        })();
+      }
+      // Prefill documento y fecha nacimiento
+      if (pfTipoDoc) pfTipoDoc.value = (userData.tipoDocumento || 'cedula').toLowerCase();
+      if (pfDocumento) pfDocumento.value = userData.documento || '';
+      if (pfFechaNac) { pfFechaNac.value = isoToDDMMYYYY((userData.fechaNacimiento || '').substring(0,10)); attachDateMask(pfFechaNac); }
+      // Init mask
+      if (pfTipoDoc && pfDocumento){
+        pfTipoDoc.addEventListener('change', applyDocMask);
+        ['input','keyup','blur'].forEach(evt => pfDocumento.addEventListener(evt, applyDocMask));
+        pfDocumento.addEventListener('paste', ()=> setTimeout(applyDocMask,0));
+        applyDocMask();
+      }
+
+      // General info: sección con barra de acciones
+      const btnProfileEdit = document.getElementById('btn-profile-edit');
+      const btnProfileCancel = document.getElementById('btn-profile-cancel');
+      const btnProfileSave = document.getElementById('btn-profile-save');
+      let nombreOriginal = userData.nombre || '';
+      let apellidoOriginal = userData.apellido || '';
+      let telefonoOriginalDigits = String(userData.telefono||'').replace(/\D/g,'').slice(-10);
+      let tipoDocOriginal = (userData.tipoDocumento || 'cedula').toLowerCase();
+      let documentoOriginal = userData.documento || '';
+      let fechaNacOriginal = (userData.fechaNacimiento || '').substring(0,10);
+      function enterProfileEdit(){
+        pfNombre.disabled=false; pfApellido.disabled=false; pfTelefono.disabled=false;
+        if (pfTipoDoc) pfTipoDoc.disabled = false;
+        if (pfDocumento) pfDocumento.disabled = false;
+        if (pfFechaNac) pfFechaNac.disabled = false;
+        btnProfileEdit.style.display='none'; btnProfileCancel.style.display='inline-flex'; btnProfileSave.style.display='inline-flex';
+        pfNombre.focus();
+      }
+      function exitProfileEdit(revert){
+        if (revert){
+          pfNombre.value = nombreOriginal;
+          pfApellido.value = apellidoOriginal;
+          pfTelefono.value = (userData.telefono || '');
+          if (pfTipoDoc) pfTipoDoc.value = tipoDocOriginal;
+          if (pfDocumento) { pfDocumento.value = documentoOriginal; applyDocMask(); }
+          if (pfFechaNac) pfFechaNac.value = fechaNacOriginal;
+        }
+        pfNombre.disabled = true;
+        pfApellido.disabled = true;
+        pfTelefono.disabled = true;
+        if (pfTipoDoc) pfTipoDoc.disabled = true;
+        if (pfDocumento) pfDocumento.disabled = true;
+        if (pfFechaNac) pfFechaNac.disabled = true;
+        btnProfileEdit.style.display = 'inline-flex';
+        btnProfileCancel.style.display = 'none';
+        btnProfileSave.style.display = 'none';
+      }
+      btnProfileEdit?.addEventListener('click', enterProfileEdit);
+      btnProfileCancel?.addEventListener('click', ()=> exitProfileEdit(true));
+      btnProfileSave?.addEventListener('click', async ()=>{
+        const payload = {};
+        // Nombre/Apellido
+        const newNombre = pfNombre.value.trim();
+        const newApellido = pfApellido.value.trim();
+        if (newNombre !== nombreOriginal) payload.nombre = newNombre;
+        if (newApellido !== apellidoOriginal) payload.apellido = newApellido;
+        // Teléfono (comparar por dígitos)
+        const newDigits = String(pfTelefono.value||'').replace(/\D/g,'').slice(-10);
+        if (newDigits && newDigits !== telefonoOriginalDigits){
+          if (newDigits.length !== 10){ ensureToast(); showToast({ title:'Validación', message:'Ingrese un teléfono válido de 10 dígitos.', type:'error' }); return; }
+          payload.telefono = normalizeToE164(pfTelefono.value);
+        }
+        // Iglesia
+        const sel = document.querySelector('input[name="pf-iglesia"]:checked');
+        const iglesiaVal = sel ? (sel.value === 'Otra' ? (pfIglesiaOtraInput?.value || '').trim() : sel.value) : '';
+        if (iglesiaVal && iglesiaVal !== iglesiaOriginal){
+          if (sel && sel.value === 'Otra' && !iglesiaVal){ ensureToast(); showToast({ title:'Validación', message:'Especifique su iglesia en "Otra".', type:'error' }); return; }
+          payload.iglesia = iglesiaVal;
+        }
+        // Documento y fecha de nacimiento
+        if (pfTipoDoc && pfDocumento){
+          const tipo = (pfTipoDoc.value||'cedula').toLowerCase();
+          const docVal = (pfDocumento.value||'').trim();
+          if (tipo !== tipoDocOriginal) payload.tipoDocumento = tipo;
+          if (docVal && docVal !== documentoOriginal) {
+            if (tipo === 'cedula' && !/^\d{3}-\d{7}-\d{1}$/.test(docVal)){ ensureToast(); showToast({ title:'Validación', message:'La cédula debe tener el formato 000-0000000-0', type:'error' }); return; }
+            if (tipo === 'pasaporte' && !/^[A-Za-z0-9]{5,20}$/.test(docVal.replace(/\s/g,''))){ ensureToast(); showToast({ title:'Validación', message:'El pasaporte debe ser alfanumérico (5-20 caracteres)', type:'error' }); return; }
+            payload.documento = docVal;
+          }
+        }
+        if (pfFechaNac){
+          const val = (pfFechaNac.value||'').trim();
+          if (val){
+            if (!/^\d{2}\/\d{2}\/\d{4}$/.test(val)){ ensureToast(); showToast({ title:'Validación', message:'La fecha debe tener el formato dd/mm/yyyy.', type:'error' }); return; }
+            const iso = ddmmyyyyToISO(val);
+            if (!iso){ ensureToast(); showToast({ title:'Validación', message:'Fecha inválida. Use dd/mm/yyyy.', type:'error' }); return; }
+            if (iso !== fechaNacOriginal) payload.fechaNacimiento = iso;
+          }
+        }
+        if (Object.keys(payload).length === 0){ ensureToast(); showToast({ title:'Sin cambios', message:'No hay cambios para guardar.', type:'error' }); return; }
+        const prev = btnProfileSave.textContent; btnProfileSave.disabled = true; btnProfileSave.textContent='Guardando...';
+        try{
+          const token = localStorage.getItem('buenohotel_auth_token');
+          const res = await fetch(`${API_BASE}/api/auth/me`, { method:'PUT', headers:{ 'Content-Type':'application/json', ...(token? { 'Authorization':`Bearer ${token}` } : {}) }, body: JSON.stringify(payload) });
+          const json = await res.json().catch(()=>({}));
+          if (!res.ok) throw new Error(json?.errors?.map(e=>e.message).join(' | ') || json?.message || 'No se pudo actualizar el perfil');
+          const updated = json.data || {}; const merged = { ...userData, ...updated };
+          localStorage.setItem('buenohotel_user_data', JSON.stringify(merged));
+          document.getElementById('user-first-name').textContent = merged.nombre || 'Usuario';
+          document.getElementById('user-full-name').textContent = `${merged.nombre || ''} ${merged.apellido || ''}`.trim() || 'Usuario';
+          if (merged.nombre) document.getElementById('user-avatar').textContent = merged.nombre.charAt(0).toUpperCase();
+          // Actualizar originales
+          nombreOriginal = merged.nombre ?? nombreOriginal;
+          apellidoOriginal = merged.apellido ?? apellidoOriginal;
+          telefonoOriginalDigits = String(merged.telefono||'').replace(/\D/g,'').slice(-10) || telefonoOriginalDigits;
+          tipoDocOriginal = (merged.tipoDocumento || tipoDocOriginal).toLowerCase();
+          documentoOriginal = merged.documento ?? documentoOriginal;
+          fechaNacOriginal = (merged.fechaNacimiento || fechaNacOriginal).substring(0,10);
+          if (payload.iglesia){ iglesiaOriginal = payload.iglesia; }
+          ensureToast(); showToast({ title:'Perfil', message:'Información actualizada.', type:'success' });
+          exitProfileEdit(false);
+        }catch(err){ console.error(err); ensureToast(); showToast({ title:'Error', message:String(err.message||err), type:'error' }); }
+        finally{ btnProfileSave.disabled = false; btnProfileSave.textContent = prev; }
+      });
+
+      // Controles: Contraseña
+      const btnPassEdit = document.getElementById('btn-pass-edit');
+      const btnPassCancel = document.getElementById('btn-pass-cancel');
+      const btnPassSave = document.getElementById('btn-pass-save');
+      function enterPassEdit(){ pfOld.disabled=false; pfNew.disabled=false; pfConfirm.disabled=false; btnPassEdit.style.display='none'; btnPassCancel.style.display='inline-flex'; btnPassSave.style.display='inline-flex'; pfOld.focus(); }
+      function clearPassFields(){ pfOld.value=''; pfNew.value=''; pfConfirm.value=''; }
+      function exitPassEdit(revert){ if(revert) clearPassFields(); pfOld.disabled=true; pfNew.disabled=true; pfConfirm.disabled=true; btnPassEdit.style.display='inline-flex'; btnPassCancel.style.display='none'; btnPassSave.style.display='none'; }
+      btnPassEdit?.addEventListener('click', enterPassEdit);
+      btnPassCancel?.addEventListener('click', ()=> exitPassEdit(true));
+      btnPassSave?.addEventListener('click', async ()=>{
+        if (pfNew.value.length < 6){ ensureToast(); showToast({ title:'Validación', message:'La nueva contraseña debe tener al menos 6 caracteres.', type:'error' }); return; }
+        if (pfNew.value !== pfConfirm.value){ ensureToast(); showToast({ title:'Validación', message:'La confirmación no coincide.', type:'error' }); return; }
+        const prev = btnPassSave.textContent; btnPassSave.disabled = true; btnPassSave.textContent='Guardando...';
+        try{
+          const token = localStorage.getItem('buenohotel_auth_token');
+          const res = await fetch(`${API_BASE}/api/auth/change-password`, { method:'POST', headers:{ 'Content-Type':'application/json', ...(token? { 'Authorization':`Bearer ${token}` } : {}) }, body: JSON.stringify({ oldPassword: pfOld.value, newPassword: pfNew.value, confirmNewPassword: pfConfirm.value }) });
+          const json = await res.json().catch(()=>({}));
+          if (!res.ok) throw new Error(json?.errors?.map(e=>e.message).join(' | ') || json?.message || 'No se pudo actualizar la contraseña');
+          clearPassFields();
+          ensureToast(); showToast({ title:'Seguridad', message:'Contraseña actualizada.', type:'success' });
+          exitPassEdit(false);
+        }catch(err){ console.error(err); ensureToast(); showToast({ title:'Error', message:String(err.message||err), type:'error' }); }
+        finally{ btnPassSave.disabled = false; btnPassSave.textContent = prev; }
+      });
+
+      // Cambiar contraseña
+      const passwordForm = document.getElementById('password-form');
+      const btnChangePass = document.getElementById('btn-change-pass');
+      const pfOld = document.getElementById('pf-old');
+      const pfNew = document.getElementById('pf-new');
+      const pfConfirm = document.getElementById('pf-confirm');
+      passwordForm?.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        if (pfNew.value !== pfConfirm.value){ ensureToast(); showToast({ title:'Validación', message:'La confirmación no coincide.', type:'error' }); return; }
+        const prev = btnChangePass.textContent; btnChangePass.disabled = true; btnChangePass.textContent = 'Actualizando...';
+        try{
+          const token = localStorage.getItem('buenohotel_auth_token');
+          const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', ...(token? { 'Authorization':`Bearer ${token}` } : {}) },
+            body: JSON.stringify({ oldPassword: pfOld.value, newPassword: pfNew.value, confirmNewPassword: pfConfirm.value })
+          });
+          const json = await res.json().catch(()=>({}));
+          if (!res.ok) throw new Error(json?.errors?.map(e=>e.message).join(' | ') || json?.message || 'No se pudo actualizar la contraseña');
+          pfOld.value = ''; pfNew.value=''; pfConfirm.value='';
+          ensureToast(); showToast({ title:'Listo', message:'Contraseña actualizada.', type:'success' });
+        }catch(err){ console.error(err); ensureToast(); showToast({ title:'Error', message:String(err.message||err), type:'error' }); }
+        finally{ btnChangePass.disabled = false; btnChangePass.textContent = prev; }
+      });
+    });
+    
+    // Función para cargar los eventos del usuario
+    async function cargarEventosUsuario() {
+      try {
+        // Aquí iría la llamada a tu API para obtener los eventos del usuario
+        // Por ahora, mostramos un mensaje de ejemplo
+        const eventosContainer = document.getElementById('user-events');
+        // eventosContainer.innerHTML = ...; // Aquí se cargarían los eventos reales
+      } catch (error) {
+        console.error('Error al cargar los eventos:', error);
+      }
+    }
+    
+    // Función para cargar eventos recomendados
+    async function cargarEventosRecomendados() {
+      try {
+        // Aquí iría la llamada a tu API para obtener eventos recomendados
+        // Por ahora, mostramos un mensaje de ejemplo
+        const eventosContainer = document.getElementById('recommended-events');
+        // eventosContainer.innerHTML = ...; // Aquí se cargarían los eventos recomendados
+      } catch (error) {
+        console.error('Error al cargar los eventos recomendados:', error);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+Claudia — Paso 5 v7 (QR BUENOHOTEL + firmar + enviar incluidos)
+
+El ZIP anterior (v6) no tenia "firmar-todos". Este SI.
+
+Descarga:
+  https://booking.buenohotel.com.do/dgii/bh-paso5-formato-dgii-v7.zip
+  https://eventos.buenohotel.com.do/descargas-dgii/bh-paso5-formato-dgii-v7.zip
+
+1) Descomprime SOBRE dgi\ (reemplaza archivos)
+2) npm install
+3) En orden:
+
+   node parchear-xml-sin-firmar.js
+   npm run firmar-todos
+   npm run enviar-api
+   npm run paso5
+
+4) Verificar QR en un PDF: debe decir BUENOHOTEL, S.R.L.
+5) Subir los 11 PDF de salida\representacion-impresa\pdf\
+
+Requisito: .env.cert con el P12 (igual que Paso 4).

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECF>
+  <Encabezado>
+    <Version>1.0</Version>
+    <IdDoc>
+      <TipoeCF>32</TipoeCF>
+      <eNCF>E320000000212</eNCF>
+      <IndicadorMontoGravado>0</IndicadorMontoGravado>
+      <TipoIngresos>01</TipoIngresos>
+      <TipoPago>1</TipoPago>
+    </IdDoc>
+    <Emisor>
+      <RNCEmisor>131631088</RNCEmisor>
+      <RazonSocialEmisor>DOCUMENTOS ELECTRONICOS PRUEBA FACTURA DE CONSUMO MENOR 250MIL</RazonSocialEmisor>
+      <NombreComercial>DOCUMENTOS ELECTRONICOS</NombreComercial>
+      <DireccionEmisor>AVE. ISABEL AGUIAR NO. 269, ZONA INDUSTRIAL DE HERRERA</DireccionEmisor>
+      <TablaTelefonoEmisor>
+        <TelefonoEmisor>809-472-7676</TelefonoEmisor>
+      </TablaTelefonoEmisor>
+      <CorreoEmisor>DOCUMENTOSELECTRONICOS@123.COM</CorreoEmisor>
+      <InformacionAdicionalEmisor>Simulacion Paso 4 - BUENOHOTEL SRL</InformacionAdicionalEmisor>
+      <FechaEmision>01-07-2026</FechaEmision>
+    </Emisor>
+    <Comprador>
+      <RNCComprador>131880681</RNCComprador>
+      <RazonSocialComprador>DOCUMENTOS ELECTRONICOS DE 03</RazonSocialComprador>
+      <CorreoComprador>DOCUMENTOSELECTRONICOSDE0612345678969789@123.COM</CorreoComprador>
+      <DireccionComprador>AVE. ISABEL AGUIAR NO. 269, ZONA INDUSTRIAL DE HERRERA</DireccionComprador>
+      <MunicipioComprador>030307</MunicipioComprador>
+      <ProvinciaComprador>030000</ProvinciaComprador>
+      <TelefonoAdicional>809-472-7676</TelefonoAdicional>
+    </Comprador>
+    <Totales>
+      <MontoGravadoTotal>40000.00</MontoGravadoTotal>
+      <MontoGravadoI1>40000.00</MontoGravadoI1>
+      <ITBIS1>18</ITBIS1>
+      <TotalITBIS>7200.00</TotalITBIS>
+      <TotalITBIS1>7200.00</TotalITBIS1>
+      <MontoTotal>47200.00</MontoTotal>
+    </Totales>
+  </Encabezado>
+  <DetallesItems>
+    <Item>
+      <NumeroLinea>1</NumeroLinea>
+      <IndicadorFacturacion>1</IndicadorFacturacion>
+      <NombreItem>Estufa</NombreItem>
+      <IndicadorBienoServicio>1</IndicadorBienoServicio>
+      <CantidadItem>1.00</CantidadItem>
+      <UnidadMedida>55</UnidadMedida>
+      <PrecioUnitarioItem>40000.00</PrecioUnitarioItem>
+      <MontoItem>40000.00</MontoItem>
+    </Item>
+  </DetallesItems>
+  <FechaHoraFirma>02-07-2026 12:11:46</FechaHoraFirma>
+</ECF>

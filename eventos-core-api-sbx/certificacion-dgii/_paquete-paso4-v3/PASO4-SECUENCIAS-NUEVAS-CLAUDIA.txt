@@ -1,0 +1,44 @@
+CLAUDIA — Paso 4: SECUENCIAS NUEVAS (+200)
+==========================================
+
+Qué pasó:
+  El reenvío con las mismas secuencias (+100) falló.
+  Los 4 RFCE (E320111–E320114) ya estaban usados → error 75.
+  DGII no permite reutilizar e-NCF en Paso 4.
+
+Solución:
+  Paquete nuevo con offset +200 (ej. E320211, E310204, etc.).
+  Hay que firmar y enviar LOS 25 desde cero en un solo lote.
+
+1) Descarga:
+   https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/dgii-paso4-offset200-v3.zip
+
+2) Descomprime SOBRE C:\Users\claud\OneDrive\Desktop\dgi\
+   (reemplaza scripts, salida\ y datos\)
+
+3) Borra firmados viejos si quedaron:
+   - salida\ecf-firmados\*.xml
+   - salida\rfce-firmados\*.xml
+   - salida\envio-resultados\*.json
+
+4) En CMD dentro de dgi\:
+
+   npm run firmar-todos
+   npm run enviar-api
+
+   NO uses reenviar-paso4-25 ni enviar solo rechazados.
+   NO App Firma DGII (corrompe eNCF).
+
+5) Meta: 25/25 Aceptados.
+
+6) Portal Paso 4 — subir 4 FC32 <250k (ECF íntegros) desde ecf-firmados\:
+   131631088E320000000211.xml
+   131631088E320000000212.xml
+   131631088E320000000213.xml
+   131631088E320000000214.xml
+
+Mapeo rápido (Paso 2 → Paso 4 offset +200):
+  E320000000011 → E320000000211
+  E330000000001 → E330000000201
+  E310000000034 → E310000000234
+  E410000000001 → E410000000201

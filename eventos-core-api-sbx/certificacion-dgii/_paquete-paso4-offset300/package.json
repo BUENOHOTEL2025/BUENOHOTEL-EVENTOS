@@ -1,0 +1,19 @@
+{
+  "name": "buenohotel-dgii-paso4-offset300",
+  "version": "4.3.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "firmar-todos": "node firmar-todos.js",
+    "enviar-api": "node enviar-set-firmados.js",
+    "enviar-api-pendientes": "node enviar-set-firmados.js --omitir-aceptados",
+    "parchear-xml": "node parchear-xml-sin-firmar.js",
+    "paso5-generar": "node generar-representacion-paso5.js"
+  },
+  "dependencies": {
+    "dgii-ecf": "1.8.0",
+    "dotenv": "16.0.3",
+    "qrcode": "1.5.4",
+    "xlsx": "0.18.5"
+  }
+}

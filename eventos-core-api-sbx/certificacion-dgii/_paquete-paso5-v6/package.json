@@ -1,0 +1,17 @@
+{
+  "name": "buenohotel-dgii-paso5-v5",
+  "version": "5.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "paso5-generar": "node generar-representacion-paso5.js",
+    "paso5-pdf": "node exportar-pdf-paso5.js",
+    "paso5": "node generar-representacion-paso5.js && node exportar-pdf-paso5.js"
+  },
+  "dependencies": {
+    "dgii-ecf": "^1.8.0",
+    "dotenv": "^16.0.3",
+    "puppeteer": "^24.0.0",
+    "qrcode": "^1.5.4"
+  }
+}

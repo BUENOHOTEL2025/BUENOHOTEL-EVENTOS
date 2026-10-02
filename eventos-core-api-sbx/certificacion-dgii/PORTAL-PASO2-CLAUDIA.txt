@@ -1,0 +1,69 @@
+BUENOHOTEL — Portal DGII Paso 2 (carga web)
+============================================
+
+IMPORTANTE
+----------
+- Los envíos por API (npm) ya validaron los XML en CerteCF.
+- El PORTAL cuenta por separado y REINICIA el progreso cada vez que rechaza un archivo.
+- Cada línea "Las pruebas han sido reiniciadas..." en los logs = volver a 0/21 y 0/4.
+
+NO CONFUNDIR ARCHIVOS
+---------------------
+| Carpeta              | Raíz XML | Dónde subir en portal        |
+|----------------------|----------|------------------------------|
+| rfce-firmados\       | <RFCE>   | Resúmenes de consumo (4)     |
+| ecf-firmados\        | <ECF>    | Bloque principal (21)        |
+| ecf-firmados\        | <ECF>    | Facturas consumo <250Mil (4) |
+
+ERROR 22:34 — subió RFCE o XML inválido en "Facturas <250Mil".
+Esa sección exige factura ÍNTEGRA <ECF>, NO el resumen <RFCE>.
+
+ANTES DE SUBIR AL PORTAL
+------------------------
+Refirmar los 4 FC32 <250k con P12 (tag <eNCF>):
+
+  npm run firmar-fc32-portal
+
+Usar los firmados resultantes en ecf-firmados\ (no los viejos con <ENCF>).
+
+
+ORDEN EN EL PORTAL (sin saltar pasos)
+------------------------------------
+
+FASE A — Resúmenes (0/4 → 4/4)
+  Subir UNO a la vez desde rfce-firmados\:
+    131631088E320000000011.xml
+    131631088E320000000012.xml
+    131631088E320000000013.xml
+    131631088E320000000014.xml
+  Esperar que cada uno quede Aceptado antes del siguiente.
+
+FASE B — Facturas FC32 <250Mil (0/4 → 4/4)
+  Solo cuando FASE A = 4/4.
+  Subir desde ecf-firmados\ (los refirmados con P12):
+    131631088E320000000011.xml
+    131631088E320000000012.xml
+    131631088E320000000013.xml
+    131631088E320000000014.xml
+  ¡Mismo eNCF que el resumen, pero archivo ECF distinto al RFCE!
+
+FASE C — Resto de comprobantes (0/21 → 21/21)
+  Subir los otros 21 ECF firmados en el orden del manifest (ordenEnvio).
+  NO incluir otra vez E320011, E320012, E320013, E320014.
+
+  Orden (pasos 5-25 del manifest, omitiendo los 4 FC32 B2C):
+    E320006 → E330001 → E310034 → E340002 → E410001 → E340015
+    → E310007 → E310005 → E310004 → E320004 → E450001 → E460009
+    → E470008 → E430010 → E440007 → E410008 → E450008 → E460010
+    → E470010 → E430011 → E440010
+
+VERIFICAR ANTES DE CADA ENVÍO
+-----------------------------
+  findstr /C:"<ECF>" archivo.xml     → debe encontrar (factura íntegra)
+  findstr /C:"<RFCE>" archivo.xml    → solo en resúmenes
+  findstr /C:"<eNCF>" archivo.xml    → debe encontrar
+  findstr /C:"<ENCF>" archivo.xml    → NO debe encontrar nada
+
+Si el portal rechaza un archivo, el progreso se reinicia — corregir y empezar FASE A de nuevo.
+
+Soporte: Elmer

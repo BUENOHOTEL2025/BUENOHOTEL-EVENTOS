@@ -1,0 +1,26 @@
+Claudia — Paso 5: herramientas nuevas (representación impresa)
+
+Descarga (elige UN enlace):
+
+  A) booking.buenohotel.com.do (recomendado):
+  https://booking.buenohotel.com.do/dgii/bh-paso5-herramientas.zip
+
+  B) eventos.buenohotel.com.do:
+  https://eventos.buenohotel.com.do/descargas-dgii/bh-paso5-herramientas.zip
+
+Instalación:
+  1) Descomprime SOBRE C:\Users\claud\OneDrive\Desktop\dgi\
+  2) En CMD dentro de dgi\:
+       npm install
+       npm run paso5-generar
+
+  (o doble clic: ejecutar-paso5-generar.bat)
+
+Salida: salida\representacion-impresa\
+  → Abrir cada .html → Ctrl+P → Guardar como PDF
+  → Subir los 11 PDF al portal Paso 5
+
+Requisito: los XML firmados deben estar en salida\ecf-firmados\
+(del Paso 4 que ya completaste).
+
+Detalle: PASO5-REPRESENTACION-IMPRESA.txt

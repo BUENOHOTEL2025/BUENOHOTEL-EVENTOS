@@ -1,0 +1,34 @@
+CLAUDIA — Paso 4: reenvío completo (25 API)
+==========================================
+
+DGII reinicia el progreso si envías solo los rechazados.
+Hay que reenviar LOS 25 en un solo comando.
+
+1) Descarga fix (si no lo tienes):
+   https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/dgii-paso4-fix-notas-v2.zip
+
+2) Descomprime sobre dgi\ (reemplaza parchear + 3 XML)
+
+3) En CMD dentro de dgi\:
+
+   npm run reenviar-paso4-25
+
+   O doble clic: ejecutar-paso4-reenviar-notas.bat
+
+Qué hace:
+  - Corrige FechaNCFModificado en las 3 notas (error 634)
+  - Refirma solo esas 3 con P12
+  - Envía los 25 juntos (4 RFCE + 21 ECF)
+
+Los 22 que ya estaban OK saldrán "Aceptado" con secuenciaUtilizada — normal.
+
+Meta: 25/25 Aceptados en el JSON.
+
+Después → portal Paso 4: subir 4 FC32 <250k desde ecf-firmados\
+  131631088E320000000111.xml
+  131631088E320000000112.xml
+  131631088E320000000113.xml
+  131631088E320000000114.xml
+
+NO enviar solo 3 archivos.
+NO App Firma DGII.

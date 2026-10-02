@@ -1,0 +1,27 @@
+CLAUDIA — Paso 4 NUEVO (+300) QR BUENOHOTEL
+==========================================
+
+IMPORTANTE npm install:
+  1) Cierra Cursor, VS Code y cualquier terminal en dgi\
+  2) Si falla, borra node_modules y vuelve a instalar:
+
+     rmdir /s /q node_modules
+     del package-lock.json
+     npm install
+
+Este paquete NO instala Puppeteer (eso fallaba en OneDrive).
+Puppeteer solo se necesita al final para PDF (paso5).
+
+Descarga:
+  https://booking.buenohotel.com.do/dgii/bh-paso4-secuencias-300.zip
+
+1) Descomprime SOBRE dgi\
+2) npm install
+3) npm run firmar-todos
+4) npm run enviar-api
+5) Portal: 4 FC32 <250k desde ecf-firmados/
+6) Cuando acepten: npm run paso5-generar
+   (HTML listos; PDF: npm run paso5-con-pdf   O Ctrl+P)
+7) Subir 11 PDF a mano en Paso 5
+
+Los XML ya vienen con RazonSocialEmisor = BUENOHOTEL, S.R.L.

@@ -1,0 +1,75 @@
+BUENOHOTEL — Paso 2 CerteCF (29 XML)
+=====================================
+
+RESUMEN
+-------
+  25 comprobantes  →  API CerteCF (npm) — SIEMPRE LOS 25 JUNTOS
+  4 FC32 <250k     →  Portal web SOLO DESPUÉS de 25/25 API
+
+  Total firmados: 29 (25 ECF + 4 RFCE)
+
+REGLA DGII (CRÍTICA)
+--------------------
+  • Los 25 por API se envían en UN SOLO comando, en orden (4 RFCE + 21 ECF).
+  • NO enviar solo los 3 rechazados — CerteCF reinicia el progreso.
+  • Los que ya estaban OK saldrán "Aceptado" (secuenciaUtilizada).
+  • Los corregidos deben quedar "Aceptado" en la misma corrida.
+  • Portal (4 FC32): solo cuando API = 25/25.
+
+
+FLUJO CORRECTO AHORA (con fix E450001, E460010, E470010)
+--------------------------------------------------------
+
+  cd C:\Users\claud\OneDrive\Desktop\dgi
+
+  1) Actualizar parchear-xml-sin-firmar.js y los 3 XML corregidos en
+     salida\ecf-sin-firmar\ (E450001, E460010, E470010) desde S3.
+
+  2) Un solo comando (parchea + firma 29 + envía 25 API):
+
+     npm run reenviar-api-25
+
+  O paso a paso:
+
+     npm run preparar
+     npm run firmar-todos
+     npm run enviar-api          ← los 25, no enviar-api-pendientes
+
+  3) Verificar JSON: 25 resultados, todos estado "Aceptado".
+
+  4) ENTONCES portal — 4 archivos desde salida\ecf-firmados\:
+     131631088E320000000011.xml … 014.xml
+     Sección: Facturas de consumo < 250Mil (raíz ECF, NO RFCE).
+
+
+NO USAR
+-------
+  npm run enviar-3-rechazados     ← reinicia CerteCF
+  npm run enviar-api-pendientes   ← no manda el lote completo
+  App Firma DGII                  ← corrompe <eNCF>
+
+
+CORRECCIÓN APLICADA (3 rechazados)
+----------------------------------
+  E450001  PrecioUnitarioItem 30000.00 (no .0000)
+  E460010  precios con 2 decimales (350.00, etc.)
+  E470010  precios con 2 decimales (1500.00, etc.)
+
+
+ARCHIVOS S3 ACTUALIZADOS
+------------------------
+  parchear-xml-sin-firmar.js
+  enviar-set-firmados.js
+  package.json
+  salida/ecf-sin-firmar/131631088E450000000001.xml
+  salida/ecf-sin-firmar/131631088E460000000010.xml
+  salida/ecf-sin-firmar/131631088E470000000010.xml
+
+Base: https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/
+
+
+ORDEN API (25)
+--------------
+  4 RFCE → 21 ECF (ver manifest ordenEnvio)
+
+Soporte: Elmer

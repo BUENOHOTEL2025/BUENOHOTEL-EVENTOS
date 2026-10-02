@@ -1,0 +1,38 @@
+Claudia — RECHAZO QR Paso 5: nombre emisor incorrecto
+========================================================
+
+MOTIVO DGII:
+  Al escanear el QR, el nombre del emisor no coincide con la factura impresa.
+
+CAUSA:
+  La factura mostraba "BUENOHOTEL, S.R.L." pero el XML firmado enviado a DGII
+  en Paso 4 todavía decía "DOCUMENTOS ELECTRONICOS DE 02" (nombre de prueba).
+  El QR consulta DGII y devuelve el nombre del XML, no el de la RI impresa.
+
+SOLUCION (en orden, todos obligatorios):
+
+  1) Parchear XML sin firmar:
+       node parchear-xml-sin-firmar.js
+     (o doble clic: ejecutar-corregir-qr-paso5.bat)
+
+  2) Firmar de nuevo los XML parcheados:
+       npm run firmar-todos
+
+  3) REENVIAR Paso 4 a DGII (sin esto el QR sigue mal):
+       npm run enviar-api-pendientes
+
+  4) Regenerar PDF Paso 5:
+       npm install
+       npm run paso5
+
+  5) Verificar: abrir un PDF, escanear QR → debe decir BUENOHOTEL, S.R.L.
+
+  6) Subir los 11 PDF nuevos al portal Paso 5.
+
+Descarga herramientas corregidas:
+  https://booking.buenohotel.com.do/dgii/bh-paso5-formato-dgii-v6.zip
+  https://eventos.buenohotel.com.do/descargas-dgii/bh-paso5-formato-dgii-v6.zip
+
+IMPORTANTE:
+  No sirve solo regenerar el PDF si no se reenvía Paso 4 con XML corregido.
+  Tipo 32 menor 250k: también parchea rfce-sin-firmar y reenvía el RFCE.

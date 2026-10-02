@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ECF>
+  <Encabezado>
+    <Version>1.0</Version>
+    <IdDoc>
+      <TipoeCF>32</TipoeCF>
+      <ENCF>E320000000014</ENCF>
+      <IndicadorMontoGravado>0</IndicadorMontoGravado>
+      <TipoIngresos>01</TipoIngresos>
+      <TipoPago>1</TipoPago>
+    </IdDoc>
+    <Emisor>
+      <RNCEmisor>131631088</RNCEmisor>
+      <RazonSocialEmisor>DOCUMENTOS ELECTRONICOS PRUEBA FACTURA DE CONSUMO MENOR 250MIL</RazonSocialEmisor>
+      <NombreComercial>DOCUMENTOS ELECTRONICOS</NombreComercial>
+      <DireccionEmisor>AVE. ISABEL AGUIAR NO. 269, ZONA INDUSTRIAL DE HERRERA</DireccionEmisor>
+      <TablaTelefonoEmisor>
+        <TelefonoEmisor>809-472-7676</TelefonoEmisor>
+      </TablaTelefonoEmisor>
+      <CorreoEmisor>DOCUMENTOSELECTRONICOS@123.COM</CorreoEmisor>
+      <FechaEmision>01-04-2020</FechaEmision>
+    </Emisor>
+    <Comprador>
+      <RNCComprador>131880681</RNCComprador>
+      <RazonSocialComprador>DOCUMENTOS ELECTRONICOS DE 03</RazonSocialComprador>
+      <CorreoComprador>DOCUMENTOSELECTRONICOSDE0612345678969789@123.COM</CorreoComprador>
+      <DireccionComprador>AVE. ISABEL AGUIAR NO. 269, ZONA INDUSTRIAL DE HERRERA</DireccionComprador>
+      <MunicipioComprador>170203</MunicipioComprador>
+      <ProvinciaComprador>170000</ProvinciaComprador>
+      <TelefonoAdicional>809-472-7676</TelefonoAdicional>
+    </Comprador>
+    <Totales>
+      <MontoGravadoTotal>10100.00</MontoGravadoTotal>
+      <MontoGravadoI1>10100.00</MontoGravadoI1>
+      <ITBIS1>18</ITBIS1>
+      <TotalITBIS>1818.00</TotalITBIS>
+      <TotalITBIS1>1818.00</TotalITBIS1>
+      <MontoTotal>11918.00</MontoTotal>
+    </Totales>
+  </Encabezado>
+  <DetallesItems>
+    <Item>
+      <NumeroLinea>1</NumeroLinea>
+      <IndicadorFacturacion>1</IndicadorFacturacion>
+      <NombreItem>Articulos de belleza</NombreItem>
+      <IndicadorBienoServicio>1</IndicadorBienoServicio>
+      <CantidadItem>1</CantidadItem>
+      <UnidadMedida>55</UnidadMedida>
+      <PrecioUnitarioItem>10000.00</PrecioUnitarioItem>
+      <MontoItem>10000.00</MontoItem>
+    </Item>
+    <Item>
+      <NumeroLinea>2</NumeroLinea>
+      <IndicadorFacturacion>1</IndicadorFacturacion>
+      <NombreItem>Queso</NombreItem>
+      <IndicadorBienoServicio>1</IndicadorBienoServicio>
+      <CantidadItem>1</CantidadItem>
+      <UnidadMedida>23</UnidadMedida>
+      <PrecioUnitarioItem>100.00</PrecioUnitarioItem>
+      <MontoItem>100.00</MontoItem>
+    </Item>
+  </DetallesItems>
+  <FechaHoraFirma>26-06-2026 14:33:17</FechaHoraFirma>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+      <Reference URI="">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <DigestValue>ZIGubtGtCR659sq/QFJWbgwRZvsfWkxERQ3DNbXkKHQ=</DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue>Ja0jSxgYzD2iL47TiH9ARFu7F9E0HudFFSnF5jamyvJ26qYAQAqvPRGtXnk/4SNK08TfVw+4yG8LzvcnV6hAKINXXrQnDqTkaa1WHn6W7tu8v6/4DKpHhB5uYbK+S6oQxEfPsXIZA9e0UEgQmwULgzWnVjUfwD3WqWOxGG4zmL5GMmqtIdG/SftYGbEPvSHHCtysEQqlm1XWKbz18V2JF5TJuKgiUvH/4/5+r1jHadQaGBZGSyME9PuZgIOlm6eRZvnrqXbuNdJ+oNQvtrIK7uD1ZNGJtyHInl7LwNQstyNGU+xP56bkAceuj5Vlmd3XsstY49+qLFIWkKkTQ71Qeg==</SignatureValue>
+    <KeyInfo>
+      <X509Data>
+        <X509Certificate>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</X509Certificate>
+      </X509Data>
+    </KeyInfo>
+  </Signature>
+</ECF>

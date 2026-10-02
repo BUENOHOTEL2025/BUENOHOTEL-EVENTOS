@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+!.env.cert.example
+*.p12
+*.pfx
+*.pem
+*.key
+!**/__tests__/sample/*.key
+
+# Empaques / artefactos
+*.zip
+deploy-lambda.zip
+_tmp-*.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Sistema
+.DS_Store
+Thumbs.db

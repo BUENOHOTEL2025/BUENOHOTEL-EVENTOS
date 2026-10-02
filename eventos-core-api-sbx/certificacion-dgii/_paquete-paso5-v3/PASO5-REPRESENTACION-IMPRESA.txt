@@ -1,0 +1,47 @@
+PASO 5 — Representación impresa (FORMATO DGII)
+==============================================
+
+DGII rechazó el formato anterior. Las RI deben seguir los modelos ilustrativos:
+https://dgii.gov.do/cicloContribuyente/facturacion/comprobantesFiscalesElectronicosE-CF/Documentacin%20sobre%20eCF/Informe%20y%20Descripci%C3%B3n%20T%C3%A9cnica/Representaci%C3%B3n%20Impresa%20(Modelos%20ilustrativos).pdf
+
+Modelos usados en certificación BUENOHOTEL:
+  1.1  → tipos 31, 41, 43, 44, 45, 46, 47
+  1.5  → tipo 33 (Nota de Débito)
+  1.6  → tipo 34 (Nota de Crédito)
+  2.1  → tipo 32 >= RD$250mil
+  2.2  → tipo 32 < RD$250mil
+
+Regla clave (modelo 1.1): columna Valor = precio × cantidad SIN ITBIS.
+
+Generar en dgi\:
+  npm install
+  npm run paso5-generar
+
+Salida: salida\representacion-impresa\
+  → Abrir cada HTML → Ctrl+P → Guardar como PDF
+  → Subir los 11 PDF al portal Paso 5
+
+Requisito: XML firmados en salida\ecf-firmados\
+
+Mapeo portal → e-NCF (+200):
+  tipo 31          E310000000204   modelo 1.1
+  tipo 32 >= 250k  E320000000206   modelo 2.1
+  tipo 33          E330000000201   modelo 1.5
+  tipo 34          E340000000202   modelo 1.6
+  tipo 41          E410000000201   modelo 1.1
+  tipo 43          E430000000210   modelo 1.1
+  tipo 44          E440000000207   modelo 1.1
+  tipo 45          E450000000201   modelo 1.1
+  tipo 46          E460000000209   modelo 1.1
+  tipo 47          E470000000208   modelo 1.1
+  tipo 32 < 250k   E320000000211   modelo 2.2
+
+QR abajo-izquierda · Código de Seguridad · Fecha Firma
+Totales abajo-derecha: Subtotal Gravado, Total ITBIS, Total
+
+OBLIGATORIO en encabezado izquierdo:
+  Razón Social Emisor: (del XML firmado)
+  Nombre Comercial: (si aplica, distinto a razón social)
+
+Al imprimir PDF: verificar que el bloque del emisor se vea completo arriba.
+  Ctrl+P → márgenes predeterminados → incluir gráficos de fondo.

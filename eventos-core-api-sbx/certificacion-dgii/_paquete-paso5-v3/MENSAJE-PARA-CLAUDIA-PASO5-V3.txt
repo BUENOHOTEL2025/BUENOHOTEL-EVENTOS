@@ -1,0 +1,21 @@
+Claudia — Paso 5 REINTENTO v3 (razón social emisor)
+
+DGII rechazó: "Debe colocar el nombre o razón social del emisor".
+
+Descarga:
+  https://booking.buenohotel.com.do/dgii/bh-paso5-formato-dgii-v3.zip
+
+  Alternativa:
+  https://eventos.buenohotel.com.do/descargas-dgii/bh-paso5-formato-dgii-v3.zip
+
+Instalación:
+  1) Descomprime SOBRE dgi\
+  2) npm install
+  3) npm run paso5-generar
+
+Al imprimir PDF (Ctrl+P):
+  - Verifique que arriba-izquierda diga "Razón Social Emisor: ..."
+  - Márgenes: Predeterminado
+  - Activar "Gráficos de fondo" si el navegador lo ofrece
+
+Luego subir los 11 PDF al portal Paso 5.

@@ -1,0 +1,25 @@
+{
+  "name": "buenohotel-dgii-certificacion-envio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "enviar": "node enviar-set-firmados.js",
+    "enviar-pendientes": "node enviar-set-firmados.js --omitir-aceptados",
+    "enviar-prueba": "node enviar-prueba.js",
+    "verificar": "node enviar-set-firmados.js --dry-run",
+    "validar-sin-firmar": "node validar-xml-sin-firmar.js",
+    "generar-xml": "node generar-xml-sin-firmar.js",
+    "generar-rfce": "node generar-rfce-desde-ecf-firmados.js",
+    "parchear-xml": "node parchear-xml-sin-firmar.js",
+    "renombrar-firmados": "node renombrar-firmados.js",
+    "firmar-p12": "node firmar-xml-p12.js",
+    "enviar-notas": "node enviar-notas-pendientes.js",
+    "notas": "node firmar-xml-p12.js --pendientes-notas && node enviar-notas-pendientes.js",
+    "notas-restante": "node notas-restante.js"
+  },
+  "dependencies": {
+    "dgii-ecf": "^1.8.0",
+    "dotenv": "^16.0.3"
+  }
+}

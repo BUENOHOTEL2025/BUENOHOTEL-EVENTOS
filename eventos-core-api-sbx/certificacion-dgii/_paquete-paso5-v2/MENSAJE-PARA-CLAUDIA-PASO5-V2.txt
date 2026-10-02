@@ -1,0 +1,22 @@
+Claudia — Paso 5 REINTENTO (formato DGII oficial)
+
+DGII rechazó el formato anterior. Descarga herramientas actualizadas:
+
+  https://booking.buenohotel.com.do/dgii/bh-paso5-formato-dgii-v2.zip
+
+  Alternativa:
+  https://eventos.buenohotel.com.do/descargas-dgii/bh-paso5-formato-dgii-v2.zip
+
+Instalación:
+  1) Descomprime SOBRE dgi\
+  2) npm install
+  3) npm run paso5-generar
+
+  (o ejecutar-paso5-generar.bat)
+
+Luego: abrir salida\representacion-impresa\index.html
+  → cada HTML → Ctrl+P → PDF → subir al portal Paso 5
+
+Los XML deben estar en salida\ecf-firmados\ (Paso 4).
+
+Detalle: PASO5-REPRESENTACION-IMPRESA.txt

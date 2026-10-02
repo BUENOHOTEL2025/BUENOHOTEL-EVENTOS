@@ -1,0 +1,54 @@
+BUENOHOTEL — Enviar certificación DGII (Paso 2)
+================================================
+
+Este programa envía los 29 XML que usted ya firmó al portal de
+certificación de DGII (ambiente CerteCF). NO vuelve a firmar nada;
+solo usa su certificado .p12 para identificarse ante DGII.
+
+REQUISITOS
+----------
+1. Windows con Node.js instalado: https://nodejs.org (version LTS)
+2. Su certificado digital .p12 y su contraseña
+3. Esta carpeta completa "certificacion-dgii" con:
+   - salida\rfce-firmados\  (4 archivos .xml)
+   - salida\ecf-firmados\   (25 archivos .xml)
+
+PASO 1 — Configurar certificado
+-------------------------------
+1. Copie el archivo ".env.cert.example"
+2. Renombre la copia a ".env.cert"
+3. Abra ".env.cert" con el Bloc de notas y complete:
+
+   DGII_FE_CERT_P12_PATH=C:\ruta\completa\a\su\certificado.p12
+   DGII_FE_CERT_PASSWORD=su_clave_aqui
+
+   (Use la misma ruta y clave que usa con la App de Firma DGII)
+
+PASO 2 — Ejecutar
+-----------------
+Doble clic en:  ejecutar-envio-dgii.bat
+
+La primera vez instalará dependencias (1-2 minutos).
+Luego enviará los 29 comprobantes en este orden:
+  1) 4 resúmenes RFCE
+  2) 25 comprobantes ECF
+
+PASO 3 — Resultado
+------------------
+Al terminar, abra la carpeta:
+  salida\envio-resultados\
+
+Ahí estará un archivo envio-XXXX.json con el detalle.
+Cada comprobante debe decir estado "Aceptado".
+
+Envíele a Elmer una captura de pantalla del final del programa
+o el archivo .json del resultado.
+
+SI HAY ERROR
+------------
+- Verifique que .env.cert tenga la ruta correcta al .p12
+- Verifique la contraseña del certificado
+- Verifique conexión a internet
+- No cierre la ventana negra hasta que diga "pause"
+
+SOPORTE: escribir a Elmer con captura del error.

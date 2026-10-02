@@ -1,0 +1,31 @@
+{
+  "rnc": "131631088",
+  "razonSocial": "BUENOHOTEL SRL",
+  "solicitud": "6009965772",
+  "autorizacion": "6005483665",
+  "fechaAutorizacion": "2026-09-09T18:00:02-04:00",
+  "fechaVigencia": "2027-12-31",
+  "fechaVencimientoSecuencia": "31-12-2027",
+  "estatus": "APROBADA",
+  "tipoUso": "ELECTRÓNICA",
+  "fuente": [
+    "ComprobantesSolicitud_6009965772.csv",
+    "ComprobantesSolicitud_6009965772.xml"
+  ],
+  "rangos": [
+    {
+      "tipoeCF": 31,
+      "descripcion": "Factura de Crédito Fiscal Electrónico",
+      "numeroDesde": "E310000000001",
+      "numeroHasta": "E310000000015",
+      "secuenciaDesde": 1,
+      "secuenciaHasta": 15,
+      "cantidadAprobada": 15
+    }
+  ],
+  "notas": [
+    "No llegó rango de tipo 32 (consumo electrónico) en esta solicitud.",
+    "El envío a DGII no es automático: Claudia/admin genera el comprobante y pulsa Emitir cuando autorice.",
+    "Al pasar a PROD hay que dejar lastAssigned=0 para que el primero sea E310000000001."
+  ]
+}

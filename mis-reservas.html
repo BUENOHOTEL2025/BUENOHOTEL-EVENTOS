@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="es" class="bh-remote-chrome">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Reservas - BuenoHotel Eventos</title>
+  <link rel="stylesheet" href="styles.css?v=20260923c" />
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20260926x">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Favicon / App Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logo/logo-32.png?v=20260921j">
+  <link rel="shortcut icon" href="assets/logo/logo-32.png?v=20260921j">
+  <style>
+    body { background-color: #f4f4f4; font-family: Roboto, Arial, Helvetica, sans-serif; margin: 0; }
+    /* Evitar doble barra de scroll: cuando el modal está abierto, bloquear scroll de fondo */
+    body.modal-open { overflow: hidden; }
+    .main-content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .page-title { font-size: 1.8rem; font-weight: 800; color: #222; margin: 16px 0 10px; }
+    .page-subtitle { color: #555; margin-bottom: 24px; }
+    .reservas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+    .card { background: #fff; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+    .card { cursor: pointer; }
+    .card-img { width: 100%; height: 160px; object-fit: cover; background: #f2f2f2; }
+    .card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .card-cta { display:inline-flex; align-items:center; gap:6px; color:#FBB03B; font-weight:700; }
+    .card:focus { outline: 3px solid #FBB03B; outline-offset: 2px; }
+    .card-title { font-weight: 800; color: #111; font-size: 1.05rem; }
+    .card-meta { color: #555; font-size: 0.95rem; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 0.8rem; background: #fff3da; color: #8b5b00; border: 1px solid #ffd17a; }
+    .state { text-align: center; color: #555; padding: 36px 12px; }
+    .state .spinner { width: 26px; height: 26px; border: 3px solid rgba(0,0,0,0.12); border-top-color: #FBB03B; border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite; margin-bottom: 10px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .filters select, .filters input { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; }
+    /* El overlay del modal maneja el scroll vertical; el body queda fijo */
+    .evento-modal { position: fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); z-index: 11000; padding: 20px; overflow-y: auto; }
+    body.modal-open .wa-float { display: none !important; pointer-events: none !important; }
+    /* El contenido del modal no agrega un scroll propio para evitar doble barra visual */
+    .evento-modal-content { width: min(820px, 95vw); background:#fff; border:1px solid #eee; border-radius: 14px; box-shadow: 0 20px 45px rgba(0,0,0,.25); position: relative; }
+    .evento-modal-close { position:absolute; top:12px; right:14px; cursor:pointer; font-size:22px; line-height:1; color:#333; }
+    .evento-modal-body { padding: 20px 22px; }
+    .modal-title { font-size: 1.4rem; font-weight: 800; color:#111; margin:0 0 8px 0; }
+    .kv { display:flex; gap:8px; margin: 6px 0; color:#444; }
+    .kv .k { width:140px; color:#666; }
+    .kv .v { flex:1; font-weight:600; color:#222; }
+    .payments { margin-top: 10px; }
+    .payments li { padding:10px 0; border-bottom:1px solid #f1f1f1; }
+    .payments li:last-child { border-bottom: none; }
+    .badge.pending { background:#fff3da; color:#8b5b00; border:1px solid #ffd17a; }
+    .badge.confirmed { background:#e6f4ea; color:#1f7a3d; border:1px solid #b7e1c1; }
+    .badge.canceled { background:#fdeaea; color:#a11313; border:1px solid #f2b8b8; }
+    .modal-header { padding:18px 22px 12px; border-bottom:1px solid #f1f1f1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:8px; }
+    .modal-header h2 { margin:0; font-size:1.5rem; font-weight:800; color:#111; }
+    .modal-header .right { display:flex; align-items:center; gap:10px; }
+    .btn-abonar { display:inline-flex; align-items:center; justify-content:center; background:#fbb03b; color:#222; border:none; border-radius:20px; padding:10px 22px; font-weight:700; font-size:0.98rem; font-family:Arial, Helvetica, sans-serif; cursor:pointer; box-shadow:none; transition:background-color 0.15s ease; }
+    .btn-abonar:hover { background:#e19a2e; color:#222; }
+    .btn-abonar:hover { background:#ffc24d; box-shadow:0 6px 18px rgba(0,0,0,0.16); transform:translateY(-1px); }
+    .btn-abonar:active { background:#f5a72f; box-shadow:0 3px 8px rgba(0,0,0,0.2); transform:translateY(0); }
+    .btn-abonar:focus-visible { outline:3px solid #111; outline-offset:2px; }
+    .meta-grid { display:grid; grid-template-columns: 1fr; gap:8px 16px; margin-top:12px; }
+    @media (max-width:560px){ .meta-grid { grid-template-columns: 1fr; } }
+    .meta-item { display:flex; align-items:center; gap:12px; color:#444; }
+    .meta-item .label { color:#666; min-width: 160px; }
+    .meta-item .value { font-weight:700; color:#222; }
+    .divider { height:1px; background:#f1f1f1; margin:14px 0; }
+    .progress { height:8px; background:#f1f1f1; border-radius:999px; overflow:hidden; }
+    .progress .bar { height:100%; background:#22c55e; width:0; }
+    .abonos-list { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+    .abono-card { border:1px solid #f1f1f1; border-radius:10px; padding:10px 12px; background:#fafafa; }
+    .abono-card .row1 { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .abono-card .monto { font-weight:800; color:#111; }
+    .abono-card .row2 { color:#666; font-size:.9rem; margin-top:4px; }
+    .toast-warning { border-color: #f59e0b; }
+    .toast-info { border-color: #1565c0; }
+    .btn-factura-card { display:inline-block; margin-top:8px; padding:8px 14px; background:#1565c0; color:#fff !important; border-radius:8px; font-weight:700; font-size:0.88rem; text-decoration:none; border:0; cursor:pointer; }
+    .btn-factura-card:hover { background:#0d47a1; color:#fff !important; }
+    .btn-factura-card.wait { background:#64748b; }
+    .card-factura-hint { margin-top:8px; font-size:0.8rem; color:#555; line-height:1.35; padding:8px 10px; background:#faf8f3; border-radius:8px; border-left:3px solid #FBB03B; }
+    .factura-box { margin-top:14px; padding:14px 16px; border-radius:10px; font-size:0.95rem; line-height:1.45; }
+    .factura-box.ok { background:#e8f4fd; border:1px solid #90caf9; color:#0d3c61; }
+    .factura-box.wait { background:#fffaf3; border:1px solid #ffd699; color:#4a3c28; }
+    .factura-box .btn-factura { display:inline-block; margin-top:10px; padding:10px 18px; background:#1565c0; color:#fff !important; border-radius:8px; font-weight:800; text-decoration:none; }
+    .factura-box.wait .small { font-size:0.85rem; margin-top:8px; opacity:0.95; }
+    .btn-whatsapp-factura { display:inline-block; margin-top:10px; padding:10px 18px; background:#25D366; color:#fff !important; border-radius:8px; font-weight:800; text-decoration:none; border:1px solid #128C7E; }
+    .btn-whatsapp-factura:hover { filter:brightness(0.95); color:#fff !important; }
+    .btn-whatsapp-card { display:inline-block; margin-top:8px; padding:8px 14px; background:#25D366; color:#fff !important; border-radius:8px; font-weight:700; font-size:0.88rem; text-decoration:none; border:1px solid #128C7E; }
+    .btn-whatsapp-card:hover { filter:brightness(0.95); color:#fff !important; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+  <script src="js/auth.js?v=20260923c"></script>
+  <script src="https://buenohotel.com/js/config.js?v=20260929a"></script>
+  <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261002a"></script>
+  <script src="js/navbar.js?v=20260919m"></script>
+  <script src="js/payment.js?v=20260923c"></script>
+
+  <div class="main-content">
+    <div class="page-logo" style="text-align:center;margin:10px 0 8px;">
+      <img src="assets/logo/icono-buenohotel.png?v=20260926m" alt="BuenoHotel" style="height:56px;width:auto;display:inline-block;" />
+    </div>
+    <h1 class="page-title">Mis Reservas</h1>
+    <p class="page-subtitle">Tus eventos registrados. El <strong>comprobante fiscal</strong> solo se abre cuando administración lo <strong>configure y genere</strong>.</p>
+
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre de evento..." />
+      <select id="yearFilter">
+        <option value="">Todos los años</option>
+      </select>
+      <select id="statusFilter">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="pago">Pagados</option>
+      </select>
+    </div>
+
+    <div id="state" class="state">
+      <div class="spinner"></div>
+      <div>Cargando tus reservas...</div>
+    </div>
+
+    <div id="reservasGrid" class="reservas-grid" style="display:none;"></div>
+  </div>
+
+  <!-- Modal preview comprobante -->
+  <div id="factura-preview-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:10050; padding:14px;">
+    <div style="background:#fff; width:min(1100px, 96vw); height:min(92vh, 920px); margin:0 auto; border-radius:12px; overflow:hidden; box-shadow:0 10px 28px rgba(0,0,0,.25); display:flex; flex-direction:column;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-bottom:1px solid #eee;">
+        <div style="font-weight:900; color:#111;">Comprobante fiscal</div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+          <button type="button" id="factura-preview-download" class="btn-primary" style="padding:8px 12px;">Descargar</button>
+          <button type="button" id="factura-preview-print" class="btn-secondary" style="padding:8px 12px;">Imprimir / PDF</button>
+          <button type="button" id="factura-preview-whatsapp" class="btn-whatsapp-factura" style="margin-top:0;padding:8px 12px;">WhatsApp</button>
+          <button type="button" id="factura-preview-close" class="btn-secondary" style="padding:8px 12px;">Cerrar</button>
+        </div>
+      </div>
+      <div id="factura-preview-state" style="padding:10px 12px; font-size:13px; color:#444; border-bottom:1px solid #f0f0f0; display:none;"></div>
+      <iframe id="factura-preview-frame" title="Comprobante fiscal" style="border:0; width:100%; flex:1; background:#fff;"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // ======================
+    // Helpers básicos
+    // ======================
+    function dGet(val) {
+      if (val && typeof val === 'object') {
+        if ('S' in val) return val.S;
+        if ('N' in val) return Number(val.N);
+        if ('BOOL' in val) return !!val.BOOL;
+        if ('L' in val) return val.L.map(dGet);
+        if ('M' in val) {
+          const out = {};
+          for (const k in val.M) { out[k] = dGet(val.M[k]); }
+          return out;
+        }
+      }
+      return val;
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('es-DO', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    /** YYYY-MM-DD desde Dynamo, ISO o texto; evita desfase si ya es date-only */
+    function toDateOnlyIso(v) {
+      if (v == null || v === '') return '';
+      const s = String(dGet(v) || v).trim();
+      if (!s) return '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      if (s.includes('T')) return s.split('T')[0];
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return '';
+      return d.toISOString().slice(0, 10);
+    }
+
+    function addCalendarDaysIso(iso, deltaDays) {
+      if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      const [y, m, d] = iso.split('-').map(Number);
+      const dt = new Date(y, (m || 1) - 1, (d || 1) + deltaDays, 12, 0, 0);
+      if (isNaN(dt.getTime())) return iso;
+      const yy = dt.getFullYear();
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const dd = String(dt.getDate()).padStart(2, '0');
+      return `${yy}-${mm}-${dd}`;
+    }
+
+    function compareIsoDate(a, b) {
+      if (!a || !b) return 0;
+      return a < b ? -1 : a > b ? 1 : 0;
+    }
+
+    function canonicalEventRangeFromPlain(plain) {
+      const startRaw = dGet(plain.fecha_inicio) || dGet(plain.fechaInicio) || dGet(plain.fecha) || '';
+      const endRaw = dGet(plain.fecha_fin) || dGet(plain.fechaFin) || dGet(plain.fechaSalida) || '';
+      let start = toDateOnlyIso(startRaw);
+      let end = toDateOnlyIso(endRaw);
+      if (!start && !end) return { start: '', end: '' };
+      if (!start) start = end;
+      if (!end) end = start;
+      if (compareIsoDate(start, end) > 0) {
+        const t = start;
+        start = end;
+        end = t;
+      }
+      return { start, end };
+    }
+
+    let EVENT_FECHAS_MAP = {};
+
+    function buildEventosFechasMap(eventos) {
+      const map = {};
+      (eventos || []).forEach((raw) => {
+        const plain = dGet(raw) || raw;
+        const id =
+          raw && typeof raw.id === 'object' && raw.id.S
+            ? raw.id.S
+            : plain.id || plain.eventoId || '';
+        if (!id) return;
+        const range = canonicalEventRangeFromPlain(plain);
+        const diasAntes = parseInt(String(dGet(plain.dias_antes_entrada) || '0'), 10) || 0;
+        const diasDespues = parseInt(String(dGet(plain.dias_despues_salida) || '0'), 10) || 0;
+        map[id] = {
+          fechaInicio: range.start,
+          fechaFin: range.end,
+          diasAntes,
+          diasDespues
+        };
+      });
+      return map;
+    }
+
+    /**
+     * Fechas mostradas al cliente: siempre alineadas al evento actual del catálogo (panel admin).
+     * Solo se conservan fechas del registro si el evento permite ventana (días antes/después) y caen en rango válido.
+     */
+    function applyResolvedFechas(it) {
+      if (!it) return it;
+      const eventId = it.eventId || '';
+      const ev = EVENT_FECHAS_MAP[eventId];
+      let det = it.detalles || {};
+      if (det && typeof det === 'object' && det.M) det = dGet(det);
+      if (!det || typeof det !== 'object') det = {};
+
+      const regIn = toDateOnlyIso(det.fechaEntrada || det.checkIn || det.fecha_entrada);
+      const regOut = toDateOnlyIso(det.fechaSalida || det.checkOut || det.fecha_salida);
+
+      if (!ev || (!ev.fechaInicio && !ev.fechaFin)) {
+        it.fechaEntrada = regIn || it.fechaEntrada || '';
+        it.fechaSalida = regOut || it.fechaSalida || '';
+        return it;
+      }
+
+      const evIn = ev.fechaInicio || ev.fechaFin;
+      const evOut = ev.fechaFin || ev.fechaInicio || evIn;
+
+      let entrada = evIn;
+      let salida = evOut;
+
+      if (ev.diasAntes > 0 && regIn) {
+        const minIn = addCalendarDaysIso(evIn, -ev.diasAntes);
+        if (compareIsoDate(regIn, minIn) >= 0 && compareIsoDate(regIn, evIn) <= 0) entrada = regIn;
+      }
+
+      if (ev.diasDespues > 0 && regOut) {
+        const maxOut = addCalendarDaysIso(evOut, ev.diasDespues);
+        if (compareIsoDate(regOut, evOut) >= 0 && compareIsoDate(regOut, maxOut) <= 0) salida = regOut;
+      }
+
+      it.fechaEntrada = entrada;
+      it.fechaSalida = salida;
+      return it;
+    }
+
+    function escapeHtml(s){
+      return String(s||'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+    }
+
+    function facturaBorradorUrl(registroId) {
+      const rid = String(registroId || '').trim();
+      if (!rid) return '#';
+      let base = 'https://core-api.buenohotel.com.do';
+      try {
+        if (window.getAuthApiBase) {
+          const b = window.getAuthApiBase();
+          if (b) base = String(b).replace(/\/$/, '');
+        }
+      } catch (_) {}
+      return `${base}/api/registrations/${encodeURIComponent(rid)}/factura-borrador?formato=html`;
+    }
+
+    function toastComprobante(title, message, type, duration) {
+      try {
+        if (window.showToast) {
+          window.showToast({ title, message, type: type || 'info', duration: duration || 4500 });
+          return;
+        }
+      } catch (_) {}
+      alert(message);
+    }
+
+    const MSG_COMPROBANTE_NO_LISTO = 'Tu comprobante fiscal aún no está listo. Administración lo publica aquí cuando lo configure y genere.';
+
+    function comprobanteLiberadoParaCliente(dDet) {
+      if (!dDet || typeof dDet !== 'object') return false;
+      const detalles = dDet.M ? dGet(dDet) : dDet;
+      if (!detalles || typeof detalles !== 'object') return false;
+      const flag = (raw) => {
+        const v = dGet(raw);
+        const val = v !== undefined && v !== null ? v : raw;
+        return val === true || val === 'true' || String(val).toLowerCase() === 'on';
+      };
+      return flag(detalles.permite_ver_comprobante_cliente) && flag(detalles.comprobanteGeneradoPorAdmin);
+    }
+
+    window.consultarComprobanteCliente = function consultarComprobanteCliente(registroId, listo) {
+      const rid = String(registroId || '').trim();
+      if (!rid) {
+        toastComprobante('Comprobante fiscal', 'No encontramos este registro.', 'error');
+        return;
+      }
+      // Siempre consultar el API: si admin ya habilitó, el cliente debe verla
+      // aunque la lista de reservas aún no tenga el flag actualizado.
+      openFacturaBorradorHtml(rid);
+    };
+
+    async function openFacturaBorradorHtml(registroId) {
+      const rid = String(registroId || '').trim();
+      if (!rid) return;
+      if (!window.auth || !window.auth.isAuthenticated || !window.auth.isAuthenticated()) {
+        toastComprobante('Inicia sesión', 'Inicia sesión para ver tu comprobante fiscal.', 'warning');
+        return;
+      }
+      toastComprobante('Comprobante fiscal', 'Abriendo el documento generado por administración…', 'info', 2500);
+      const token = window.auth.getAuthToken();
+      const bases = getApiBaseCandidates();
+      let lastErr = null;
+      for (const base of bases) {
+        try {
+          const url = `${base}/api/registrations/${encodeURIComponent(rid)}/factura-borrador?formato=html`;
+          const resp = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+          const ct = String(resp.headers.get('content-type') || '');
+          if (resp.status === 401) {
+            toastComprobante('Inicia sesión', 'Inicia sesión para ver tu comprobante fiscal.', 'warning');
+            return;
+          }
+          if (resp.status === 403 || resp.status === 404) {
+            let msg = MSG_COMPROBANTE_NO_LISTO;
+            if (ct.includes('json')) {
+              const data = await resp.json().catch(() => null);
+              if (data?.message) msg = String(data.message);
+            }
+            toastComprobante('Comprobante fiscal', msg, 'warning', 6500);
+            return;
+          }
+          if (!resp.ok) {
+            lastErr = new Error(`HTTP ${resp.status}`);
+            continue;
+          }
+          const html = await resp.text();
+          if (String(html || '').trim().startsWith('{')) {
+            try {
+              const data = JSON.parse(html);
+              toastComprobante('Comprobante fiscal', data.message || MSG_COMPROBANTE_NO_LISTO, 'warning', 6500);
+            } catch (_) {
+              toastComprobante('Comprobante fiscal', MSG_COMPROBANTE_NO_LISTO, 'warning', 6500);
+            }
+            return;
+          }
+          const modal = document.getElementById('factura-preview-modal');
+          const frame = document.getElementById('factura-preview-frame');
+          const st = document.getElementById('factura-preview-state');
+          const btnClose = document.getElementById('factura-preview-close');
+          const btnPrint = document.getElementById('factura-preview-print');
+          const btnDl = document.getElementById('factura-preview-download');
+          if (!modal || !frame || !btnClose || !btnPrint || !btnDl) {
+            toastComprobante('Comprobante fiscal', 'No se pudo abrir el documento.', 'error');
+            return;
+          }
+          st.style.display = 'block';
+          st.textContent = 'Puedes imprimir, guardar como PDF (Imprimir → Guardar como PDF) o descargar el archivo para enviarlo por correo o WhatsApp.';
+          modal.style.display = 'block';
+          document.body.classList.add('modal-open');
+          frame.srcdoc = html;
+          toastComprobante('Comprobante listo', 'Este es tu comprobante fiscal (configurado por administración).', 'success', 4000);
+
+          const close = () => {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            try { frame.srcdoc = '<!doctype html><html><body></body></html>'; } catch(_) {}
+          };
+
+          function downloadFacturaCliente() {
+            const blob = new Blob([html || ''], { type: 'text/html;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `comprobante-${rid}.html`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (_) {} }, 1500);
+          }
+
+          const btnWaShare = document.getElementById('factura-preview-whatsapp');
+          btnClose.onclick = close;
+          btnPrint.onclick = () => { try { frame.contentWindow && frame.contentWindow.print(); } catch(_) {} };
+          btnDl.onclick = () => {
+            downloadFacturaCliente();
+            toastComprobante('Descargado', 'Archivo listo. Para PDF usa Imprimir → Guardar como PDF. Puedes adjuntarlo en correo o WhatsApp.', 'success', 5000);
+          };
+          if (btnWaShare) {
+            btnWaShare.onclick = () => {
+              downloadFacturaCliente();
+              const msg = 'Te comparto el comprobante fiscal de BuenoHotel Eventos. Adjunto el archivo que acabo de descargar.';
+              window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+            };
+          }
+          return;
+        } catch (e) {
+          lastErr = e;
+          continue;
+        }
+      }
+      toastComprobante('Comprobante fiscal', `No se pudo cargar el comprobante. ${lastErr?.message || ''}`, 'error', 5000);
+    }
+
+    function whatsappRecordarComprobanteLink(displayName, registroId, codigoCorto) {
+      const wa = (typeof window !== 'undefined' && window.WHATSAPP_LINK) ? String(window.WHATSAPP_LINK).replace(/\/$/, '') : 'https://wa.me/18093034991';
+      const ev = String(displayName || 'Evento');
+      const rid = String(registroId || '').trim();
+      const cod = String(codigoCorto || '').trim();
+      const msg = `Hola, solicito que configuren y generen mi comprobante fiscal para verlo en Mis reservas.\nEvento: ${ev}\nRegistro: ${rid}${cod ? `\nCódigo: ${cod}` : ''}`;
+      return `${wa}?text=${encodeURIComponent(msg)}`;
+    }
+
+    function mapEstadoClass(e){
+      const s = String(e||'').toLowerCase();
+      if (s==='confirmado' || s==='confirmada' || s==='aprobado' || s==='pago' || s==='pagado') return 'badge confirmed';
+      if (s==='cancelado' || s==='cancelada') return 'badge canceled';
+      return 'badge pending';
+    }
+
+    function formatEstadoLabel(e){
+      const s = String(e||'').toLowerCase();
+      if (s === 'pago' || s === 'pagado') return 'Pagado';
+      return String(e||'');
+    }
+
+    function normalizeReserva(r){
+      const nombre = (r?.detalles?.eventoNombre) || r?.eventoNombre || r?.eventName || r?.eventId || r?.eventoId || 'Evento';
+      const fecha = r?.fechaRegistro || r?.fecha || '';
+      const fechaEntrada = r?.detalles?.fechaEntrada || r?.detalles?.fecha_entrada || r?.fechaEntrada || '';
+      const fechaSalida = r?.detalles?.fechaSalida || r?.detalles?.fecha_salida || r?.fechaSalida || '';
+      let year = '';
+      try { const d = new Date(fecha); if (!isNaN(d.getTime())) year = String(d.getFullYear()); } catch(_) {}
+      return {
+        id: r?.id || '',
+        eventId: r?.eventId || r?.eventoId || '',
+        codigoCorto: r?.codigoCorto || r?.codigo || '',
+        codigo: r?.codigo || '',
+        nombre,
+        estado: r?.estado || 'pendiente',
+        metodoPago: r?.metodoPago || ((Array.isArray(r?.pagos) && r.pagos[0]?.metodo) || ''),
+        fecha,
+        fechaEntrada,
+        fechaSalida,
+        year,
+        totalAprobado: r?.totalAprobado || 0,
+        pagos: Array.isArray(r?.pagos) ? r.pagos : []
+      };
+    }
+
+    function sumMontos(pagos){
+      try { return (pagos||[]).reduce((acc,p)=> acc + Number(p?.monto||0), 0); } catch(_) { return 0; }
+    }
+
+    function groupByEvent(items){
+      const map = {};
+      for (const it of items){
+        const key = it.eventId || it.id;
+        if (!map[key]) { map[key] = { ...it, pagos: [...(it.pagos||[])] }; }
+        else {
+          map[key].pagos = [...map[key].pagos, ...(it.pagos||[])];
+          // Mantén la fecha más antigua como fecha de registro visual
+          try {
+            const a = new Date(map[key].fecha).getTime();
+            const b = new Date(it.fecha).getTime();
+            if (!isNaN(b) && (isNaN(a) || b < a)) map[key].fecha = it.fecha;
+          } catch(_) {}
+        }
+      }
+      return Object.values(map);
+    }
+
+    function ensureReservaModal(){
+      if (document.getElementById('reserva-modal')) return;
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `
+        <div id="reserva-modal" class="evento-modal" style="display:none;">
+          <div class="evento-modal-content">
+            <span class="evento-modal-close" id="reserva-modal-close">&times;</span>
+            <div class="evento-modal-body" id="reserva-modal-body"></div>
+          </div>
+        </div>`;
+      document.body.appendChild(wrap.firstElementChild);
+
+      const modalEl = document.getElementById('reserva-modal');
+      const closeEl = document.getElementById('reserva-modal-close');
+
+      function closeModal(){
+        modalEl.style.display = 'none';
+        document.body.classList.remove('modal-open');
+      }
+
+      closeEl.onclick = closeModal;
+    }
+
+    async function maybeRecomputeEstado(it, aprobado, montoTotal){
+      try {
+        const pagos = Array.isArray(it.pagos) ? it.pagos : [];
+        const pendiente = pagos
+          .filter(p => String(p?.estado||'').toLowerCase()==='pendiente')
+          .reduce((s,p)=> s + Number(p?.monto||0), 0);
+        const hipotetico = aprobado + pendiente;
+        if (!(hipotetico >= montoTotal && montoTotal > 0)) return;
+        const prev = String(it.estado||'').toLowerCase();
+        if (prev === 'pago' || prev === 'confirmado' || prev === 'confirmada') return;
+        if (!window.auth || !window.auth.isAuthenticated || !window.auth.isAuthenticated()) return;
+        const token = window.auth.getAuthToken();
+        const bases = getApiBaseCandidates();
+        let updated = null; let lastErr = null;
+        for (const base of bases){
+          try{
+            const idOrCode = it.id || it.codigo || it.codigoCorto || '';
+            const { resp, data } = await fetchJson(`${base}/api/registrations/${encodeURIComponent(idOrCode)}/recompute-estado`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!resp.ok) throw new Error(data?.message || `HTTP ${resp.status}`);
+            updated = data?.data || null;
+            break;
+          } catch(e){ lastErr = e; continue; }
+        }
+        if (!updated) return;
+        // Actualizar objeto y UI del modal
+        it.estado = updated.estado || it.estado;
+        const span = document.getElementById('estado-actual');
+        if (span){
+          span.textContent = escapeHtml(formatEstadoLabel(it.estado));
+          span.className = mapEstadoClass(it.estado);
+        }
+      } catch(_){ /* sin romper UI */ }
+    }
+
+    function openReservaModal(item){
+      ensureReservaModal();
+      const body = document.getElementById('reserva-modal-body');
+      const displayName = EVENT_NAME_MAP[item.eventId] || item.nombre;
+      const moneda = EVENT_MONEDA_MAP[item.eventId] || 'DOP';
+      const total = sumMontos(item.pagos);
+      // Calcular aprobado siempre desde pagos para tener estado actualizado (no fiarse de totalAprobado que puede estar desactualizado)
+      const aprobado = Array.isArray(item.pagos)
+        ? item.pagos.filter(p=> String(p?.estado||'').toLowerCase()==='aprobado').reduce((s,p)=> s + Number(p?.monto||0), 0)
+        : 0;
+      // Incluir tours en el monto total
+      const montoBase = Number(item?.montoTotal || item?.detalles?.precioTotal || item?.detalles?.montoTotal || item?.total || 0) || 0;
+      const montoTours = Number(item?.detalles?.totalTours || item?.totalTours || 0) || 0;
+      const montoTotal = montoBase + montoTours;
+      const fechaEntradaEvt = item?.fechaEntrada || item?.detalles?.fechaEntrada || '';
+      const fechaSalidaEvt = item?.fechaSalida || item?.detalles?.fechaSalida || '';
+      const pendiente = (Array.isArray(item.pagos)? item.pagos.filter(p=> String(p?.estado||'').toLowerCase()==='pendiente').reduce((s,p)=> s + Number(p?.monto||0), 0) : 0);
+      const restante = (montoTotal > 0 && aprobado < montoTotal)
+        ? Math.max(0, montoTotal - aprobado)
+        : 0;
+      const prog = montoTotal>0 ? Math.min(100, Math.round((aprobado/montoTotal)*100)) : 0;
+      const regIdFactura = String(item.id || item.codigoCorto || '').trim();
+      const facturaHref = escapeHtml(facturaBorradorUrl(regIdFactura));
+      const detalleRaw = item.detalles || {};
+      const comprobanteOk = comprobanteLiberadoParaCliente(detalleRaw);
+      const waRec = escapeHtml(whatsappRecordarComprobanteLink(displayName, item.id || '', item.codigoCorto || item.codigo || ''));
+      let bloqueFactura;
+      if (aprobado <= 0) {
+        bloqueFactura = `<div class="factura-box wait"><strong>Pagos en revisión</strong><p style="margin:6px 0 0;">Administración confirma cada ingreso. El comprobante fiscal no se genera hasta que el pago esté cubierto y ellos lo configuren.</p><button type="button" class="btn-factura" onclick="consultarComprobanteCliente('${escapeHtml(regIdFactura)}', false)">Ver comprobante</button><p class="small">Si lo pulsas ahora te avisamos: aún no está listo.</p></div>`;
+      } else if (comprobanteOk) {
+        bloqueFactura = `<div class="factura-box ok"><strong>Comprobante disponible</strong><p style="margin:6px 0 0;">Administración ya configuró y cargó tu documento (aunque no lo hayan enviado a DGII).</p><button type="button" class="btn-factura" onclick="consultarComprobanteCliente('${escapeHtml(regIdFactura)}', true)">Ver comprobante / imprimir</button></div>`;
+      } else {
+        bloqueFactura = `<div class="factura-box wait"><strong>Comprobante fiscal</strong><p style="margin:6px 0 0;">Aún no está publicado. Administración lo genera desde su panel (datos de la empresa).</p><button type="button" class="btn-factura" onclick="consultarComprobanteCliente('${escapeHtml(regIdFactura)}', false)">Ver comprobante</button><a class="btn-whatsapp-factura" href="${waRec}" target="_blank" rel="noopener">Recordar por WhatsApp</a><p class="small">Al pulsar Ver comprobante te confirmamos si ya está listo.</p></div>`;
+      }
+      // Calcular estado real basado en pagos aprobados vs precio total del evento
+      let estadoReal = 'pendiente';
+      if (montoTotal > 0 && aprobado >= montoTotal) {
+        estadoReal = 'pagado';
+      }
+      // El botón "Abonar" solo se muestra si aún falta por pagar
+      const showAbonar = !(montoTotal > 0 && aprobado >= montoTotal);
+      const btnAbonarHtml = showAbonar ? '<button type="button" id="btn-abonar-reserva" class="btn-primary btn-abonar">Abonar<\/button>' : '';
+      const estadoBadge = `<span id="estado-actual" class="${mapEstadoClass(estadoReal)}">${escapeHtml(formatEstadoLabel(estadoReal))}</span>`;
+      const pagosHtml = (item.pagos||[]).map(p=>{
+        const badge = `<span class="${mapEstadoClass(p.estado)}">${escapeHtml(p.estado||'')}</span>`;
+        return `
+          <div class="abono-card">
+            <div class="row1">
+              <div class="monto">${formatMoneda(p.monto, moneda)}</div>
+              ${badge}
+            </div>
+            <div class="row2">${escapeHtml(p.tipo||'abono')} · ${escapeHtml(p.metodo||'N/D')} · ${escapeHtml(formatDate(p.fecha||''))}</div>
+          </div>`;
+      }).join('');
+      body.innerHTML = `
+        <div class="modal-header">
+          <h2>${escapeHtml(displayName)}</h2>
+          <div class="right">
+            ${btnAbonarHtml}
+          </div>
+        </div>
+        <div class="evento-modal-body">
+          <div class="meta-grid">
+            <div class="meta-item"><div class="label">Evento</div><div class="value">${escapeHtml(displayName)}</div></div>
+            ${fechaEntradaEvt ? `<div class="meta-item"><div class="label">Fecha de entrada</div><div class="value">${escapeHtml(formatDate(fechaEntradaEvt))}</div></div>` : ''}
+            ${fechaSalidaEvt ? `<div class="meta-item"><div class="label">Fecha de salida</div><div class="value">${escapeHtml(formatDate(fechaSalidaEvt))}</div></div>` : ''}
+            <div class="meta-item"><div class="label">Código de registro</div><div class="value">${escapeHtml((item.codigoCorto || item.codigo || item.id || '').toString())}</div></div>
+            <div class="meta-item"><div class="label">Fecha de registro</div><div class="value">${escapeHtml(formatDate(item.fecha))}</div></div>
+            <div class="meta-item"><div class="label">Estado actual</div><div class="value">${estadoBadge}</div></div>
+            <div class="meta-item"><div class="label">Total evento${montoTours > 0 ? ' + tours' : ''}</div><div class="value">${formatMoneda(montoTotal, moneda)}${montoTours > 0 ? ` (${formatMoneda(montoBase, moneda)} + ${formatMoneda(montoTours, moneda)} tours)` : ''}</div></div>
+            <div class="meta-item"><div class="label">Abonado Aprobado</div><div class="value">${formatMoneda(aprobado, moneda)}</div></div>
+            ${restante>0 ? `<div class="meta-item"><div class="label">Restante para saldar</div><div class="value">${formatMoneda(restante, moneda)}<\/div><\/div>` : ''}
+            ${pendiente>0 ? `<div class="meta-item"><div class="label">Abonos Pendientes<\/div><div class="value">${formatMoneda(pendiente, moneda)}<\/div><\/div>` : ''}
+            ${(montoTotal>0 && pendiente>0)?`<div class="meta-item"><div class="label">Total si se aprueban pendientes<\/div><div class="value">${formatMoneda(aprobado+pendiente, moneda)}<\/div><\/div>`:''}
+          </div>
+          ${montoTotal>0?`
+            <div class="divider"></div>
+            <div class="meta-item"><div class="label">Progreso de pago</div><div class="value">${prog}%</div></div>
+            <div class="progress"><div class="bar" style="width:${prog}%"></div></div>
+          `:''}
+          <div class="divider"></div>
+          <div class="abonos-section">
+            <div style="font-weight:800; margin-bottom:6px;">Abonos</div>
+            <div class="abonos-list">
+              ${pagosHtml || '<div class="abono-card">No hay abonos registrados.</div>'}
+            </div>
+          </div>
+          ${bloqueFactura}
+        </div>`;
+      document.getElementById('reserva-modal').style.display='flex';
+      document.body.classList.add('modal-open');
+      // Intentar confirmar automáticamente si procede
+      if (false) { maybeRecomputeEstado(item, aprobado, montoTotal); }
+      // Botón "Abonar" dentro del modal: redirigir a la página principal de eventos
+      try {
+        const btnAbonar = document.getElementById('btn-abonar-reserva');
+        if (btnAbonar) {
+          btnAbonar.onclick = () => {
+            try {
+              const params = new URLSearchParams();
+              if (item.eventId) params.set('eventId', String(item.eventId));
+              if (item.codigoCorto || item.codigo || item.id) {
+                params.set('registro', String(item.codigoCorto || item.codigo || item.id));
+              }
+              params.set('abono', '1');
+              const url = 'index.html?' + params.toString();
+              window.location.href = url;
+            } catch(_) {}
+          };
+        }
+      } catch(_) {}
+    }
+
+    let EVENT_IMG_MAP = {};
+    let EVENT_NAME_MAP = {};
+    let ALL_RESERVAS = [];
+    function getImgForEvent(eventId){
+      return EVENT_IMG_MAP[eventId] || 'assets/img/default-event.jpg';
+    }
+
+    function renderReservas(items){
+      const grid = document.getElementById('reservasGrid');
+      const grouped = groupByEvent(items);
+      window.__reservasLista = grouped;
+      grid.innerHTML = grouped.map((it, idx)=>{
+        const displayName = EVENT_NAME_MAP[it.eventId] || it.nombre;
+        const codeDisplay = (it.codigoCorto || it.codigo || it.id || '').toString();
+        // Calcular estado real basado en pagos aprobados vs precio total del evento
+        // Siempre recalcular desde pagos para reflejar cambios de estado (cancelados/pendientes)
+        const aprobado = Array.isArray(it.pagos)
+          ? it.pagos.filter(p=> String(p?.estado||'').toLowerCase()==='aprobado').reduce((s,p)=> s + Number(p?.monto||0), 0)
+          : 0;
+        const montoBase = Number(it?.montoTotal || it?.detalles?.precioTotal || it?.detalles?.montoTotal || it?.total || 0) || 0;
+        const montoTours = Number(it?.detalles?.totalTours || it?.totalTours || 0) || 0;
+        const montoTotal = montoBase + montoTours;
+        let estadoReal = 'pendiente';
+        if (montoTotal > 0 && aprobado >= montoTotal) {
+          estadoReal = 'pagado';
+        }
+        const regIdCard = String(it.id || it.codigoCorto || '').trim();
+        const facturaCardHref = escapeHtml(facturaBorradorUrl(regIdCard));
+        const detCard = it.detalles || {};
+        const compOkCard = comprobanteLiberadoParaCliente(detCard);
+        const waCard = escapeHtml(whatsappRecordarComprobanteLink(displayName, it.id || '', it.codigoCorto || it.codigo || ''));
+        let facturaRow;
+        if (compOkCard) {
+          facturaRow = `<div class="card-meta" style="margin-top:6px;"><button type="button" class="btn-factura-card" onclick="event.stopPropagation(); consultarComprobanteCliente('${escapeHtml(regIdCard)}', true)">Ver comprobante</button></div>`;
+        } else {
+          facturaRow = `<div class="card-meta" style="margin-top:6px;"><button type="button" class="btn-factura-card wait" onclick="event.stopPropagation(); consultarComprobanteCliente('${escapeHtml(regIdCard)}', false)">Ver comprobante</button></div>`;
+        }
+        return `
+        <div class="card" data-idx="${idx}" role="button" tabindex="0" aria-label="Ver detalles de ${escapeHtml(displayName)}">
+          <img class="card-img" src="${escapeHtml(getImgForEvent(it.eventId))}" alt="${escapeHtml(it.nombre)}">
+          <div class="card-body">
+            <div class="card-title">${escapeHtml(displayName)}</div>
+            <div class="card-meta">Fecha registro: ${escapeHtml(formatDate(it.fecha))}</div>
+            <div class="card-meta">Estado: <span class="${mapEstadoClass(estadoReal)}">${escapeHtml(formatEstadoLabel(estadoReal))}</span></div>
+            <div class="card-meta">Código: ${escapeHtml(codeDisplay)}</div>
+            <div class="card-meta">Método pago: ${escapeHtml(it.metodoPago||'N/D')}</div>
+            <div class="card-meta">Abonos: ${it.pagos.length}</div>
+            ${facturaRow}
+            <div class="card-cta">Ver detalles <span aria-hidden="true">›</span></div>
+          </div>
+        </div>
+      `}).join('');
+      grid.querySelectorAll('.card').forEach(card=>{
+        const open = ()=>{
+          const i = Number(card.getAttribute('data-idx'));
+          const it = window.__reservasLista?.[i];
+          if (it) openReservaModal(it);
+        };
+        card.addEventListener('click', open);
+        card.addEventListener('keydown', (e)=>{ if (e.key==='Enter' || e.key===' ') { e.preventDefault(); open(); } });
+      });
+    }
+
+    // ======================
+    // API base candidates
+    // ======================
+    function getApiBaseCandidates() {
+      const candidates = [];
+      try { if (window.getAuthApiBase) { const b = window.getAuthApiBase(); if (b) candidates.push(b); } } catch(_) {}
+      try { const manual = localStorage.getItem('buenohotel_api_base'); if (manual) candidates.push(manual); } catch(_) {}
+      return [...new Set(candidates)];
+    }
+
+    // ======================
+    // Catálogo de eventos (para imagen)
+    // ======================
+    function toAbsImg(u){
+      const CDN_BASE = 'https://eventos.buenohotel.com.do/';
+      try { const s=String(u||'').trim(); if(!s) return ''; if (/^(https?:\/\/|data:)/i.test(s)) return s; return CDN_BASE + s.replace(/^\/+/, ''); } catch(_) { return ''; }
+    }
+    async function fetchEventosCatalog(){
+      const url = 'https://zp27hv7zkk.execute-api.us-east-1.amazonaws.com/prod/eventos';
+      const resp = await fetch(url);
+      const data = await resp.json();
+      const arr = JSON.parse(data.body||'[]');
+      return Array.isArray(arr) ? arr : [];
+    }
+    function buildEventosImgMap(eventos){
+      const map = {};
+      (eventos||[]).forEach(ev=>{
+        const id = (ev && typeof ev.id==='object' && ev.id.S) ? ev.id.S : (ev?.id || ev?.eventoId || '');
+        const imagenes = (Array.isArray(ev?.imagenes) ? ev.imagenes : (dGet(ev?.imagenes)||[]))
+          .map(x=> typeof x==='string'? x : (x && x.S? x.S: ''))
+          .filter(Boolean)
+          .map(toAbsImg);
+        if (id) map[id] = imagenes[0] || 'assets/img/default-event.jpg';
+      });
+      return map;
+    }
+
+    function buildEventosNameMap(eventos){
+      const map = {};
+      (eventos||[]).forEach(ev=>{
+        const id = (ev && typeof ev.id==='object' && ev.id.S) ? ev.id.S : (ev?.id || ev?.eventoId || '');
+        const nombre = (ev && typeof ev.nombre==='object' && ev.nombre.S) ? ev.nombre.S : (ev?.nombre || '');
+        if (id && nombre) map[id] = nombre;
+      });
+      return map;
+    }
+
+    let EVENT_MONEDA_MAP = {};
+    function buildEventosMonedaMap(eventos){
+      const map = {};
+      (eventos||[]).forEach(ev=>{
+        const id = (ev && typeof ev.id==='object' && ev.id.S) ? ev.id.S : (ev?.id || ev?.eventoId || '');
+        if (!id) return;
+        let moneda = 'DOP';
+        try {
+          // 1) Intentar precio_moneda a nivel raíz
+          let m = dGet(ev?.precio_moneda);
+          // 2) Si no existe, intentar precios_predefinidos.moneda (eventos con precios por cantidad)
+          if (!m) {
+            const pp = dGet(ev?.precios_predefinidos);
+            if (pp && pp.moneda) m = pp.moneda;
+          }
+          moneda = String(m || 'DOP').toUpperCase() === 'USD' ? 'USD' : 'DOP';
+          // Debug para encontrar dónde está la moneda
+          if (id.includes('galeria-6') || id.includes('retiro')) {
+            console.log('[mis-reservas] DEBUG moneda evento:', id, '-> moneda:', moneda);
+            console.log('[mis-reservas] DEBUG evento raw:', ev);
+            console.log('[mis-reservas] DEBUG precio_moneda raw:', ev?.precio_moneda);
+            console.log('[mis-reservas] DEBUG precios_predefinidos raw:', ev?.precios_predefinidos);
+          }
+        } catch(_) {}
+        map[id] = moneda;
+      });
+      return map;
+    }
+    
+    // Mapa de configuración de precios por evento (para calcular precio según huéspedes)
+    let EVENT_PRECIOS_MAP = {};
+    function buildEventosPreciosMap(eventos){
+      const map = {};
+      (eventos||[]).forEach(ev=>{
+        const id = (ev && typeof ev.id==='object' && ev.id.S) ? ev.id.S : (ev?.id || ev?.eventoId || '');
+        if (!id) return;
+        // Unwrap DynamoDB format si aplica
+        const evPlain = dGet(ev) || ev;
+        // Moneda: raíz o dentro de precios_predefinidos
+        let monedaRaw = evPlain?.precio_moneda || evPlain?.precios_predefinidos?.moneda || 'DOP';
+        const moneda = String(monedaRaw).toUpperCase() === 'USD' ? 'USD' : 'DOP';
+        map[id] = {
+          precio: Number(evPlain?.precio || evPlain?.precio_por_persona || 0) || 0,
+          precios_predefinidos: evPlain?.precios_predefinidos || null,
+          moneda
+        };
+      });
+      return map;
+    }
+    
+    // Calcular precio de un evento según cantidad de huéspedes
+    function calcularPrecioEvento(eventId, cantidadHuespedes){
+      const cfg = EVENT_PRECIOS_MAP[eventId];
+      if (!cfg) return 0;
+      // Si tiene precios predefinidos habilitados, buscar el que corresponda
+      const pp = cfg.precios_predefinidos;
+      if (pp?.habilitado && Array.isArray(pp.precios) && pp.precios.length > 0){
+        const cant = Number(cantidadHuespedes) || 1;
+        // Buscar precio exacto por cantidad
+        const exacto = pp.precios.find(p => Number(p?.cantidad) === cant);
+        if (exacto) return Number(exacto.precio || 0) || 0;
+        // Si no hay exacto, buscar el más cercano por arriba
+        const ordenados = pp.precios.slice().sort((a,b)=> Number(a?.cantidad||0) - Number(b?.cantidad||0));
+        for (const p of ordenados){
+          if (Number(p?.cantidad||0) >= cant) return Number(p.precio||0) || 0;
+        }
+        // Si la cantidad excede, usar el último (mayor)
+        return Number(ordenados[ordenados.length-1]?.precio || 0) || 0;
+      }
+      // Sin precios predefinidos, usar precio base
+      return cfg.precio || 0;
+    }
+
+    function formatMoneda(monto, moneda) {
+      const m = String(moneda || 'DOP').toUpperCase();
+      const symbol = m === 'USD' ? 'US$' : 'RD$';
+      return `${symbol}${Number(monto||0).toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    async function withTimeout(promise, ms = 8000) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Tiempo de espera agotado')), ms))
+      ]);
+    }
+
+    async function fetchJson(url, options) {
+      const resp = await withTimeout(fetch(url, options));
+      const data = await resp.json().catch(() => ({}));
+      return { resp, data };
+    }
+
+    // ======================
+    // Fetch reservas
+    // ======================
+    function normalizeStatus(s){
+      const v = String(s||'').toLowerCase();
+      if (v.startsWith('confirm')) return 'confirmado';
+      if (v.startsWith('pend')) return 'pendiente';
+      if (v.startsWith('canc')) return 'cancelado';
+      return v || 'pendiente';
+    }
+
+    function rebuildFiltersOptions(lista){
+      try{
+        const yearSel = document.getElementById('yearFilter');
+        if (!yearSel) return;
+        const years = [...new Set(lista.map(it=> it.year).filter(Boolean))].sort((a,b)=> Number(b)-Number(a));
+        const current = yearSel.value;
+        yearSel.innerHTML = '<option value="">Todos los años</option>' + years.map(y=>`<option value="${y}">${y}</option>`).join('');
+        if (years.includes(current)) yearSel.value = current;
+      } catch(_) {}
+    }
+
+    function applyFilters(){
+      const grid = document.getElementById('reservasGrid');
+      if (!Array.isArray(ALL_RESERVAS)) return;
+      const q = (document.getElementById('searchInput')?.value||'').toLowerCase().trim();
+      const y = (document.getElementById('yearFilter')?.value||'').trim();
+      const rawSt = (document.getElementById('statusFilter')?.value||'').trim();
+      const st = rawSt ? normalizeStatus(rawSt) : '';
+      const filtered = ALL_RESERVAS.filter(it=>{
+        const name = (EVENT_NAME_MAP[it.eventId] || it.nombre || '').toLowerCase();
+        const yearOk = !y || String(it.year||'') === y;
+        const textOk = !q || name.includes(q);
+        const stOk = !st || normalizeStatus(it.estado) === st;
+        return yearOk && textOk && stOk;
+      });
+      if (!filtered.length){
+        grid.innerHTML = '<div style="grid-column:1/-1;color:#666;padding:18px;">No hay reservas que coincidan con los filtros.</div>';
+      } else {
+        enrichReservasConPrecio(filtered)
+          .then(enriched => enrichReservasConDetalles(enriched))
+          .then((enriched2) => {
+            (enriched2 || []).forEach(applyResolvedFechas);
+            renderReservas(enriched2);
+          });
+      }
+    }
+
+    // Cache de detalles de reserva para evitar llamadas repetidas
+    const __reservaDetalleCache = {};
+    async function fetchReservaDetalle(registroId){
+      if (!registroId) return null;
+      if (__reservaDetalleCache[registroId]) return __reservaDetalleCache[registroId];
+      try {
+        if (!window.auth || !window.auth.isAuthenticated || !window.auth.isAuthenticated()) return null;
+        const token = window.auth.getAuthToken();
+        const bases = getApiBaseCandidates();
+        for (const base of bases){
+          try {
+            const { resp, data } = await fetchJson(`${base}/api/reservas/${encodeURIComponent(registroId)}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!resp.ok) continue;
+            const det = data?.data || data;
+            __reservaDetalleCache[registroId] = det;
+            return det;
+          } catch(_) { continue; }
+        }
+      } catch(_) {}
+      return null;
+    }
+    
+    async function enrichReservasConPrecio(lista){
+      const promises = lista.map(async (it) => {
+        if (it.montoTotal > 0) return it; // ya tiene precio
+        const key = it.registroId || it.codigoCorto || it.id;
+        if (!key) return it;
+        const det = await fetchReservaDetalle(key);
+        if (det) {
+          // Determinar cantidad de huéspedes desde varias fuentes
+          const cantHuespedes = Number(
+            det?.cantidadHuespedes ||
+            det?.detalles?.cantidadHuespedes ||
+            det?.cantHuespedes ||
+            (Array.isArray(det?.huespedes) ? det.huespedes.length : 0) ||
+            (Array.isArray(det?.detalles?.huespedes) ? det.detalles.huespedes.length : 0) ||
+            det?.datosPersona?.cantidadHuespedes ||
+            1
+          ) || 1;
+          
+          // Intentar obtener precio del detalle primero
+          let precio = Number(det?.montoTotal || det?.detalles?.precioTotal || det?.detalles?.montoTotal || det?.total || 0) || 0;
+          
+          // Si no hay precio en detalle, calcularlo desde el catálogo de eventos
+          if (precio === 0 && it.eventId){
+            precio = calcularPrecioEvento(it.eventId, cantHuespedes);
+          }
+          
+          // Sumar tours si existen
+          let tours = Number(det?.totalTours || det?.detalles?.totalTours || 0) || 0;
+          if (!tours && Array.isArray(det?.tours)){
+            tours = det.tours.reduce((s,t)=> s + (Number(t?.precio||0) * Number(t?.cantidad||1)), 0);
+          }
+          if (!tours && Array.isArray(det?.detalles?.tours)){
+            tours = det.detalles.tours.reduce((s,t)=> s + (Number(t?.precio||0) * Number(t?.cantidad||1)), 0);
+          }
+          
+          if (precio > 0) {
+            it.montoTotal = precio;
+            it.detalles = { ...(it.detalles||{}), ...(det?.detalles||{}) };
+            if (tours > 0) it.totalTours = tours;
+          }
+        }
+        return it;
+      });
+      return Promise.all(promises);
+    }
+
+    // Traer detalles frescos para flags (ej: permite_ver_comprobante_cliente) aunque ya haya precio.
+    async function enrichReservasConDetalles(lista){
+      const promises = (lista || []).map(async (it) => {
+        try{
+          const key = it?.registroId || it?.codigoCorto || it?.id;
+          if (!key) return it;
+          const det = await fetchReservaDetalle(key);
+          if (det && det.detalles) {
+            it.detalles = { ...(it.detalles||{}), ...(det?.detalles||{}) };
+          }
+        } catch(_) {}
+        return it;
+      });
+      return Promise.all(promises);
+    }
+
+    async function fetchMisReservas() {
+      const stateEl = document.getElementById('state');
+      const grid = document.getElementById('reservasGrid');
+      stateEl.style.display = 'block';
+      grid.style.display = 'none';
+      stateEl.innerHTML = '<div class="spinner"></div><div>Cargando tus reservas...</div>';
+
+      try {
+        if (!window.auth || !window.auth.isAuthenticated || !window.auth.isAuthenticated()) {
+          stateEl.innerHTML = '<div>Redirigiendo al inicio de sesión...</div>';
+          return;
+        }
+        const token = window.auth.getAuthToken();
+        const bases = getApiBaseCandidates();
+        let reservas = null;
+        let lastErr = null;
+
+        for (const base of bases) {
+          try {
+            let { resp, data } = await fetchJson(`${base}/api/reservas/mias`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!resp.ok) throw new Error(data?.message || `HTTP ${resp.status}`);
+            reservas = data?.data || data?.reservas || data || [];
+            break;
+          } catch (e) {
+            lastErr = e;
+            continue;
+          }
+        }
+
+        if (!Array.isArray(reservas)) {
+          throw lastErr || new Error('No se pudieron obtener tus reservas');
+        }
+
+        if (reservas.length === 0) {
+          stateEl.innerHTML = '<div>No tienes reservas registradas aún.</div>';
+          return;
+        }
+
+        const planas = reservas.map(dGet);
+        const lista = planas.map(normalizeReserva);
+        // Cargar catálogo de eventos para obtener la imagen por eventId
+        try {
+          const eventosCat = await fetchEventosCatalog();
+          EVENT_IMG_MAP = buildEventosImgMap(eventosCat);
+          EVENT_NAME_MAP = buildEventosNameMap(eventosCat);
+          EVENT_MONEDA_MAP = buildEventosMonedaMap(eventosCat);
+          EVENT_PRECIOS_MAP = buildEventosPreciosMap(eventosCat);
+          EVENT_FECHAS_MAP = buildEventosFechasMap(eventosCat);
+        } catch(_) {
+          EVENT_IMG_MAP = {};
+          EVENT_NAME_MAP = {};
+          EVENT_MONEDA_MAP = {};
+          EVENT_PRECIOS_MAP = {};
+          EVENT_FECHAS_MAP = {};
+        }
+        lista.forEach(applyResolvedFechas);
+        ALL_RESERVAS = lista;
+        rebuildFiltersOptions(ALL_RESERVAS);
+        applyFilters();
+        stateEl.style.display = 'none';
+        grid.style.display = 'grid';
+
+      } catch (err) {
+        console.error('Mis reservas error:', err);
+        stateEl.innerHTML = `<div>Ocurrió un error cargando tus reservas. ${err.message || ''}</div>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Listeners de filtros
+      document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+      document.getElementById('yearFilter')?.addEventListener('change', applyFilters);
+      document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
+      fetchMisReservas();
+    });
+  </script>
+</body>
+</html>

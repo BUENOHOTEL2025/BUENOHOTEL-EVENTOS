@@ -1,0 +1,15 @@
+Claudia — Paso 4 secuencias nuevas (+200)
+
+Si el enlace anterior te bloqueó, usa este (dominio booking):
+
+https://booking.buenohotel.com.do/dgii/bh-paso4-secuencias-200.zip
+
+Alternativas (mismo archivo):
+https://eventos.buenohotel.com.do/descargas-dgii/bh-paso4-secuencias-200.zip
+https://eventos.buenohotel.com.do/eventos-core-api-sbx/certificacion-dgii/bh-paso4-secuencias-200.zip
+
+Descomprime sobre dgi\ y luego:
+  npm run firmar-todos
+  npm run enviar-api
+
+NO reenviar solo rechazados. NO App Firma DGII.

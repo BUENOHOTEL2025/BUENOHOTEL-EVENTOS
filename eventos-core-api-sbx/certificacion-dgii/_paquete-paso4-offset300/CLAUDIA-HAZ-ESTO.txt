@@ -1,0 +1,35 @@
+========================================
+CLAUDIA ? HAZ EXACTAMENTE ESTO
+========================================
+
+Tu carpeta actual esta MAL (ZIP viejo + OneDrive bloquea).
+
+PASO A ? Mover fuera de OneDrive
+1. Crea carpeta:  C:\dgi
+2. Copia TODO lo de:
+     C:\Users\claud\OneDrive\Desktop\dgi\bh-paso4-secuencias-300
+   hacia:
+     C:\dgi
+   (copia archivos, no dejes otra carpeta adentro)
+
+PASO B ? En CMD
+  cd /d C:\dgi
+
+  if exist node_modules ren node_modules node_modules_OLD
+  if exist package-lock.json del package-lock.json
+
+PASO C ? Instalar SOLO lo necesario (sin Puppeteer)
+  npm install dgii-ecf@1.8.0 dotenv@16.0.3 xlsx@0.18.5 qrcode@1.5.4
+
+PASO D ? Firmar y enviar
+  npm run firmar-todos
+  npm run enviar-api
+
+Si "npm run firmar-todos" falla, usa:
+  node firmar-todos.js
+  node enviar-set-firmados.js
+
+NO uses Puppeteer ahora. PDF del Paso 5 es despues.
+
+ZIP nuevo (vuelve a bajar si quieres):
+https://booking.buenohotel.com.do/dgii/bh-paso4-300-LIMPIO.zip

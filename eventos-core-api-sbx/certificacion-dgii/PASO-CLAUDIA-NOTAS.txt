@@ -1,0 +1,104 @@
+BUENOHOTEL — Paso 2 DGII — ÚLTIMAS 3 NOTAS (Claudia)
+=====================================================
+RNC: 131631088 — BUENOHOTEL SRL
+
+ESTADO ACTUAL (julio 2026)
+--------------------------
+Ya están ACEPTADOS en DGII: 24 de 25 comprobantes (4 RFCE + 20 ECF).
+Solo faltan estas 3 NOTAS:
+
+  E330000000001  (referencia: E320000000006)
+  E340000000002  (referencia: E310000000034)
+  E340000000015  (referencia: E410000000001)
+
+NO use la App de Firma DGII para estos 6 archivos.
+La App cambia <eNCF> por <ENCF> y DGII rechaza la referencia (error 614).
+Este paquete firma con el certificado .p12 desde Node.js.
+
+
+REQUISITOS
+----------
+1. Node.js LTS: https://nodejs.org
+2. Su certificado .p12 y contraseña (mismos de la Oficina Virtual DGII)
+3. Esta carpeta en: C:\Users\claud\OneDrive\Desktop\dgi
+   (o donde ya trabajaba antes)
+
+
+PASO 1 — Actualizar archivos (Elmer le envía ZIP o S3)
+------------------------------------------------------
+Reemplace en su carpeta dgi\ estos archivos nuevos:
+
+  firmar-xml-p12.js
+  enviar-notas-pendientes.js
+  lib\certUtils.js
+  package.json
+  ejecutar-notas-pendientes.bat
+  PASO-CLAUDIA-NOTAS.txt
+
+Y copie los 6 XML en:
+  salida\ecf-sin-firmar\
+    131631088E320000000006.xml
+    131631088E330000000001.xml
+    131631088E310000000034.xml
+    131631088E340000000002.xml
+    131631088E410000000001.xml
+    131631088E340000000015.xml
+
+
+PASO 2 — Configurar .env.cert (solo si no lo tiene)
+---------------------------------------------------
+1. Copie .env.cert.example → .env.cert
+2. Edite .env.cert:
+
+   DGII_FE_CERT_P12_PATH=C:\ruta\completa\a\su\certificado.p12
+   DGII_FE_CERT_PASSWORD=su_clave
+
+   (La misma ruta y clave que usa con DGII)
+
+
+PASO 3 — Ejecutar
+-----------------
+
+OPCION A (recomendada) — doble clic, SIN npm:
+  ejecutar-notas-pendientes.bat
+
+OPCION B — desde CMD (tampoco uses "npm run" con el .bat):
+  cd C:\Users\claud\OneDrive\Desktop\dgi
+  ejecutar-notas-pendientes.bat
+
+OPCION C — todo con npm (un solo comando):
+  cd C:\Users\claud\OneDrive\Desktop\dgi
+  npm install
+  npm run notas
+
+  (NO escribir: npm run ejecutar-notas-pendientes — ese nombre no existe en npm)
+
+Hace automáticamente:
+  1) npm install (solo la primera vez)
+  2) Firma los 6 XML con su .p12 (tag correcto <eNCF>)
+  3) Envía a DGII en orden: padre → nota (6 envíos)
+  4) Guarda resultado en salida\envio-resultados\
+
+
+PASO 4 — Verificar y avisar a Elmer
+-----------------------------------
+Al terminar debe decir:  Notas: 3/3 Aceptadas
+
+Si hay error:
+  - Captura de pantalla de la ventana negra
+  - Envíe el archivo salida\envio-resultados\envio-notas-XXXX.json
+
+Comando manual por pasos (CMD):
+  cd C:\Users\claud\OneDrive\Desktop\dgi
+  npm install
+  npm run firmar-p12 -- --pendientes-notas
+  npm run enviar-notas
+
+
+IMPORTANTE
+----------
+- NO ejecutar ejecutar-envio-dgii.bat (envía los 29 otra vez).
+- NO usar enviar-pendientes (solo manda las 3 notas sin sus padres).
+- Los 22 comprobantes ya aceptados NO se tocan.
+
+Soporte: Elmer
