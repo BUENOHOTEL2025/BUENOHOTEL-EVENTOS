@@ -29,6 +29,31 @@ const EMAIL_API_URL = process.env.EMAIL_API_URL || "";
 const RESET_URL_BASE = process.env.RESET_URL_BASE || "https://eventos.buenohotel.com.do/reset.html";
 const RESET_TOKEN_TTL_MIN = parseInt(process.env.RESET_TOKEN_TTL_MIN || "60", 10);
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://eventos.buenohotel.com.do";
+const CORS_ALLOWED = Array.from(
+  new Set(
+    `${CORS_ORIGIN},https://eventos.buenohotel.com.do,https://ecommerce.buenohotel.com.do,https://www.buenohotel.com,https://buenohotel.com`
+      .split(/[,;\s]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+  )
+);
+
+let requestOrigin = "";
+
+function pickCorsOrigin() {
+  if (requestOrigin && CORS_ALLOWED.includes(requestOrigin)) return requestOrigin;
+  return "https://eventos.buenohotel.com.do";
+}
+
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": pickCorsOrigin(),
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    Vary: "Origin"
+  };
+}
 
 // ========= Utils =========
 let cachedSecret = null;
@@ -74,11 +99,8 @@ function json(status, body, extraHeaders = {}) {
     statusCode: status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": CORS_ORIGIN,
-      "Access-Control-Allow-Credentials": "true",
-      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-      ...extraHeaders,
+      ...corsHeaders(),
+      ...extraHeaders
     },
     body: JSON.stringify(body),
   };
@@ -379,17 +401,13 @@ async function handleUpdateProfile(evt) {
 exports.handler = async (evt) => {
   const method = evt.requestContext?.http?.method || "";
   const path = (evt.requestContext?.http?.path || "").toLowerCase();
+  const hdrs = evt.headers || {};
+  requestOrigin = hdrs.origin || hdrs.Origin || "";
 
-  // --- 🔥 BLOQUE CORS UNIVERSAL ---
   if (method === "OPTIONS") {
     return {
       statusCode: 204,
-      headers: {
-        "Access-Control-Allow-Origin": CORS_ORIGIN,
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-      },
+      headers: corsHeaders()
     };
   }
 

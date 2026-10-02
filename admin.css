@@ -4,6 +4,7 @@ body { background:#f7f8fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, san
 .page-title { font-size: 1.8rem; font-weight: 800; color: #222; margin: 16px 0 10px; }
 .tabs { display:flex; gap:10px; margin: 12px 0 18px; }
 .tab { padding:8px 12px; border-radius: 8px; border:1px solid #e7eaef; background:#fff; font-weight:700; color:#222; cursor:pointer; }
+.tab-link { text-decoration:none; display:inline-flex; align-items:center; }
 .tab.active { background:#FBB03B; border-color:#E19A2E; }
 .card { background:#fff; border:1px solid #eee; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.06); padding: 14px 16px; }
 .list { display:flex; flex-direction:column; gap:12px; }
