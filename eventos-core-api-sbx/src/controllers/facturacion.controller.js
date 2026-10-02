@@ -2,7 +2,8 @@ import {
   emitirFacturaElectronica,
   getEstadoEmision,
   consultarEstadoValidacionDgii,
-  facturacionEmitHealth
+  facturacionEmitHealth,
+  previewFacturaHtml
 } from '../services/facturacionEmitir.service.js';
 import {
   listarComprobantesEmitidos,
@@ -35,6 +36,17 @@ export async function postEmitir(req, res) {
     res.status(200).json({ success: true, ...payload });
   } catch (err) {
     console.error('facturacion emitir:', err?.message || err);
+    sendError(res, err);
+  }
+}
+
+export async function postPreviewFactura(req, res) {
+  try {
+    const html = await previewFacturaHtml(req.body || {});
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.status(200).send(html);
+  } catch (err) {
+    console.error('facturacion preview:', err?.message || err);
     sendError(res, err);
   }
 }

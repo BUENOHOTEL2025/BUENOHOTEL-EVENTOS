@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   postEmitir,
+  postPreviewFactura,
   getEstado,
   getValidacion,
   getFacturacionHealth,
@@ -16,6 +17,7 @@ const router = Router();
 
 router.get('/_health', getFacturacionHealth);
 router.post('/emitir', postEmitir);
+router.post('/preview', postPreviewFactura);
 router.get('/validacion/:trackId', getValidacion);
 router.get('/comprobantes', getComprobantes);
 router.post('/comprobantes/refrescar', postComprobantesRefrescar);

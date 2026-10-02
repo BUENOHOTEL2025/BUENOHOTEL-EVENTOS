@@ -18,6 +18,7 @@ import {
   validateDirectEmitPayload
 } from '../domain/facturacionEmit.schema.js';
 import { buildCodigoQrDataUrl } from './ecfQr.service.js';
+import { renderFacturaOperativaHtml } from './creditFiscalPrint.template.js';
 
 function envToLibrary(envName) {
   if (envName === 'PROD') return ENVIRONMENT.PROD;
@@ -80,7 +81,8 @@ export function resolveOrigenEmision(body, registroId) {
   const raw = String(body?.origen || body?.fuente || body?.source || body?.sistema || '')
     .trim()
     .toLowerCase();
-  if (raw === 'eventos' || raw === 'booking' || raw === 'manual') return raw;
+  const allowed = ['eventos', 'booking', 'ecommerce', 'manual', 'seguro', 'tours'];
+  if (allowed.includes(raw)) return raw;
   return 'booking';
 }
 
@@ -380,6 +382,20 @@ export async function getEstadoEmision(registroIdOrTrack, opts = {}) {
   }
 
   return consultarEstadoValidacionDgii(id);
+}
+
+/** Vista previa HTML: no reserva e-NCF y no envía a DGII. */
+export async function previewFacturaHtml(body = {}) {
+  const { draft } = await loadDraft(body);
+  const printDraft = {
+    ...draft,
+    documento: {
+      ...(draft.documento || {}),
+      ncf: String(draft.documento?.ncf || '').trim() || 'SIN e-NCF (vista previa)',
+      tipo: draft.documento?.tipo || 'DOCUMENTO DE COBRO'
+    }
+  };
+  return renderFacturaOperativaHtml(printDraft);
 }
 
 export function facturacionEmitHealth() {
