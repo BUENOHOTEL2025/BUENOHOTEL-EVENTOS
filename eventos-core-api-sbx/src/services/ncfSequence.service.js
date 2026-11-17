@@ -139,6 +139,35 @@ export async function allocateNextEncf(tipoeCF) {
   };
 }
 
+/**
+ * Lee el próximo e-NCF sin reservarlo.
+ */
+export async function peekNextEncf(tipoeCF) {
+  const t = Number(tipoeCF) === 32 ? 32 : 31;
+  await ensureNcfSequenceSeed(t);
+  const TableName = tableName();
+  const tipoeCFId = tipoeCFKey(t);
+  const existing = await docClient.send(
+    new GetCommand({ TableName, Key: { tipoeCF: tipoeCFId } })
+  );
+  const lastAssigned = Number(existing?.Item?.lastAssigned);
+  const last = Number.isFinite(lastAssigned) ? lastAssigned : startFor(t) - 1;
+  const max = maxFor(t);
+  const next = last + 1;
+  const remaining = max > 0 ? Math.max(0, max - last) : null;
+  const exhausted = max > 0 && next > max;
+  return {
+    tipoeCF: t,
+    lastAssigned: last,
+    nextSequence: exhausted ? null : next,
+    proximoEncf: exhausted ? null : formatEncf(t, next),
+    maxSequence: max || null,
+    remaining,
+    start: startFor(t),
+    table: TableName
+  };
+}
+
 export function peekNcfConfig(tipoeCF) {
   return {
     table: tableName(),

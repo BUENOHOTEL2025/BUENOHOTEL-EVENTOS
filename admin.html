@@ -1,38 +1,38 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" class="bh-remote-chrome">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel Admin - BuenoHotel Eventos</title>
   <link rel="stylesheet" href="styles.css?v=20260923c" />
-  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20260926x">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261107ad">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <!-- Favicon / App Icons -->
   <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/logo-32.png?v=20260921j">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/logo/logo-32.png?v=20260921j">
   <link rel="shortcut icon" href="assets/logo/logo-32.png?v=20260921j">
-  <link rel="stylesheet" href="admin.css?v=20261002d">
+  <link rel="stylesheet" href="admin.css?v=20261107ad">
 </head>
 <body>
   <div id="site-header"></div>
-  <script src="js/auth.js?v=20260923c"></script>
-  <script src="https://buenohotel.com/js/config.js?v=20260929a"></script>
+  <script src="js/auth.js?v=20261117a"></script>
+  <script src="https://buenohotel.com/js/config.js?v=20261029e"></script>
   <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
-  <script src="https://buenohotel.com/js/site-shell.js?v=20261002a"></script>
-  <script src="js/navbar.js?v=20260919m"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261117n"></script>
+  <script src="js/navbar.js?v=20261117a"></script>
   <script src="js/admin-core.js?v=20260930q"></script>
   <script src="js/admin-ecf.js?v=20261002s"></script>
 
   <!-- Event Form Modal -->
   <div id="event-modal" class="modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-    <div class="card" style="width:90%; max-width:600px; max-height:90vh; overflow-y:auto;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #eee;">
+    <div class="card" style="width:90%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; padding:0;">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px 12px; border-bottom:1px solid #eee; flex-shrink:0; background:#fff; position:sticky; top:0; z-index:3;">
         <h2 style="margin:0;" id="event-modal-title">Nuevo Evento</h2>
-        <button id="close-event-modal" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+        <button id="close-event-modal" type="button" style="background:none; border:none; font-size:24px; cursor:pointer; line-height:1;">&times;</button>
       </div>
       
-      <form id="event-form">
+      <form id="event-form" style="overflow-y:auto; flex:1; min-height:0; padding:16px;">
         <input type="hidden" id="event-id">
         
         <div class="form-group" style="margin-bottom:20px;">
@@ -176,21 +176,29 @@
         <div class="form-group" style="margin-bottom:20px;">
           <label style="display:block; margin-bottom:8px; font-weight:600; color:#333;">Imagen de portada</label>
           <input type="hidden" id="event-portada" class="form-control">
-          <div id="event-portada-preview" style="min-height:80px; border:2px dashed #ddd; border-radius:8px; padding:10px; display:flex; align-items:center; gap:10px; background:#fafafa; margin-bottom:8px;">
-            <span style="color:#999; font-size:0.9em;">Sin imagen de portada</span>
+          <div id="event-portada-preview" style="min-height:80px; border:2px dashed #fbb03b; border-radius:8px; padding:10px; display:flex; align-items:center; gap:10px; background:#fffaf0; margin-bottom:8px; cursor:pointer;">
+            <span style="color:#999; font-size:0.9em;">Toca para elegir de la galería</span>
           </div>
-          <input type="file" id="event-portada-file" accept="image/*" style="width:100%;">
-          <small style="display:block; margin-top:4px; color:#666; font-size:0.85em;">Selecciona una imagen para la portada del evento.</small>
+          <input type="file" id="event-portada-file" accept="image/*" style="display:none;" data-bh-galeria-skip>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" id="event-portada-galeria" class="btn" style="flex:1; min-height:42px; background:#FBB03B; color:#1a365d; border:0; font-weight:700; font-size:14px; font-family:inherit; border-radius:10px;">Elegir de la galería</button>
+            <button type="button" id="event-portada-equipo" class="btn" style="flex:1; min-height:42px; background:#1a365d; color:#fff; border:0; font-weight:700; font-size:14px; font-family:inherit; border-radius:10px;">Subir a la galería</button>
+          </div>
+          <small style="display:block; margin-top:6px; color:#666; font-size:0.85em;">Queda en la galería general de BUENOHOTEL (S3) y se puede reutilizar.</small>
         </div>
 
         <div class="form-group" style="margin-bottom:20px;">
           <label style="display:block; margin-bottom:8px; font-weight:600; color:#333;">Imágenes del lugar</label>
           <textarea id="event-imagenes-lugar" class="form-control" style="display:none;"></textarea>
-          <div id="event-imagenes-lugar-preview" style="min-height:80px; border:2px dashed #ddd; border-radius:8px; padding:10px; display:flex; flex-wrap:wrap; gap:10px; background:#fafafa; margin-bottom:8px;">
-            <span style="color:#999; font-size:0.9em;">Sin imágenes del lugar</span>
+          <div id="event-imagenes-lugar-preview" style="min-height:80px; border:2px dashed #fbb03b; border-radius:8px; padding:10px; display:flex; flex-wrap:wrap; gap:10px; background:#fffaf0; margin-bottom:8px; cursor:pointer;">
+            <span style="color:#999; font-size:0.9em;">Toca para elegir de la galería</span>
           </div>
-          <input type="file" id="event-imagenes-lugar-file" accept="image/*" multiple style="width:100%;">
-          <small style="display:block; margin-top:4px; color:#666; font-size:0.85em;">Selecciona una o varias imágenes del lugar.</small>
+          <input type="file" id="event-imagenes-lugar-file" accept="image/*" multiple style="display:none;" data-bh-galeria-skip>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" id="event-lugar-galeria" class="btn" style="flex:1; min-height:42px; background:#FBB03B; color:#1a365d; border:0; font-weight:700; font-size:14px; font-family:inherit; border-radius:10px;">Elegir de la galería</button>
+            <button type="button" id="event-lugar-equipo" class="btn" style="flex:1; min-height:42px; background:#1a365d; color:#fff; border:0; font-weight:700; font-size:14px; font-family:inherit; border-radius:10px;">Subir a la galería</button>
+          </div>
+          <small style="display:block; margin-top:6px; color:#666; font-size:0.85em;">Las nuevas también entran a la galería general.</small>
         </div>
 
         <details style="margin-bottom:20px; border:1px solid #eee; border-radius:10px; padding:12px; background:#fafafa;">
@@ -462,11 +470,20 @@
 
   <div class="container">
     <h1 class="page-title">Panel de Administración</h1>
+    <div class="card" style="margin-bottom:14px;">
+      <nav class="bh-admin-nav" aria-label="Panel">
+        <a class="is-on" href="/admin">Eventos</a>
+        <a href="https://buenohotel.com/admin/fotos-eventos">Galería</a>
+        <a href="https://buenohotel.com/admin/difusion">Difusión</a>
+        <a href="https://buenohotel.com/admin/paquetes">Paquetes</a>
+      </nav>
+      <p class="muted" style="margin:10px 0 0;">Galería general en S3: una foto sirve para Eventos, Tours, ecommerce y el sitio.</p>
+    </div>
 
     <div class="tabs">
       <div class="tab active" data-tab="pagos">Pagos</div>
-      <a class="tab tab-link" href="https://ecommerce.buenohotel.com.do/admin/comprobantes" target="_blank" rel="noopener">Comprobantes</a>
       <div class="tab" data-tab="eventos">Eventos</div>
+      <div class="tab" data-tab="fotos">Fotos</div>
       <div class="tab" data-tab="usuarios">Usuarios</div>
     </div>
 
@@ -511,7 +528,16 @@
       </div>
     </div>
 
-    <div id="pagos-ecf-note" class="card" style="display:none;"></div>
+    <div id="fotos-tab" class="tab-content" style="display:none;">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+          <h2 style="margin:0; font-size:1.3rem; color:#1a365d;">Galería BUENOHOTEL</h2>
+          <a class="btn" href="https://buenohotel.com/admin/fotos-eventos" target="_blank" rel="noopener" style="background:#FBB03B; color:#222; border:1px solid #E19A2E; text-decoration:none; font-weight:700;">Subir / notas</a>
+        </div>
+        <p class="muted" style="margin:0 0 12px;">Las mismas fotos de la galería general. Pasa el mouse (lupa) y pulsa para verlas a tamaño original.</p>
+        <div id="bh-fotos-galeria" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px;"></div>
+      </div>
+    </div>
 
     <!-- Users Management Section -->
     <div id="usuarios-tab" class="tab-content" style="display:none;">
@@ -546,13 +572,6 @@
     </div>
 
     <div id="pagos-tab" class="tab-content">
-    <div class="card" style="margin-bottom:14px; background:#f8fafc; border:1px solid #e2e8f0;">
-      <p style="margin:0; color:#1a365d; line-height:1.45;">
-        Aquí se emiten y descargan solo los comprobantes de <strong>este evento</strong>.
-        El listado completo (Eventos, Booking y otros) está en
-        <a href="https://ecommerce.buenohotel.com.do/admin/comprobantes" target="_blank" rel="noopener" style="color:#1a365d; font-weight:800;">Ecommerce → Comprobantes</a>.
-      </p>
-    </div>
     <div class="card" style="margin-bottom:14px;">
       <div class="toolbar">
         <input id="search" type="text" placeholder="Buscar por nombre, email, monto, método, ref, evento o registro..." />
@@ -3166,7 +3185,7 @@
 
     // Tab switching functionality
     const ADMIN_LAST_TAB_KEY = 'bh_admin_last_tab';
-    const ADMIN_TABS = ['pagos', 'eventos', 'usuarios'];
+    const ADMIN_TABS = ['pagos', 'eventos', 'fotos', 'usuarios'];
 
     function readLastAdminTab() {
       try {
@@ -3206,6 +3225,9 @@
       if (name === 'ecf' && typeof window.cargarComprobantesEcf === 'function') {
         window.cargarComprobantesEcf();
       }
+      if (name === 'fotos' && typeof window.renderBhFotosTab === 'function') {
+        window.renderBhFotosTab();
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -3235,6 +3257,7 @@
       // Tab click handlers
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
+          if (tab.classList.contains('tab-link') || !tab.getAttribute('data-tab')) return;
           e.preventDefault();
           const tabName = tab.getAttribute('data-tab');
           switchTab(tabName);
@@ -3975,7 +3998,7 @@
 
       return new Promise(resolve => {
         const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:1400;';
+        overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:2200;';
 
         const box = document.createElement('div');
         box.style.cssText = 'background:#fff; border-radius:10px; padding:18px 20px; max-width:420px; width:90%; box-shadow:0 10px 30px rgba(0,0,0,0.18);';
@@ -4017,7 +4040,10 @@
       if (document.getElementById('admin-upload-spinner-style')) return;
       const style = document.createElement('style');
       style.id = 'admin-upload-spinner-style';
-      style.textContent = `@keyframes admin-upload-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+      style.textContent = `@keyframes admin-upload-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .bh-foto-zoom{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.88);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+        .bh-foto-zoom img{max-width:min(96vw,1400px);max-height:92vh;width:auto;height:auto;object-fit:contain;border-radius:8px}
+        .bh-foto-lupa{cursor:zoom-in}`;
       document.head.appendChild(style);
     })();
 
@@ -4044,14 +4070,14 @@
       // Tab switching
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
-          // Hide all tab contents
+          if (tab.classList.contains('tab-link') || !tab.dataset.tab) return;
+          const panel = document.getElementById(`${tab.dataset.tab}-tab`);
+          if (!panel) return;
           document.querySelectorAll('.tab-content').forEach(content => {
             content.style.display = 'none';
           });
-          // Remove active class from all tabs
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          // Show selected tab content and set active class
-          document.getElementById(`${tab.dataset.tab}-tab`).style.display = 'block';
+          panel.style.display = 'block';
           tab.classList.add('active');
           if (tab.dataset.tab === 'ecf' && typeof window.cargarComprobantesEcf === 'function') {
             window.cargarComprobantesEcf();
@@ -4427,17 +4453,41 @@
         }
         
         eventModal.style.display = 'flex';
+        window.__eventFormBaseline = snapshotEventForm();
       }
 
-      // Close event modal
+      function snapshotEventForm() {
+        if (!eventForm) return '';
+        return Array.from(eventForm.querySelectorAll('input, select, textarea')).map((el) => {
+          if (el.type === 'file') return el.id + ':files:' + ((el.files && el.files.length) || 0);
+          if (el.type === 'checkbox' || el.type === 'radio') return el.id + ':' + el.checked + ':' + el.value;
+          return el.id + ':' + String(el.value || '');
+        }).join('\n');
+      }
+
+      function eventFormIsDirty() {
+        return snapshotEventForm() !== String(window.__eventFormBaseline || '');
+      }
+
       function closeEventModal() {
         eventModal.style.display = 'none';
       }
 
+      async function requestCloseEventModal() {
+        if (eventFormIsDirty()) {
+          const ok = await showAdminConfirm(
+            'Hay información ya escrita en este evento. Si lo cierras se perderá lo que llenaste. ¿Quieres cerrarlo de todos modos?',
+            { confirmLabel: 'Cerrar y perder datos', cancelLabel: 'Seguir editando' }
+          );
+          if (!ok) return;
+        }
+        closeEventModal();
+      }
+
       // Event listeners
       newEventBtn?.addEventListener('click', () => showEventModal());
-      closeEventModalBtn?.addEventListener('click', closeEventModal);
-      cancelEventBtn?.addEventListener('click', closeEventModal);
+      closeEventModalBtn?.addEventListener('click', requestCloseEventModal);
+      cancelEventBtn?.addEventListener('click', requestCloseEventModal);
 
       // ----- Subida de imágenes (portada e imágenes del lugar) -----
       const portadaFileInput = document.getElementById('event-portada-file');
@@ -4627,35 +4677,43 @@
         uploadInProgress++;
         setUploadLoading(true);
         try {
-          const metaResp = await fetchFirstOk(getAdminUploadCandidates(), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...authHeaders() },
-            body: JSON.stringify({
-              fileName: file.name,
-              folder: 'assets/img/eventos',
-              contentType: file.type || 'image/jpeg',
-            }),
-          });
-          const metaJson = await metaResp.json().catch(() => ({}));
-          if (!metaResp.ok || !metaJson.uploadUrl || !metaJson.finalPath){
-            console.error('Error obteniendo URL de subida', metaResp.status, metaJson);
-            showAdminAlert('No se pudo preparar la subida de imagen.', {type:'error'});
-            return null;
+          let lastErr = null;
+          for (const base of API_BASES) {
+            try {
+              const { resp, data } = await fetchJson(`${base}/api/eventos-fotos/presign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...authHeaders() },
+                body: JSON.stringify({
+                  filename: file.name,
+                  contentType: file.type || 'image/jpeg',
+                  size: file.size,
+                  kind: 'foto'
+                })
+              });
+              if (!resp.ok || !data.uploadUrl) throw new Error(data?.message || 'No se pudo preparar la subida');
+              const putResp = await fetch(data.uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': data.contentType || file.type || 'image/jpeg' },
+                body: file
+              });
+              if (!putResp.ok) throw new Error('No se pudo guardar en S3');
+              await fetchJson(`${base}/api/eventos-fotos/lote`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...authHeaders() },
+                body: JSON.stringify({
+                  note: 'Subida desde Eventos',
+                  photos: [{ key: data.key, url: data.publicUrl }],
+                  refs: []
+                })
+              });
+              return data.publicUrl;
+            } catch (e) {
+              lastErr = e;
+            }
           }
-
-          // Subir binario directamente a S3
-          const putResp = await fetch(metaJson.uploadUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': file.type || 'image/jpeg' },
-            body: file,
-          });
-          if (!putResp.ok){
-            console.error('Error subiendo imagen a S3', putResp.status, await putResp.text().catch(()=>''));
-            showAdminAlert('Error al subir la imagen al servidor.', {type:'error'});
-            return null;
-          }
-
-          return metaJson.finalPath;
+          console.error('Error subiendo a galería', lastErr);
+          showAdminAlert('No se pudo subir a la galería general.', {type:'error'});
+          return null;
         } catch (err) {
           console.error('Error en subida de imagen', err);
           showAdminAlert('Error inesperado al subir la imagen.', {type:'error'});
@@ -4708,6 +4766,205 @@
           lugarTextarea.disabled = false;
           renderLugarPreviews();
         }
+      });
+
+      window.openBhFotoZoom = function(url){
+        if (!url) return;
+        const old = document.getElementById('bh-foto-zoom');
+        if (old) old.remove();
+        const ov = document.createElement('div');
+        ov.id = 'bh-foto-zoom';
+        ov.className = 'bh-foto-zoom';
+        ov.innerHTML = `<img src="${String(url).replace(/"/g,'')}" alt="">`;
+        ov.addEventListener('click', () => ov.remove());
+        document.body.appendChild(ov);
+      };
+      window.openBhFotoRefs = function(urls){
+        const list = (urls || []).map((u) => String(u || '').trim()).filter(Boolean);
+        if (!list.length) return;
+        const old = document.getElementById('bh-foto-zoom');
+        if (old) old.remove();
+        const ov = document.createElement('div');
+        ov.id = 'bh-foto-zoom';
+        ov.className = 'bh-foto-zoom';
+        ov.innerHTML = `<div style="max-width:min(96vw,1100px);max-height:92vh;overflow:auto;text-align:center;">
+          <p style="color:#fff;font-weight:800;margin:0 0 12px;">Referencia</p>
+          ${list.map((u) => `<img src="${u.replace(/"/g,'')}" alt="referencia" style="display:block;margin:10px auto;max-width:min(92vw,1000px);max-height:80vh;">`).join('')}
+          <p style="color:#fff;margin:12px 0 0;">Clic para cerrar</p>
+        </div>`;
+        ov.addEventListener('click', () => ov.remove());
+        document.body.appendChild(ov);
+      };
+
+      window.fetchEventosFotos = async function(){
+        for (const base of API_BASES) {
+          try {
+            const { resp, data } = await fetchJson(`${base}/api/eventos-fotos`, { headers: authHeaders() });
+            if (resp.ok && data && Array.isArray(data.fotos)) return data.fotos;
+          } catch (_) {}
+        }
+        return [];
+      };
+
+      window.renderBhFotosTab = async function(){
+        const box = document.getElementById('bh-fotos-galeria');
+        if (!box) return;
+        box.innerHTML = '<p class="muted">Cargando…</p>';
+        const fotos = await window.fetchEventosFotos();
+        if (!fotos.length) {
+          box.innerHTML = '<p class="muted">Aún no hay fotos. Súbelas en el panel de Fotos.</p>';
+          return;
+        }
+        const published = fotos.filter((f) => {
+          const u = String(f.url || f.key || '');
+          return u && !/\/refs\//.test(u) && !/\/thumbs\//.test(u);
+        });
+        if (!published.length) {
+          box.innerHTML = '<p class="muted">Aún no hay fotos. Súbelas en el panel de Fotos.</p>';
+          return;
+        }
+        box.innerHTML = published.map((f) => {
+          const note = String(f.note || '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+          const url = String(f.url || '').replace(/"/g, '');
+          const refs = (f.refs || []).map((r) => r && r.url).filter(Boolean);
+          return `<div style="background:#fff;border:1px solid #eee;border-radius:10px;overflow:hidden;">
+            <button type="button" class="bh-foto-lupa" data-zoom="${url}" style="display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;">
+              <img src="${url}" alt="" style="width:100%;height:auto;display:block;background:none;">
+            </button>
+            ${note ? `<small style="display:block;padding:8px;color:#333;">${note}</small>` : ''}
+            ${refs.length ? `<button type="button" class="bh-ver-ref" data-refs="${refs.join('|').replace(/"/g,'')}" style="display:block;margin:0 8px 10px;padding:0;border:0;background:none;color:#1a365d;font-weight:800;text-decoration:underline;cursor:pointer;">Ver referencia${refs.length > 1 ? 's (' + refs.length + ')' : ''}</button>` : ''}
+          </div>`;
+        }).join('');
+        box.querySelectorAll('[data-zoom]').forEach((btn) => {
+          btn.addEventListener('click', () => window.openBhFotoZoom(btn.getAttribute('data-zoom')));
+        });
+        box.querySelectorAll('.bh-ver-ref').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.openBhFotoRefs(String(btn.getAttribute('data-refs') || '').split('|'));
+          });
+        });
+      };
+      if (document.querySelector('.tab[data-tab="fotos"].active')) window.renderBhFotosTab();
+
+      function applyGaleriaPick(overlay, mode, url){
+        if (!url) return;
+        if (mode === 'portada') {
+          portadaTextInput.value = url;
+          renderPortadaPreview();
+          overlay.style.display = 'none';
+          return;
+        }
+        const lines = (lugarTextarea.value || '').split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+        if (!lines.includes(url)) lines.push(url);
+        lugarTextarea.value = lines.join('\n');
+        renderLugarPreviews();
+      }
+      function openGaleriaPicker(mode){
+        let overlay = document.getElementById('bh-fotos-picker');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'bh-fotos-picker';
+          overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1600;display:flex;align-items:center;justify-content:center;padding:16px;';
+          overlay.innerHTML = `<div style="background:#fff;max-width:860px;width:100%;max-height:86vh;overflow:auto;border-radius:12px;padding:16px;position:relative;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+              <strong>Galería BUENOHOTEL</strong>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" id="bh-fotos-picker-upload" class="btn" style="background:#FBB03B;color:#1a365d;border:0;font-weight:700;min-height:42px;border-radius:10px;">Subir a la galería</button>
+                <button type="button" id="bh-fotos-picker-close" class="btn" style="min-height:42px;">Cerrar</button>
+              </div>
+            </div>
+            <input type="file" id="bh-fotos-picker-file" accept="image/*" multiple style="display:none;">
+            <p class="muted" id="bh-fotos-picker-hint" style="margin:8px 0 12px;"></p>
+            <div id="bh-fotos-picker-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;"></div>
+            <div style="position:sticky;bottom:0;display:flex;justify-content:flex-end;padding:12px 0 0;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 40%);">
+              <button type="button" id="bh-fotos-picker-use" class="btn" disabled style="background:#FBB03B;color:#1a365d;border:0;font-weight:800;min-height:42px;border-radius:10px;padding:0 18px;">Usar este</button>
+            </div>
+          </div>`;
+          document.body.appendChild(overlay);
+          overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.style.display = 'none'; });
+          overlay.querySelector('#bh-fotos-picker-close').addEventListener('click', () => { overlay.style.display = 'none'; });
+          overlay.querySelector('#bh-fotos-picker-upload').addEventListener('click', () => overlay.querySelector('#bh-fotos-picker-file').click());
+          overlay.querySelector('#bh-fotos-picker-use').addEventListener('click', () => {
+            applyGaleriaPick(overlay, overlay._bhMode, overlay._bhPickedUrl);
+          });
+          overlay.querySelector('#bh-fotos-picker-file').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files || []);
+            e.target.value = '';
+            const pickMode = overlay._bhMode || mode;
+            for (const file of files) {
+              const url = await uploadSingleImage(file);
+              if (url && pickMode === 'portada') {
+                portadaTextInput.value = url;
+                renderPortadaPreview();
+              } else if (url) {
+                const lines = (lugarTextarea.value || '').split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+                if (!lines.includes(url)) lines.push(url);
+                lugarTextarea.value = lines.join('\n');
+                renderLugarPreviews();
+              }
+            }
+            fillPickerGrid(overlay, overlay._bhMode || mode);
+          });
+        }
+        overlay._bhMode = mode;
+        overlay._bhPickedUrl = '';
+        overlay.style.display = 'flex';
+        const useBtn = overlay.querySelector('#bh-fotos-picker-use');
+        if (useBtn) useBtn.disabled = true;
+        overlay.querySelector('#bh-fotos-picker-hint').textContent = mode === 'portada'
+          ? 'Clic para resaltar la portada. Doble clic la usa al instante, o pulsa Usar este.'
+          : 'Clic para resaltar. Doble clic o Usar este la añade al lugar. Puedes elegir varias, una tras otra.';
+        fillPickerGrid(overlay, mode);
+      }
+      function fillPickerGrid(overlay, mode){
+        const grid = overlay.querySelector('#bh-fotos-picker-grid');
+        const useBtn = overlay.querySelector('#bh-fotos-picker-use');
+        overlay._bhPickedUrl = '';
+        if (useBtn) useBtn.disabled = true;
+        grid.innerHTML = 'Cargando…';
+        window.fetchEventosFotos().then((fotos) => {
+          const published = (fotos || []).filter((f) => {
+            const u = String(f.url || f.key || '');
+            return u && !/\/refs\//.test(u) && !/\/thumbs\//.test(u);
+          });
+          if (!published.length) {
+            grid.innerHTML = '<p class="muted">Aún no hay fotos. Usa “Subir a la galería”.</p>';
+            return;
+          }
+          grid.innerHTML = published.map((f) => {
+            const url = String(f.url||'').replace(/"/g,'');
+            const note = String(f.note||'').replace(/[&<>]/g,'');
+            return `<button type="button" class="bh-pick-card" data-url="${url}" style="border:2px solid #eee;border-radius:8px;overflow:hidden;background:#fff;padding:0;cursor:pointer;text-align:left;">
+              <img src="${url}" alt="" style="width:100%;height:auto;display:block;background:none;pointer-events:none;">
+              ${note ? `<small style="display:block;padding:6px;font-size:11px;color:#555;">${note}</small>` : ''}
+            </button>`;
+          }).join('');
+          grid.querySelectorAll('.bh-pick-card').forEach((card) => {
+            card.addEventListener('click', () => {
+              grid.querySelectorAll('.bh-pick-card').forEach((c) => {
+                c.style.borderColor = '#eee';
+                c.style.boxShadow = 'none';
+              });
+              card.style.borderColor = '#FBB03B';
+              card.style.boxShadow = '0 0 0 3px rgba(251,176,59,.45)';
+              overlay._bhPickedUrl = card.getAttribute('data-url') || '';
+              if (useBtn) useBtn.disabled = !overlay._bhPickedUrl;
+            });
+            card.addEventListener('dblclick', () => {
+              applyGaleriaPick(overlay, mode, card.getAttribute('data-url'));
+            });
+          });
+        });
+      }
+      document.getElementById('event-portada-galeria')?.addEventListener('click', () => openGaleriaPicker('portada'));
+      document.getElementById('event-lugar-galeria')?.addEventListener('click', () => openGaleriaPicker('lugar'));
+      document.getElementById('event-portada-equipo')?.addEventListener('click', () => portadaFileInput?.click());
+      document.getElementById('event-lugar-equipo')?.addEventListener('click', () => lugarFileInput?.click());
+      document.getElementById('event-portada-preview')?.addEventListener('click', () => openGaleriaPicker('portada'));
+      document.getElementById('event-imagenes-lugar-preview')?.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-lugar-img')) return;
+        openGaleriaPicker('lugar');
       });
 
       // ===== Lógica de Itinerario de Vuelo y Múltiples Huéspedes =====
@@ -7888,3 +8145,4 @@
   </script>
 </body>
 </html>
+

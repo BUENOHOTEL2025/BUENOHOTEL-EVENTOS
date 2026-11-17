@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { updatePagoEstado } from '../controllers/pagos.controller.js';
+import { requirePanelJwt } from '../middleware/jwtGuard.middleware.js';
 
 const router = Router();
 
-// PATCH /api/reservas/:registroId/pagos/:pagoId/estado
-router.patch('/:registroId/pagos/:pagoId/estado', updatePagoEstado);
+router.patch('/:registroId/pagos/:pagoId/estado', requirePanelJwt, updatePagoEstado);
 
 export default router;

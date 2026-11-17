@@ -1,9 +1,23 @@
 import EventService from '../services/event.service.js';
 
+const SENSITIVE_EVENT_KEY =
+  /password|secret|token|apikey|api_key|private|accesskey|internal|costo_interno|notas_internas/i;
+
+function publicEvent(ev) {
+  if (!ev || typeof ev !== 'object') return ev;
+  const out = {};
+  for (const [k, v] of Object.entries(ev)) {
+    if (SENSITIVE_EVENT_KEY.test(k)) continue;
+    out[k] = v;
+  }
+  return out;
+}
+
 export const getAllEvents = async (req, res, next) => {
   try {
     const events = await EventService.getAll();
-    res.json({ success: true, count: events.length, data: events });
+    const data = (events || []).map(publicEvent);
+    res.json({ success: true, count: data.length, data });
   } catch (error) {
     console.error('Error en getAllEvents:', error);
     next(error);
@@ -16,7 +30,7 @@ export const getEventById = async (req, res, next) => {
     const event = await EventService.getById(id);
     if (!event)
       return res.status(404).json({ success: false, message: 'Evento no encontrado' });
-    res.json({ success: true, data: event });
+    res.json({ success: true, data: publicEvent(event) });
   } catch (error) {
     console.error('Error en getEventById:', error);
     next(error);

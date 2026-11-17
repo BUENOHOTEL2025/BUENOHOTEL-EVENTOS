@@ -39,6 +39,14 @@ function nz(s, fallback = '—') {
   return t || fallback;
 }
 
+/** Mismo formato que el XML DGII: 10 dígitos RD, sin +1. */
+function telDgii(raw) {
+  let d = String(raw || '').replace(/\D/g, '');
+  if (d.startsWith('1') && d.length === 11) d = d.slice(1);
+  if (d.length === 10 && /^8(09|29|49)/.test(d)) return d;
+  return '';
+}
+
 export function renderFacturaOperativaHtml(draft) {
   const e = draft.emisor || {};
   const doc = draft.documento || {};
@@ -49,11 +57,27 @@ export function renderFacturaOperativaHtml(draft) {
   const moneda = tot.moneda === 'USD' || doc.moneda === 'USD' ? 'USD' : 'DOP';
   const money = (v) => formatDocMoney(v, moneda);
   const v = draft.verificacion || {};
-  const tarifaBase = tot.tarifaBase != null ? tot.tarifaBase : tot.subtotalGravado;
+  const lineSum = lineas.reduce((s, ln) => {
+    const qty = Number(ln.cantidad ?? 1) || 1;
+    const precio = Number(ln.precioUnitario ?? 0) || 0;
+    const imp = Number(ln.importeLinea);
+    return s + (Number.isFinite(imp) && imp !== 0 ? imp : qty * precio);
+  }, 0);
+  const itbisVal = Number(tot.itbis ?? tot.TotalITBIS ?? 0) || 0;
+  const tarifaBase =
+    tot.tarifaBase != null
+      ? tot.tarifaBase
+      : tot.subtotalGravado != null
+        ? tot.subtotalGravado
+        : tot.MontoGravadoTotal != null
+          ? tot.MontoGravadoTotal
+          : itbisVal > 0
+            ? lineSum
+            : 0;
   const ley10 = tot.ley10 != null ? tot.ley10 : 0;
   const precioAPagarGravado =
     tot.precioAPagarGravado != null ? tot.precioAPagarGravado : tot.precioAPagar != null ? tot.precioAPagar : tot.totalRD;
-  const totalFinal = tot.totalRD != null ? tot.totalRD : precioAPagarGravado;
+  const totalFinal = tot.totalRD != null ? tot.totalRD : tot.MontoTotal != null ? tot.MontoTotal : precioAPagarGravado;
   const descuentoMonto = Number(tot.descuento ?? 0);
   const descuentoPct = Number(tot.descuentoPct ?? 0);
   const tieneDescuento = Boolean(tot.tieneDescuento) || (descuentoPct > 0 && descuentoMonto > 0);
@@ -62,14 +86,20 @@ export function renderFacturaOperativaHtml(draft) {
       ? tot.subTotal
       : tot.totalAntesDescuento != null
         ? tot.totalAntesDescuento
-        : Number(tarifaBase) + Number(ley10) + Number(tot.itbis || 0) + Number(tot.subtotalExento || 0);
+        : lineSum > 0
+          ? lineSum
+          : Number(tarifaBase) + Number(ley10) + Number(tot.subtotalExento || 0);
 
   const exentoMonto = Number(tot.subtotalExento || 0);
+  const ley10n = Number(ley10) || 0;
+  const otrasTasas =
+    exentoMonto > 0.009 && Math.abs(exentoMonto - ley10n) > 0.009 ? exentoMonto : 0;
   const resumenTotalesHtml = `
         <div>SubTotal: ${money(subTotalDoc)}</div>
         ${tieneDescuento ? `<div>Descuento: ${money(descuentoMonto)}</div>` : ''}
-        ${exentoMonto > 0 ? `<div>Otras Tasas Exentas: ${money(exentoMonto)}</div>` : ''}
+        ${otrasTasas > 0 ? `<div>Otras Tasas Exentas: ${money(otrasTasas)}</div>` : ''}
         <div>Subt. Gravado: ${money(tot.subtotalGravado != null ? tot.subtotalGravado : tarifaBase)}</div>
+        ${ley10n > 0 ? `<div>10% ley (exento): ${money(ley10n)}</div>` : ''}
         <div>ITBIS: ${money(tot.itbis)}</div>
         <div style="margin-top:10px;padding-top:8px;border-top:1px solid #c5cdd8;font-size:14px;font-weight:600;color:#222;">
           ${escapeHtml(labelTotal(moneda))}: ${money(totalFinal)}
@@ -96,7 +126,7 @@ export function renderFacturaOperativaHtml(draft) {
         </div>`;
 
   const tieneNcf = String(doc.ncf || '').trim().length > 0;
-  const emisorDireccionHtml = escapeHtml(String(e.direccion || '')).replace(/\n/g, '<br/>');
+  const emisorDireccionHtml = escapeHtml(String(e.direccion || '').replace(/\s+/g, ' ').trim());
 
   const lineasHtml = lineas
     .map((ln) => {
@@ -240,10 +270,11 @@ export function renderFacturaOperativaHtml(draft) {
 
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:16px;flex-wrap:wrap;">
     <div style="flex:1;min-width:220px;line-height:1.45;font-size:12px;">
-      <div style="font-size:18px;font-weight:800;color:var(--bh-navy);margin-bottom:6px;">${nz(e.nombreComercial)}</div>
+      <div style="font-weight:800;color:var(--bh-navy);margin-bottom:8px;font-size:13px;">Emisor</div>
+      <div style="font-size:16px;font-weight:800;color:var(--bh-navy);margin-bottom:6px;">${nz(e.nombreComercial)}</div>
       <div style="color:#444;">${emisorDireccionHtml || ''}</div>
-      ${e.telefono ? `<div style="color:#444;">Tel.: ${nz(e.telefono, '')}</div>` : ''}
       ${e.rnc ? `<div style="color:#444;"><strong>RNC:</strong> ${nz(e.rnc, '')}</div>` : ''}
+      ${telDgii(e.telefono) ? `<div style="color:#444;">Tel.: ${telDgii(e.telefono)}</div>` : ''}
       ${e.email ? `<div style="color:#444;">${nz(e.email, '')}</div>` : ''}
     </div>
     <div style="text-align:right;max-width:340px;line-height:1.5;font-size:12px;padding:12px 16px;background:var(--bh-warm);border-radius:10px;border:1px solid var(--bh-border-warm);border-left:4px solid var(--bh-yellow);">
@@ -262,7 +293,7 @@ export function renderFacturaOperativaHtml(draft) {
         ${c.nombreRazon ? `<div style="font-weight:600;">${nz(c.nombreRazon)}</div>` : ''}
         ${c.direccion ? `<div style="color:#444;">${nz(c.direccion)}</div>` : ''}
         ${c.email ? `<div style="color:#444;">${nz(c.email)}</div>` : ''}
-        ${c.telefono ? `<div style="color:#444;">Tel.: ${nz(c.telefono)}</div>` : ''}
+        ${telDgii(c.telefono) ? `<div style="color:#444;">Tel.: ${telDgii(c.telefono)}</div>` : ''}
       </td>
       <td style="vertical-align:top;padding:12px 14px;background:#fafbfc;">
         <div style="font-weight:800;color:var(--bh-navy);margin-bottom:8px;font-size:13px;">Detalle del documento</div>

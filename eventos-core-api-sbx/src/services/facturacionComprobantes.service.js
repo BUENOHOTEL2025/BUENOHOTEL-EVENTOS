@@ -1,18 +1,151 @@
 import { ECF } from 'dgii-ecf';
+import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { dynamoDBClient } from '../config/db.config.js';
 import RegistrationModel from '../models/registration.model.js';
-import ComprobanteEcfModel from '../models/comprobanteEcf.model.js';
+import ComprobanteEcfModel, { pickMontoFiscal, montoFromXml } from '../models/comprobanteEcf.model.js';
 import { requireFeStack, isDgiiFeCertConfigured, getDgiiFeRnc } from './dgiiFeCert.service.js';
 import { consultarEstadoValidacionDgii } from './facturacionEmitir.service.js';
 import {
   draftToIecfDocument,
   iecfDocumentToXml,
-  setFechaHoraFirma
+  setFechaHoraFirma,
+  telefonoDgii,
+  printModelFromDraft
 } from './facturacionIecf.mapper.js';
-import { buildCreditFiscalDraftFromRegistration } from './creditFiscalDraft.service.js';
+import {
+  buildCreditFiscalDraftFromRegistration,
+  mergeEmisorFactura
+} from './creditFiscalDraft.service.js';
 import { renderFacturaOperativaHtml } from './creditFiscalPrint.template.js';
 import { enrichVerificacionQr } from './ecfQr.service.js';
 import { resolveDgiiEnvironment } from '../domain/facturacionEmit.schema.js';
+import { peekNextEncf } from './ncfSequence.service.js';
 import { ENVIRONMENT } from 'dgii-ecf';
+
+const bookingDoc = DynamoDBDocumentClient.from(dynamoDBClient, {
+  marshallOptions: { removeUndefinedValues: true }
+});
+const BOOKING_TABLE = String(process.env.BOOKING_ENTITIES_TABLE || 'booking-buenohotel-entities-table').trim();
+
+function arreglarAcentos(s) {
+  let t = String(s || '').trim();
+  if (!t) return '';
+  for (let i = 0; i < 2 && /Ã[\u0080-\u00BF]|Â[\u0080-\u00BF]/.test(t); i += 1) {
+    try {
+      const next = Buffer.from(t, 'latin1').toString('utf8');
+      if (!next || next.includes('\uFFFD')) break;
+      t = next;
+    } catch {
+      break;
+    }
+  }
+  if (/hipermercados/i.test(t) && /compa/i.test(t)) {
+    return 'Compa\u00f1\u00eda Dominicana de Hipermercados';
+  }
+  return t;
+}
+
+function limpiaRazonSocial(s) {
+  return arreglarAcentos(s);
+}
+
+function rowDesdeBooking(item) {
+  const f = item?.factura;
+  const encf = String(f?.encf || f?.respuesta?.encf || '').trim().toUpperCase();
+  if (!/^E\d{12,}$/i.test(encf)) return null;
+  const c = f.comprador || {};
+  const tot = f.totales || {};
+  const resp = f.respuesta || {};
+  const razon = limpiaRazonSocial(c.nombreRazon || c.razonSocial);
+  const ley = Number(tot.ley10) || 0;
+  const otras = Number(tot.subtotalExento) || 0;
+  const monto = pickMontoFiscal(resp.montoTotal, tot.totalRD, tot.MontoTotal, tot);
+  return {
+    encf,
+    origen: 'booking',
+    registroId: null,
+    referenciaInterna: f.transaccion?.numeroFacturaInterna || item.bookingReference || null,
+    rncComprador: String(c.rncCliente || c.rnc || '').replace(/\D/g, '') || null,
+    razonSocial: razon || null,
+    clienteNombre: razon || null,
+    clienteEmail: c.email || null,
+    emailComprador: c.email || null,
+    telefonoComprador: c.telefono || null,
+    direccionComprador: c.direccion || null,
+    trackId: resp.trackId || f.trackId || null,
+    estado: resp.estado || null,
+    codigoSeguridad: resp.codigoSeguridad || null,
+    fechaFirmaDigital: resp.fechaFirmaDigital || null,
+    fileName: resp.fileName || null,
+    codigoQrUrl: resp.codigoQrUrl || null,
+    emitidoAt: f.emitidaEl || f.transaccion?.fechaEmisionISO || null,
+    environment: resp.environment || null,
+    dryRun: resp.dryRun ?? null,
+    montoTotal: monto,
+    snapshot: {
+      comprador: { ...c, nombreRazon: razon || c.nombreRazon },
+      lineas: Array.isArray(f.lineas) ? f.lineas : [],
+      totales: {
+        ...tot,
+        ley10: ley,
+        subtotalExento: otras && Math.abs(otras - ley) > 0.009 ? otras : 0,
+        totalRD: tot.totalRD || monto,
+        MontoTotal: monto
+      },
+      transaccion: f.transaccion || {},
+      documento: { ncf: encf, tipo: 'e-CF' }
+    },
+    tieneImpresion: true,
+    tieneXml: false
+  };
+}
+
+async function listFacturasBooking() {
+  try {
+    const out = [];
+    let ExclusiveStartKey;
+    do {
+      const res = await bookingDoc.send(
+        new ScanCommand({ TableName: BOOKING_TABLE, ExclusiveStartKey })
+      );
+      for (const item of res.Items || []) {
+        const row = rowDesdeBooking(item);
+        if (row) out.push(row);
+      }
+      ExclusiveStartKey = res.LastEvaluatedKey;
+    } while (ExclusiveStartKey);
+    return out;
+  } catch (e) {
+    console.error('listar facturas booking:', e?.message || e);
+    return [];
+  }
+}
+
+function mergeComprobante(prev, next) {
+  const p = prev || {};
+  const n = next || {};
+  return {
+    ...p,
+    ...n,
+    razonSocial: arreglarAcentos(n.razonSocial || p.razonSocial) || null,
+    clienteNombre: arreglarAcentos(n.clienteNombre || n.razonSocial || p.clienteNombre || p.razonSocial) || null,
+    rncComprador: n.rncComprador || p.rncComprador || null,
+    emailComprador: n.emailComprador || n.clienteEmail || p.emailComprador || p.clienteEmail || null,
+    telefonoComprador: n.telefonoComprador || p.telefonoComprador || null,
+    direccionComprador: n.direccionComprador || p.direccionComprador || null,
+    montoTotal: pickMontoFiscal(n.montoTotal, p.montoTotal),
+    trackId: n.trackId || p.trackId || null,
+    codigoSeguridad: n.codigoSeguridad || p.codigoSeguridad || null,
+    fechaFirmaDigital: n.fechaFirmaDigital || p.fechaFirmaDigital || null,
+    registroId: n.registroId || p.registroId || null,
+    fileName: n.fileName || p.fileName || null,
+    referenciaInterna: n.referenciaInterna || n.codigoCorto || p.referenciaInterna || p.codigoCorto || null,
+    tieneImpresion: Boolean(
+      n.tieneImpresion || p.tieneImpresion || n.snapshot || n.registroId || p.registroId
+    ),
+    tieneXml: Boolean(n.tieneXml || p.tieneXml || n.xmlFirmado || p.xmlFirmado || n.registroId || p.registroId)
+  };
+}
 
 function envToLibrary(envName) {
   if (envName === 'PROD') return ENVIRONMENT.PROD;
@@ -49,15 +182,16 @@ function ledgerToListRow(item) {
     codigoCorto: item.referenciaInterna || null,
     eventoId: null,
     eventoNombre: item.origen === 'booking' ? 'Booking' : item.origen === 'eventos' ? 'Eventos' : item.origen || null,
-    clienteNombre: item.razonSocial || null,
-    clienteEmail: null,
+    clienteNombre: arreglarAcentos(item.razonSocial) || null,
+    clienteEmail: item.emailComprador || null,
+    telefonoComprador: item.telefonoComprador || null,
     rncComprador: item.rncComprador || null,
-    razonSocial: item.razonSocial || null,
+    razonSocial: arreglarAcentos(item.razonSocial) || null,
     encf: item.encf,
     tipoeCF: item.tipoeCF || null,
     trackId: item.trackId || null,
     estado: item.estado || null,
-    codigoDgii: item.codigoDgii ?? null,
+    codigoDgii: item.codigoDgii != null && item.codigoDgii !== '' ? Number(item.codigoDgii) : null,
     codigoSeguridad: item.codigoSeguridad || null,
     fechaFirmaDigital: item.fechaFirmaDigital || null,
     emitidoAt: item.emitidoAt || null,
@@ -66,7 +200,8 @@ function ledgerToListRow(item) {
     fileName: item.fileName || null,
     mensajes: item.mensajes || null,
     origen: item.origen || (item.registroId ? 'eventos' : 'booking'),
-    montoTotal: item.montoTotal ?? null,
+    montoTotal: pickMontoFiscal(item.montoTotal, montoFromXml(item.xmlFirmado)),
+    direccionComprador: item.direccionComprador || null,
     errorEnvio: Boolean(item.errorEnvio),
     tieneXml: Boolean(item.xmlFirmado) || Boolean(item.tieneXml),
     tieneImpresion: Boolean(item.tieneImpresion) || Boolean(item.snapshot) || Boolean(item.registroId)
@@ -75,11 +210,13 @@ function ledgerToListRow(item) {
 
 async function seedLedgerFromEventos(eventosRows) {
   const existing = await ComprobanteEcfModel.listAll({ includeHeavy: false });
-  const have = new Set(existing.map((x) => String(x.encf || '').toUpperCase()));
+  const byEncf = new Map(existing.map((x) => [String(x.encf || '').toUpperCase(), x]));
   for (const row of eventosRows) {
     const encf = String(row.encf || '').trim().toUpperCase();
-    if (!encf || have.has(encf)) continue;
-    await ComprobanteEcfModel.put({
+    if (!encf) continue;
+    const cur = byEncf.get(encf);
+    if (cur?.razonSocial && pickMontoFiscal(cur.montoTotal)) continue;
+    await ComprobanteEcfModel.upsert({
       encf,
       tipoeCF: row.tipoeCF || 31,
       origen: 'eventos',
@@ -96,40 +233,115 @@ async function seedLedgerFromEventos(eventosRows) {
       environment: row.environment || null,
       dryRun: row.dryRun ?? null,
       emitidoAt: row.emitidoAt || null,
+      montoTotal: row.montoTotal ?? null,
       mensajes: row.mensajes || null
     });
-    have.add(encf);
+    byEncf.set(encf, { ...(cur || {}), encf });
+  }
+}
+
+async function seedLedgerFromBooking(bookingRows) {
+  const existing = await ComprobanteEcfModel.listAll({ includeHeavy: false });
+  const byEncf = new Map(existing.map((x) => [String(x.encf || '').toUpperCase(), x]));
+  for (const row of bookingRows) {
+    const encf = String(row.encf || '').trim().toUpperCase();
+    if (!encf) continue;
+    const cur = byEncf.get(encf);
+    if (cur?.razonSocial && pickMontoFiscal(cur.montoTotal) && cur.tieneImpresion) continue;
+    try {
+      await ComprobanteEcfModel.upsert({
+        encf,
+        tipoeCF: row.tipoeCF || 31,
+        origen: cur?.origen || 'booking',
+        referenciaInterna: row.referenciaInterna || null,
+        rncComprador: row.rncComprador || null,
+        razonSocial: row.razonSocial || null,
+        emailComprador: row.emailComprador || null,
+        telefonoComprador: row.telefonoComprador || null,
+        direccionComprador: row.direccionComprador || null,
+        trackId: row.trackId || null,
+        estado: cur?.estado || row.estado || null,
+        codigoSeguridad: row.codigoSeguridad || null,
+        fechaFirmaDigital: row.fechaFirmaDigital || null,
+        fileName: row.fileName || null,
+        codigoQrUrl: row.codigoQrUrl || null,
+        environment: row.environment || null,
+        emitidoAt: row.emitidoAt || cur?.emitidoAt || null,
+        montoTotal: row.montoTotal ?? null,
+        snapshot: row.snapshot || null,
+        tieneImpresion: true
+      });
+    } catch (e) {
+      console.error('seed ledger booking', encf, e?.message || e);
+    }
   }
 }
 
 export async function listarComprobantesEmitidos() {
-  const eventos = await RegistrationModel.listComprobantesFiscales();
+  let eventos = [];
+  let booking = [];
   try {
-    await seedLedgerFromEventos(eventos);
+    eventos = await RegistrationModel.listComprobantesFiscales();
+  } catch (e) {
+    console.error('listar eventos fiscales:', e?.message || e);
+  }
+  try {
+    booking = await listFacturasBooking();
+  } catch (e) {
+    console.error('listar booking fiscales:', e?.message || e);
+  }
+  try {
+    try {
+      await seedLedgerFromEventos(eventos);
+    } catch (e) {
+      console.error('seed ledger eventos:', e?.message || e);
+    }
+    try {
+      await seedLedgerFromBooking(booking);
+    } catch (e) {
+      console.error('seed ledger booking:', e?.message || e);
+    }
     const ledger = await ComprobanteEcfModel.listAll();
     const byEncf = new Map();
+    for (const row of booking) {
+      const k = String(row.encf || '').toUpperCase();
+      if (k) byEncf.set(k, mergeComprobante(byEncf.get(k), row));
+    }
     for (const row of eventos) {
       const k = String(row.encf || '').toUpperCase();
-      if (k) byEncf.set(k, { ...row, origen: 'eventos', tieneImpresion: true, tieneXml: true });
+      if (k) {
+        byEncf.set(
+          k,
+          mergeComprobante(byEncf.get(k), { ...row, origen: 'eventos', tieneImpresion: true, tieneXml: true })
+        );
+      }
     }
     for (const item of ledger) {
       const k = String(item.encf || '').toUpperCase();
       if (!k) continue;
-      const prev = byEncf.get(k) || {};
-      byEncf.set(k, {
-        ...prev,
-        ...ledgerToListRow(item),
-        registroId: item.registroId || prev.registroId || null,
-        tieneImpresion: Boolean(item.tieneImpresion || item.registroId || prev.registroId),
-        tieneXml: Boolean(item.tieneXml || item.registroId || prev.registroId)
-      });
+      byEncf.set(k, mergeComprobante(byEncf.get(k), ledgerToListRow(item)));
     }
     const items = [...byEncf.values()].sort((a, b) =>
       String(b.emitidoAt || '').localeCompare(String(a.emitidoAt || ''))
     );
+    for (const row of items) {
+      if (!row.registroId) continue;
+      try {
+        const draft = await buildCreditFiscalDraftFromRegistration(row.registroId);
+        const m = pickMontoFiscal(draft?.totales);
+        if (m) row.montoTotal = m;
+      } catch (_) {
+        /* keep ledger/eventos amount */
+      }
+    }
+    let secuencia = null;
+    try {
+      secuencia = await peekNextEncf(31);
+    } catch (_) {}
     return {
       environment: resolveDgiiEnvironment(),
       consultaResultadoUrl: urlConsultaResultado(),
+      secuencia,
       total: items.length,
       items: items.map(decorate)
     };
@@ -229,8 +441,15 @@ async function resolveLedger(id) {
 function ledgerToPrintDraft(item) {
   const s = item.snapshot && typeof item.snapshot === 'object' ? item.snapshot : {};
   return {
-    emisor: s.emisor || {},
-    comprador: s.comprador || {},
+    emisor: mergeEmisorFactura(s.emisor),
+    comprador: {
+      ...(s.comprador || {}),
+      nombreRazon: arreglarAcentos(
+        (s.comprador || {}).nombreRazon || item.razonSocial || (s.comprador || {}).razonSocial
+      ),
+      telefono: telefonoDgii((s.comprador || {}).telefono || (s.comprador || {}).telefonoFiscal)
+        || String((s.comprador || {}).telefono || '').replace(/\D/g, '').slice(-10)
+    },
     documento: { ...(s.documento || {}), ncf: item.encf, tipo: s.documento?.tipo || 'e-CF' },
     transaccion: s.transaccion || {},
     lineas: Array.isArray(s.lineas) ? s.lineas : [],
@@ -298,7 +517,7 @@ export async function htmlComprobante(id) {
       codigoSeguridad: ledger.codigoSeguridad,
       environment: ledger.environment
     });
-    return renderFacturaOperativaHtml(draft);
+    return renderFacturaOperativaHtml(printModelFromDraft(draft, { encf: ledger.encf }));
   }
   const regId = ledger?.registroId || raw;
   const item = await RegistrationModel.getById(regId);
@@ -310,7 +529,8 @@ export async function htmlComprobante(id) {
     throw err;
   }
   const draft = await buildCreditFiscalDraftFromRegistration(item.id);
-  return renderFacturaOperativaHtml(draft);
+  const encf = String(item?.detalles?.ncfElectronico || ledger?.encf || draft?.documento?.ncf || '').trim();
+  return renderFacturaOperativaHtml(printModelFromDraft(draft, { encf }));
 }
 
 async function clienteDgiiAutenticado() {
@@ -455,6 +675,11 @@ export async function consultarComprobanteDgii({ registroId, trackId, encf } = {
   }
 
   const consultaResultado = by.consultaResultado?.ok ? by.consultaResultado.data : null;
+  const tracksData = by.tracks?.ok ? by.tracks.data : null;
+  const t0 = tracksArray(tracksData)[0] || {};
+  const pub = by.estadoPublico?.ok && by.estadoPublico.data && typeof by.estadoPublico.data === 'object'
+    ? by.estadoPublico.data
+    : {};
   if (id && consultaResultado) {
     await RegistrationModel.upsertDetallesAndTouch(
       id,
@@ -468,12 +693,38 @@ export async function consultarComprobanteDgii({ registroId, trackId, encf } = {
     );
   }
 
-  if (ledger?.encf && consultaResultado) {
-    await ComprobanteEcfModel.patch(ledger.encf, {
-      estado: consultaResultado.estado || ledger.estado,
-      codigoDgii: consultaResultado.codigo ?? ledger.codigoDgii,
-      mensajes: consultaResultado.mensajes || ledger.mensajes || []
-    });
+  const encfLibro = String(ncf || consultaResultado?.encf || t0.encf || ledger?.encf || '').trim().toUpperCase();
+  if (encfLibro) {
+    try {
+      const codigoRaw = consultaResultado?.codigo ?? ledger?.codigoDgii;
+      const codigoNum = codigoRaw == null || codigoRaw === '' ? undefined : Number(codigoRaw);
+      ledger = await ComprobanteEcfModel.upsert({
+        encf: encfLibro,
+        tipoeCF: Number(String(encfLibro).replace(/^E/, '').slice(0, 2)) || ledger?.tipoeCF || 31,
+        origen: ledger?.origen && ledger.origen !== 'consulta' ? ledger.origen : (id ? 'eventos' : ledger?.origen || 'consulta'),
+        registroId: id || ledger?.registroId || undefined,
+        trackId: track || consultaResultado?.trackId || t0.trackId || t0.trackid || ledger?.trackId || undefined,
+        estado: consultaResultado?.estado || t0.estado || ledger?.estado || undefined,
+        codigoDgii: Number.isFinite(codigoNum) ? codigoNum : undefined,
+        mensajes: Array.isArray(consultaResultado?.mensajes)
+          ? consultaResultado.mensajes
+          : ledger?.mensajes || [],
+        rncComprador: ledger?.rncComprador || rncComprador || pub.rncComprador || pub.RNCComprador || undefined,
+        razonSocial: ledger?.razonSocial || pub.razonSocial || pub.RazonSocialComprador || undefined,
+        montoTotal: pickMontoFiscal(
+          ledger?.montoTotal,
+          pub.montoTotal,
+          pub.MontoTotal,
+          t0.montoTotal
+        ),
+        environment: ledger?.environment || envName,
+        fechaRecepcion: consultaResultado?.fechaRecepcion || t0.fechaRecepcion || ledger?.fechaRecepcion || undefined,
+        emitidoAt: ledger?.emitidoAt || undefined,
+        consultadoAt: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error('consulta no pudo guardar libro:', e?.message || e);
+    }
   }
 
   let previewComprador = null;
@@ -487,7 +738,10 @@ export async function consultarComprobanteDgii({ registroId, trackId, encf } = {
   if (!previewComprador && ledger) {
     previewComprador = {
       rnc: ledger.rncComprador || null,
-      razonSocial: ledger.razonSocial || null
+      razonSocial: ledger.razonSocial || null,
+      email: ledger.emailComprador || null,
+      telefono: ledger.telefonoComprador || null,
+      direccion: ledger.direccionComprador || ledger.snapshot?.comprador?.direccion || null
     };
   }
 
@@ -515,3 +769,67 @@ export async function consultarComprobanteDgii({ registroId, trackId, encf } = {
     previewComprador
   };
 }
+
+function round2(n) {
+  return Math.round((Number(n) || 0) * 100) / 100;
+}
+
+export async function duplicarComprobante(id) {
+  const ledger = await resolveLedger(id);
+  if (!ledger) {
+    const err = new Error('No se encontró ese comprobante.');
+    err.status = 404;
+    throw err;
+  }
+  const s = ledger.snapshot && typeof ledger.snapshot === 'object' ? ledger.snapshot : {};
+  const tot = s.totales && typeof s.totales === 'object' ? s.totales : {};
+  const cobrado = round2(pickMontoFiscal(tot.totalRD, tot.MontoTotal, ledger.montoTotal) || 0);
+  const ley = round2(Number(tot.ley10) || 0);
+  const rawLineas = Array.isArray(s.lineas) ? s.lineas : [];
+  const gravadas = rawLineas.filter((ln) => {
+    if (ln?.gravadoItbis === false) return false;
+    return !/^10\s*%\s*ley/i.test(String(ln?.descripcion || '').trim());
+  });
+  const sumImp = gravadas.reduce((acc, ln) => acc + (Number(ln?.importeLinea) || 0), 0);
+  let lineas = gravadas.map((ln) => {
+    const cantidad = Number(ln?.cantidad) > 0 ? Number(ln.cantidad) : 1;
+    const imp = Number(ln?.importeLinea) || 0;
+    const shareLey = sumImp > 0 ? ley * (imp / sumImp) : 0;
+    const inclusive = round2(imp + shareLey);
+    return {
+      descripcion: String(ln?.descripcion || '').trim(),
+      cantidad,
+      precioUnitario: round2(inclusive / cantidad),
+      descuento: 0
+    };
+  });
+  if (!lineas.length && cobrado > 0) {
+    lineas = [
+      {
+        descripcion: 'Servicio',
+        cantidad: 1,
+        precioUnitario: cobrado,
+        descuento: 0
+      }
+    ];
+  }
+  const c = s.comprador || {};
+  return {
+    form: {
+      origen: ledger.origen || 'manual',
+      origenOtro: '',
+      nombreRazon: String(c.nombreRazon || ledger.razonSocial || '').trim(),
+      rnc: String(c.rncCliente || c.rnc || ledger.rncComprador || '').replace(/\D/g, ''),
+      email: String(c.email || ledger.emailComprador || '').trim(),
+      telefono: String(c.telefono || ledger.telefonoComprador || '').replace(/\D/g, '').slice(0, 10),
+      direccion: String(c.direccion || ledger.direccionComprador || '').trim(),
+      itbis: 0,
+      totalRD: cobrado,
+      moneda: 'DOP',
+      descGlobal: 0
+    },
+    lineas,
+    encfOrigen: ledger.encf || null
+  };
+}
+

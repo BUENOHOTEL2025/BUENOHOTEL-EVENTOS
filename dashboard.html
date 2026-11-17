@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="es" class="bh-remote-chrome">
 <head>
@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Cuenta - BuenoHotel Eventos</title>
   <link rel="stylesheet" href="styles.css?v=20260923c">
-  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20260926x">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261107q">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <!-- Favicon / App Icons -->
   <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
@@ -182,11 +182,11 @@
 <body>
   <!-- Shared navbar placeholder -->
   <div id="site-header"></div>
-  <script src="js/auth.js?v=20260923c"></script>
-  <script src="https://buenohotel.com/js/config.js?v=20260929a"></script>
+  <script src="js/auth.js?v=20261117a"></script>
+  <script src="https://buenohotel.com/js/config.js?v=20261029e"></script>
   <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
-  <script src="https://buenohotel.com/js/site-shell.js?v=20261002a"></script>
-  <script src="js/navbar.js?v=20260919m"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261117n"></script>
+  <script src="js/navbar.js?v=20261117a"></script>
 
   <div class="dashboard-container">
     <div class="welcome-section">
@@ -357,18 +357,27 @@
         showToast({ title: 'Bienvenido', message: `Hola ${nombre}, nos alegra verte de vuelta.`, type: 'success', duration: 1800 });
       }
 
-      // Enlace al Panel Admin (solo para administradores)
+      // Enlaces de administración (solo para administradores)
       try {
         if (window.auth && typeof window.auth.isAdmin === 'function' && window.auth.isAdmin()) {
           const menu = document.querySelector('.sidebar .nav-menu');
-          if (menu && !menu.querySelector('#nav-admin-link')) {
+          const logoutLi = menu?.querySelector('#sidebar-logout')?.closest('li');
+          const insertAdminItem = (id, html) => {
+            if (!menu || menu.querySelector('#' + id)) return;
             const li = document.createElement('li');
             li.className = 'nav-item';
-            li.innerHTML = '<a id="nav-admin-link" href="admin.html" class="nav-link" data-requires-auth>Panel Admin</a>';
-            // Insertar antes del botón Cerrar Sesión
-            const logoutLi = menu.querySelector('#sidebar-logout')?.closest('li');
+            li.innerHTML = html;
             if (logoutLi) menu.insertBefore(li, logoutLi); else menu.appendChild(li);
-          }
+          };
+          insertAdminItem('nav-admin-link', '<a id="nav-admin-link" href="admin.html" class="nav-link" data-requires-auth>Panel Admin</a>');
+          insertAdminItem(
+            'nav-comprobantes-link',
+            '<a id="nav-comprobantes-link" href="https://ecommerce.buenohotel.com.do/admin/comprobantes" class="nav-link" target="_blank" rel="noopener">Comprobantes</a>'
+          );
+          insertAdminItem(
+            'nav-galeria-link',
+            '<a id="nav-galeria-link" href="https://buenohotel.com/admin/fotos-eventos" class="nav-link" target="_blank" rel="noopener">Galería</a>'
+          );
         }
       } catch(_) {}
 
@@ -680,3 +689,4 @@
   </script>
 </body>
 </html>
+

@@ -10,7 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import XLSX from 'xlsx';
+import { XLSX, readWorkbook } from './lib/xlsxIo.js';
 import { Transformer } from 'dgii-ecf';
 import { flatRowToDocument } from './lib/flatRowToDocument.js';
 import { buildPaso4PatchSets, isPaso4Manifest } from './lib/paso4EncfMap.js';
@@ -94,7 +94,7 @@ function main() {
   ensureDir(path.join(outDir, 'rfce-firmados'));
   ensureDir(path.join(outDir, 'envio-resultados'));
 
-  const wb = XLSX.readFile(excelPath, { cellDates: true });
+  const wb = readWorkbook(excelPath, { cellDates: true });
   const rfceFc32Set = /paso4|simulaci/i.test(path.basename(excelPath))
     ? buildPaso4PatchSets().RFCE_FC32
     : PASO2_RFCE_FC32_ENCF;

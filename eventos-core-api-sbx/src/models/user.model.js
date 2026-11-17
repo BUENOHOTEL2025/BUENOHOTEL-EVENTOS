@@ -1,4 +1,9 @@
-import { DynamoDBDocumentClient, ScanCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { randomUUID } from 'crypto';
+import { createRequire } from 'module';
+import { DynamoDBDocumentClient, ScanCommand, GetCommand, UpdateCommand, QueryCommand, PutCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+
+const require = createRequire(import.meta.url);
+const bcrypt = require('bcryptjs');
 import { dynamoDBClient } from '../config/db.config.js';
 
 const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
@@ -36,8 +41,16 @@ function pickUser(raw){
   return { id: String(id||'').trim(), nombreCompleto: String(nombreCompleto||'').trim(), email: String(email||'').trim() };
 }
 
+function looksMarshalled(val) {
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return false;
+  const keys = Object.keys(val);
+  return keys.length === 1 && ['S', 'N', 'BOOL', 'M', 'L'].includes(keys[0]);
+}
+
 function pickUserFull(raw){
-  const item = unmarshal(raw || {});
+  const item = looksMarshalled(raw) || (raw && typeof raw === 'object' && looksMarshalled(Object.values(raw)[0]))
+    ? unmarshal(raw || {})
+    : { ...(raw || {}) };
   let id = item.id || item.userId || item.usuarioId || item.pk || '';
   if (typeof id === 'string' && id.startsWith('USER#')) id = id.slice(5);
   const out = { ...item, id: String(id || '').trim() };
@@ -47,7 +60,90 @@ function pickUserFull(raw){
   return out;
 }
 
+const EMAIL_GSI = process.env.EMAIL_GSI || 'EmailIndex';
+const ADMIN_PROJECTION =
+  'id, email, #r, activo, nombre, apellido, nombreCompleto, telefono, permisosEcf, fechaActualizacion';
+
 export default class UserModel {
+  static async getByEmail(email) {
+    const key = String(email || '').trim().toLowerCase();
+    if (!key) return null;
+    try {
+      const res = await docClient.send(
+        new QueryCommand({
+          TableName: TABLE_NAME,
+          IndexName: EMAIL_GSI,
+          KeyConditionExpression: 'email = :e',
+          ExpressionAttributeValues: { ':e': key },
+          Limit: 1
+        })
+      );
+      const item = Array.isArray(res.Items) && res.Items[0] ? res.Items[0] : null;
+      return item ? pickUserFull(item) : null;
+    } catch (err) {
+      console.error('usuarios getByEmail:', err?.message || err);
+      return null;
+    }
+  }
+
+  static async listByEmails(emails) {
+    const uniq = [
+      ...new Set(
+        (emails || [])
+          .map((e) => String(e || '').trim().toLowerCase())
+          .filter(Boolean)
+      )
+    ];
+    const rows = await Promise.all(uniq.map((e) => this.getByEmail(e)));
+    return rows.filter(Boolean);
+  }
+
+  static async listPanelAdmins(extraEmails = []) {
+    const seeds = String(
+      process.env.ECF_ADMIN_EMAILS ||
+        'soporte@buenohotel.com.do,elmerluissainthilarerojo@gmail.com,info@buenohotel.com'
+    )
+      .split(/[,;]/)
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const queried = await this.listByEmails([...seeds, ...(extraEmails || [])]);
+    try {
+      const scanned = await Promise.race([
+        this.scanRolAdmin(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('scan-timeout')), 3500))
+      ]);
+      const map = new Map();
+      [...queried, ...scanned].forEach((u) => {
+        if (u && (u.id || u.email)) map.set(String(u.email || u.id).toLowerCase(), u);
+      });
+      return Array.from(map.values());
+    } catch (err) {
+      console.error('listPanelAdmins scan:', err?.message || err);
+      return queried;
+    }
+  }
+
+  static async scanRolAdmin() {
+    const acc = [];
+    let LastEvaluatedKey = undefined;
+    do {
+      const res = await docClient.send(
+        new ScanCommand({
+          TableName: TABLE_NAME,
+          ProjectionExpression: ADMIN_PROJECTION,
+          FilterExpression: '#r IN (:a, :b)',
+          ExpressionAttributeNames: { '#r': 'rol' },
+          ExpressionAttributeValues: { ':a': 'admin', ':b': 'administrador' },
+          ExclusiveStartKey: LastEvaluatedKey
+        })
+      );
+      const items = Array.isArray(res.Items) ? res.Items : [];
+      for (const it of items) acc.push(pickUserFull(it));
+      LastEvaluatedKey = res.LastEvaluatedKey;
+    } while (LastEvaluatedKey);
+    return acc;
+  }
+
   static async listAll(){
     const params = { TableName: TABLE_NAME };
     const acc = [];
@@ -87,7 +183,17 @@ export default class UserModel {
     const key = String(id || '').trim();
     if (!key) throw new Error('id requerido');
 
-    const allowedFields = ['nombre', 'apellido', 'telefono', 'documento', 'tipoDocumento', 'fechaNacimiento', 'rol', 'activo'];
+    const allowedFields = [
+      'nombre',
+      'apellido',
+      'telefono',
+      'documento',
+      'tipoDocumento',
+      'fechaNacimiento',
+      'rol',
+      'activo',
+      'permisosEcf'
+    ];
     const updates = {};
     for (const field of allowedFields){
       if (data[field] !== undefined) updates[field] = data[field];
@@ -118,5 +224,36 @@ export default class UserModel {
 
     const res = await docClient.send(new UpdateCommand(params));
     return pickUserFull(res.Attributes);
+  }
+
+  static async createAdmin({ email, password, nombre, apellido, telefono, permisosEcf }) {
+    const now = new Date().toISOString();
+    const id = randomUUID();
+    const hash = bcrypt.hashSync(String(password || '').replace(/\s+/g, ''), 10);
+    const item = {
+      id,
+      email: String(email).trim().toLowerCase(),
+      nombre: String(nombre || '').trim(),
+      apellido: String(apellido || '').trim(),
+      nombreCompleto: [String(nombre || '').trim(), String(apellido || '').trim()].filter(Boolean).join(' '),
+      telefono: String(telefono || '').trim(),
+      rol: 'admin',
+      activo: true,
+      password: hash,
+      permisosEcf: permisosEcf || {},
+      fechaCreacion: now,
+      fechaActualizacion: now
+    };
+    await docClient.send(new PutCommand({ TableName: TABLE_NAME, Item: item }));
+    return pickUserFull(item);
+  }
+
+  static async deleteById(id) {
+    const key = String(id || '').trim();
+    if (!key) throw new Error('id requerido');
+    const existing = await this.getById(key);
+    if (!existing) return null;
+    await docClient.send(new DeleteCommand({ TableName: TABLE_NAME, Key: { id: existing.id || key } }));
+    return existing;
   }
 }

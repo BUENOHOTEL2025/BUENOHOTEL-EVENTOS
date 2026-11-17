@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import RegistrationModel from '../models/registration.model.js';
 import { buildCreditFiscalDraftFromRegistration } from '../services/creditFiscalDraft.service.js';
 import { renderFacturaOperativaHtml } from '../services/creditFiscalPrint.template.js';
+import { printModelFromDraft } from '../services/facturacionIecf.mapper.js';
 import { SAMPLE_FACTURA_OPERAHOTEL } from '../domain/creditFiscalInvoice.schema.js';
 
 const nowISO = () => new Date().toISOString();
@@ -136,8 +137,11 @@ export const getFacturaBorrador = async (req, res, _next) => {
     const draft = await buildCreditFiscalDraftFromRegistration(item.id);
     const formato = String(req.query.formato || '').trim().toLowerCase();
     if (formato === 'html') {
+      const encf = String(det.ncfElectronico || draft?.documento?.ncf || '').trim();
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.send(renderFacturaOperativaHtml(draft));
+      return res.send(
+        renderFacturaOperativaHtml(printModelFromDraft(draft, { encf, esPreview: !encf }))
+      );
     }
     return res.json({ success: true, data: draft });
   } catch (err) {
@@ -184,10 +188,19 @@ export const getRegistrationById = async (req, res, next) => {
     const { id } = req.params;
     let item = await RegistrationModel.getById(id);
     if (!item) {
-      // Permitir buscar por codigo corto
       item = await RegistrationModel.getByShortCode(id);
     }
     if (!item) return res.status(404).json({ success:false, message:'No encontrado' });
+    const p = req.jwtPayload || parseJwtPayload(req.headers['authorization'] || '');
+    const email = String(p.email || '').trim().toLowerCase();
+    const userId = String(p.sub || p.user_id || '').trim();
+    const admin = isAdminEmailFromJwt(email) || isAdminFromJwtPayload(p);
+    const belongs =
+      (item.userId && userId && String(item.userId) === userId) ||
+      (item?.datosPersona?.email && email && String(item.datosPersona.email).toLowerCase() === email);
+    if (!admin && !belongs) {
+      return res.status(403).json({ success: false, message: 'No autorizado' });
+    }
     return res.json({ success:true, data: item });
   } catch (err) { next(err); }
 };
@@ -254,6 +267,12 @@ export const createRegistration = async (req, res, next) => {
     } = req.body || {};
 
     const _eventId = eventId || eventoId;
+    delete rest.estado;
+    delete rest.pagos;
+    delete rest.totalAprobado;
+    delete rest.ncfElectronico;
+    delete rest.factura;
+    delete rest.force;
 
     // Validaciones mínimas
     if (!_eventId) return res.status(400).json({ success:false, message:'eventId es requerido' });

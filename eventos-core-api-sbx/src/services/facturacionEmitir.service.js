@@ -1,21 +1,30 @@
 import { ECF, ENVIRONMENT, getCodeSixDigitfromSignature } from 'dgii-ecf';
 import RegistrationModel from '../models/registration.model.js';
 import ComprobanteEcfModel from '../models/comprobanteEcf.model.js';
-import { buildCreditFiscalDraftFromRegistration } from './creditFiscalDraft.service.js';
+import {
+  buildCreditFiscalDraftFromRegistration,
+  mergeEmisorFactura
+} from './creditFiscalDraft.service.js';
 import { requireFeStack, isDgiiFeCertConfigured, getDgiiFeRnc } from './dgiiFeCert.service.js';
-import { allocateNextEncf } from './ncfSequence.service.js';
+import { allocateNextEncf, peekNextEncf } from './ncfSequence.service.js';
 import {
   draftToIecfDocument,
   iecfDocumentToXml,
   setFechaHoraFirma,
   fechaHoraFirmaNow,
-  formatFechaDgii
+  formatFechaDgii,
+  assertXmlListoParaEmitir,
+  assertXmlCumpleDgii,
+  telefonoDgii,
+  printModelFromDraft
 } from './facturacionIecf.mapper.js';
 import {
   isDryRunDefault,
   normalizeTipoeCF,
   resolveDgiiEnvironment,
-  validateDirectEmitPayload
+  validateDirectEmitPayload,
+  validateDraftEmit,
+  digitsOnly
 } from '../domain/facturacionEmit.schema.js';
 import { buildCodigoQrDataUrl } from './ecfQr.service.js';
 import { renderFacturaOperativaHtml } from './creditFiscalPrint.template.js';
@@ -35,10 +44,19 @@ function resolveDryRun(body) {
  * Convierte payload directo al shape del draft interno.
  */
 function directPayloadToDraft(body) {
+  const c = body.comprador || {};
+  const comprador = {
+    ...c,
+    nombreRazon: String(c.nombreRazon || c.razonSocialComprador || '').trim(),
+    rncCliente: digitsOnly(c.rncCliente || c.rncComprador || c.rnc),
+    email: String(c.email || c.correo || c.emailFiscal || '').trim(),
+    telefono: telefonoDgii(c.telefono || c.telefonoFiscal || ''),
+    direccion: String(c.direccion || c.direccionFiscal || '').trim()
+  };
   return {
     tipoeCF: body.tipoeCF,
-    emisor: body.emisor || {},
-    comprador: body.comprador || {},
+    emisor: mergeEmisorFactura(body.emisor),
+    comprador,
     documento: body.documento || {},
     transaccion: body.transaccion || {
       fechaEmisionISO: new Date().toISOString(),
@@ -49,19 +67,35 @@ function directPayloadToDraft(body) {
   };
 }
 
+function denyEmit(message, code = 'DGII_XML_PREFLIGHT') {
+  const err = new Error(message);
+  err.status = 400;
+  err.code = code;
+  throw err;
+}
+
 async function loadDraft(body) {
   const registroId = String(body?.registroId || '').trim();
+  let draft;
+  let fromRegistro = false;
+  let id = null;
   if (registroId) {
-    const draft = await buildCreditFiscalDraftFromRegistration(registroId);
-    return { draft, registroId: draft._meta?.registroId || registroId, fromRegistro: true };
+    draft = await buildCreditFiscalDraftFromRegistration(registroId);
+    fromRegistro = true;
+    id = draft._meta?.registroId || registroId;
+  } else {
+    const v = validateDirectEmitPayload(body);
+    if (!v.ok) denyEmit(`${v.error}. No se enviará a Impuestos Internos.`);
+    draft = directPayloadToDraft(body);
   }
-  const v = validateDirectEmitPayload(body);
-  if (!v.ok) {
-    const err = new Error(v.error);
-    err.status = 400;
-    throw err;
+  draft.emisor = mergeEmisorFactura(draft.emisor);
+  const all = validateDraftEmit(draft);
+  if (!all.ok) {
+    denyEmit(
+      `${all.error}. Completa RNC, razón social, teléfono 809/829/849, correo y dirección (Booking, Eventos o panel). No se enviará a Impuestos Internos.`
+    );
   }
-  return { draft: directPayloadToDraft(body), registroId: null, fromRegistro: false };
+  return { draft, registroId: id, fromRegistro };
 }
 
 function compactDraft(draft) {
@@ -78,23 +112,55 @@ function compactDraft(draft) {
 
 export function resolveOrigenEmision(body, registroId) {
   if (registroId) return 'eventos';
-  const raw = String(body?.origen || body?.fuente || body?.source || body?.sistema || '')
-    .trim()
-    .toLowerCase();
+  const raw = String(body?.origen || body?.fuente || body?.source || body?.sistema || '').trim();
+  if (!raw) return 'booking';
+  const key = raw.toLowerCase();
   const allowed = ['eventos', 'booking', 'ecommerce', 'manual', 'seguro', 'tours'];
-  if (allowed.includes(raw)) return raw;
-  return 'booking';
+  if (allowed.includes(key)) return key;
+  if (key === 'otro') return 'manual';
+  const custom = raw.replace(/[^a-zA-Z0-9áéíóúñüÁÉÍÓÚÑÜ ._-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40);
+  return custom || 'manual';
 }
 
 function ledgerErrorText(err) {
   return String(err?.mensaje || err?.error || err?.message || err || 'Error de envío');
 }
 
+function flagsLibro(record) {
+  return {
+    tieneXml: Boolean(record.xmlFirmado || record.tieneXml),
+    tieneImpresion: Boolean(
+      record.tieneImpresion ||
+        (record.snapshot && (record.snapshot.lineas?.length || record.snapshot.comprador)) ||
+        record.registroId
+    )
+  };
+}
+
 async function guardarEnLibro(record) {
+  const flags = flagsLibro(record);
+  const { xmlFirmado, snapshot, ...rest } = record;
+  const light = { ...rest, ...flags };
   try {
-    await ComprobanteEcfModel.put(record);
+    await ComprobanteEcfModel.upsert(light);
   } catch (e) {
-    console.error('libro comprobantes_ecf:', e?.message || e);
+    console.error('libro comprobantes_ecf light:', e?.name, e?.message || e);
+  }
+  try {
+    await ComprobanteEcfModel.upsert({ ...record, ...flags });
+  } catch (e) {
+    console.error('libro comprobantes_ecf:', e?.name, e?.message || e);
+    try {
+      await ComprobanteEcfModel.upsert({
+        ...light,
+        snapshot,
+        ...flags,
+        tieneXml: Boolean(xmlFirmado)
+      });
+      console.error('libro comprobantes_ecf: guardado sin XML firmado');
+    } catch (e2) {
+      console.error('libro comprobantes_ecf FALLÓ:', e2?.name, e2?.message || e2);
+    }
   }
 }
 
@@ -131,6 +197,37 @@ export async function emitirFacturaElectronica(body = {}) {
     err.code = 'DGII_NCF_TIPO_32_NO_AUTORIZADO';
     throw err;
   }
+
+  const xmlPreflight = assertXmlListoParaEmitir(draft, tipoeCF);
+  try {
+    requireFeStack().signature.signXml(xmlPreflight, 'ECF');
+  } catch (signErr) {
+    if (signErr?.code === 'DGII_XML_PREFLIGHT') throw signErr;
+    const err = new Error(
+      `El XML no se pudo firmar (${signErr?.message || 'error'}). No se gastará e-NCF.`
+    );
+    err.status = 400;
+    err.code = 'DGII_XML_PREFLIGHT';
+    throw err;
+  }
+
+  if (dryRun) {
+    const peek = await peekNextEncf(tipoeCF);
+    return {
+      ok: true,
+      dryRun: true,
+      environment: envName,
+      tipoeCF,
+      encf: null,
+      sequence: null,
+      proximoEncf: peek.proximoEncf,
+      remaining: peek.remaining,
+      maxSequence: peek.maxSequence,
+      estado: 'DRY_RUN',
+      mensaje: 'Vista de prueba: no se reservó e-NCF ni se envió a Impuestos Internos.'
+    };
+  }
+
   const { encf, sequence } = await allocateNextEncf(tipoeCF);
   const origen = resolveOrigenEmision(body, registroId);
   const snapshot = compactDraft(draft);
@@ -147,12 +244,63 @@ export async function emitirFacturaElectronica(body = {}) {
   const { document, totales } = draftToIecfDocument(draft, { encf, tipoeCF });
   let xml = iecfDocumentToXml(document);
   xml = setFechaHoraFirma(xml);
+  try {
+    assertXmlCumpleDgii(xml, { tipoeCF, encf });
+  } catch (preErr) {
+    await guardarEnLibro({
+      encf,
+      tipoeCF,
+      sequence,
+      origen,
+      registroId: registroId || null,
+      rncComprador: rncComprador || null,
+      razonSocial: razonSocial || null,
+      montoTotal: totales?.MontoTotal ?? null,
+      estado: preErr?.message || 'XML no cumple requisitos DGII',
+      errorEnvio: true,
+      environment: envName,
+      dryRun,
+      snapshot
+    });
+    throw preErr;
+  }
+  const fileName = `${getDgiiFeRnc()}${encf}.xml`;
+
+  const libroBase = () => ({
+    encf,
+    tipoeCF,
+    sequence,
+    origen,
+    registroId: registroId || null,
+    referenciaInterna: draft.transaccion?.numeroFacturaInterna || body.reservaId || body.bookingId || null,
+    rncEmisor: getDgiiFeRnc(),
+    rncComprador: rncComprador || null,
+    razonSocial: razonSocial || null,
+    emailComprador: draft.comprador?.email || null,
+    telefonoComprador: draft.comprador?.telefono || null,
+    direccionComprador: draft.comprador?.direccion || null,
+    montoTotal: totales?.MontoTotal ?? null,
+    fileName,
+    environment: envName,
+    dryRun,
+    snapshot,
+    tieneImpresion: true
+  });
+
+  if (!dryRun) {
+    await guardarEnLibro({
+      ...libroBase(),
+      estado: 'Reservado',
+      errorEnvio: false,
+      xmlFirmado: null,
+      tieneXml: false
+    });
+  }
 
   const stack = requireFeStack();
   let signedXml = '';
   let codigoSeguridad = null;
   const fechaFirma = fechaHoraFirmaNow();
-  const fileName = `${getDgiiFeRnc()}${encf}.xml`;
   let trackId = null;
   let dgiiEstado = dryRun ? 'DRY_RUN' : null;
   let dgiiRaw = null;
@@ -168,6 +316,7 @@ export async function emitirFacturaElectronica(body = {}) {
       if (tipoeCF === 32 && montoTotal < 250000) {
         // TODO sprint 2: RFCE sendSummary
       }
+      assertXmlCumpleDgii(signedXml, { tipoeCF, encf });
       const ecf = new ECF(stack.keys, envToLibrary(envName));
       await ecf.authenticate();
       const sendRes = await ecf.sendElectronicDocument(signedXml, fileName);
@@ -198,25 +347,12 @@ export async function emitirFacturaElectronica(body = {}) {
   } catch (err) {
     if (!dryRun) {
       await guardarEnLibro({
-        encf,
-        tipoeCF,
-        sequence,
-        origen,
-        registroId: registroId || null,
-        referenciaInterna: draft.transaccion?.numeroFacturaInterna || body.reservaId || body.bookingId || null,
-        rncEmisor: getDgiiFeRnc(),
-        rncComprador: rncComprador || null,
-        razonSocial: razonSocial || null,
-        montoTotal: totales?.MontoTotal ?? null,
+        ...libroBase(),
         trackId,
         estado: ledgerErrorText(err),
         errorEnvio: true,
         codigoSeguridad,
         fechaFirmaDigital: fechaFirma,
-        fileName,
-        environment: envName,
-        dryRun,
-        snapshot,
         xmlFirmado: signedXml || null
       });
     }
@@ -236,7 +372,8 @@ export async function emitirFacturaElectronica(body = {}) {
     dgiiDryRun: dryRun,
     dgiiSequence: sequence,
     dgiiFileName: fileName,
-    dgiiEmitidoAt: new Date().toISOString()
+    dgiiEmitidoAt: new Date().toISOString(),
+    dgiiMontoTotal: totales?.MontoTotal ?? draft.totales?.totalRD ?? null
   };
 
   let registro = null;
@@ -250,27 +387,13 @@ export async function emitirFacturaElectronica(body = {}) {
 
   if (!dryRun) {
     await guardarEnLibro({
-      encf,
-      tipoeCF,
-      sequence,
-      origen,
-      registroId: registroId || null,
-      referenciaInterna:
-        draft.transaccion?.numeroFacturaInterna || body.reservaId || body.bookingId || null,
-      rncEmisor: getDgiiFeRnc(),
-      rncComprador: rncComprador || null,
-      razonSocial: razonSocial || null,
-      montoTotal: totales?.MontoTotal ?? null,
+      ...libroBase(),
       trackId,
       estado: dgiiEstado,
       errorEnvio: false,
       codigoSeguridad,
       fechaFirmaDigital: fechaFirma,
       codigoQrUrl,
-      fileName,
-      environment: envName,
-      dryRun,
-      snapshot,
       xmlFirmado: signedXml || null
     });
   }
@@ -316,6 +439,24 @@ export async function consultarEstadoValidacionDgii(trackId) {
   const ecf = new ECF(stack.keys, envToLibrary(envName));
   await ecf.authenticate();
   const st = await ecf.statusTrackId(id);
+  const encf = String(st?.encf || '').trim().toUpperCase();
+  if (encf) {
+    try {
+      await ComprobanteEcfModel.upsert({
+        encf,
+        trackId: st?.trackId || id,
+        estado: st?.estado || null,
+        codigoDgii: st?.codigo ?? null,
+        mensajes: st?.mensajes || [],
+        rncEmisor: st?.rnc || getDgiiFeRnc(),
+        fechaRecepcion: st?.fechaRecepcion || null,
+        environment: envName,
+        consultadoAt: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error('validacion no pudo guardar libro:', e?.message || e);
+    }
+  }
   return {
     ok: true,
     source: 'dgii',
@@ -387,15 +528,7 @@ export async function getEstadoEmision(registroIdOrTrack, opts = {}) {
 /** Vista previa HTML: no reserva e-NCF y no envía a DGII. */
 export async function previewFacturaHtml(body = {}) {
   const { draft } = await loadDraft(body);
-  const printDraft = {
-    ...draft,
-    documento: {
-      ...(draft.documento || {}),
-      ncf: String(draft.documento?.ncf || '').trim() || 'SIN e-NCF (vista previa)',
-      tipo: draft.documento?.tipo || 'DOCUMENTO DE COBRO'
-    }
-  };
-  return renderFacturaOperativaHtml(printDraft);
+  return renderFacturaOperativaHtml(printModelFromDraft(draft, { esPreview: true }));
 }
 
 export function facturacionEmitHealth() {

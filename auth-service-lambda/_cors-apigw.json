@@ -1,0 +1,12 @@
+{
+  "AllowCredentials": false,
+  "AllowHeaders": ["content-type", "authorization"],
+  "AllowMethods": ["GET", "POST", "OPTIONS", "PATCH", "PUT", "DELETE"],
+  "AllowOrigins": [
+    "https://eventos.buenohotel.com.do",
+    "https://booking.buenohotel.com.do",
+    "https://ecommerce.buenohotel.com.do",
+    "http://localhost:4200"
+  ],
+  "MaxAge": 86400
+}

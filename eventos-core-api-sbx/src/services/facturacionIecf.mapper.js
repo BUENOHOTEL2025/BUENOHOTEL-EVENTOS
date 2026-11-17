@@ -6,7 +6,11 @@ function str(v) {
   return v != null ? String(v).trim() : '';
 }
 
-/** DGII: un solo teléfono, 10 dígitos RD (809/829/849), sin +1 ni barras. */
+const TEL_DGII_RE = /^8(09|29|49)-\d{3}-\d{4}$/;
+const FECHA_DGII_RE = /^\d{2}-\d{2}-\d{4}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** 10 dígitos RD (809/829/849), sin +1 ni barras. */
 export function telefonoDgii(raw) {
   const parts = String(raw || '')
     .split(/[/;,|]+/)
@@ -20,6 +24,13 @@ export function telefonoDgii(raw) {
     if (d.length === 10 && /^8(09|29|49)/.test(d)) return d;
   }
   return '';
+}
+
+/** XSD DGII: ###-###-#### (códigos 1273 / 1503 si va pegado o con +1). */
+export function telefonoDgiiXml(raw) {
+  const d = telefonoDgii(raw);
+  if (!d) return '';
+  return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
 function round2(n) {
@@ -90,22 +101,32 @@ function emisorFromDraft(draft) {
   const e = draft.emisor || {};
   const rnc = digitsOnly(e.rnc || process.env.FACTURA_EMISOR_RNC || process.env.DGII_FE_RNC || '131631088');
   const razon =
-    str(process.env.FACTURA_EMISOR_RAZON) ||
     str(e.nombreComercial) ||
-    'BUENOHOTEL, S.R.L.';
-  const telNorm = telefonoDgii(e.telefono || process.env.FACTURA_EMISOR_TELEFONO);
-  const tels = telNorm ? [telNorm] : undefined;
+    str(process.env.FACTURA_EMISOR_NOMBRE) ||
+    str(process.env.FACTURA_EMISOR_RAZON) ||
+    'BUENOHOTEL S.R.L';
+  const telXml = telefonoDgiiXml(
+    e.telefono || process.env.FACTURA_EMISOR_TELEFONO || '8095664292'
+  );
+  if (!TEL_DGII_RE.test(telXml)) {
+    throw Object.assign(
+      new Error('El teléfono del emisor debe ser ###-###-#### (809/829/849). No se enviará.'),
+      { status: 400, code: 'DGII_XML_PREFLIGHT' }
+    );
+  }
 
   return prune({
     RNCEmisor: rnc,
     RazonSocialEmisor: razon.slice(0, 150),
     NombreComercial: str(e.nombreComercial || razon).slice(0, 150),
-    DireccionEmisor: str(e.direccion || process.env.FACTURA_EMISOR_DIRECCION)
+    DireccionEmisor: str(
+      e.direccion || 'C/ Dario Concepción no. 18, San Gerónimo, Santo Domingo DN. 10104'
+    )
       .replace(/\s+/g, ' ')
       .slice(0, 100),
     Municipio: str(process.env.DGII_EMISOR_MUNICIPIO || '010100'),
     Provincia: str(process.env.DGII_EMISOR_PROVINCIA || '010000'),
-    TablaTelefonoEmisor: tels ? { TelefonoEmisor: tels } : undefined,
+    TablaTelefonoEmisor: { TelefonoEmisor: telXml },
     CorreoEmisor: str(e.email || process.env.FACTURA_EMISOR_EMAIL || 'info@buenohotel.com'),
     NumeroFacturaInterna: str(draft.transaccion?.numeroFacturaInterna || '').slice(0, 20) || undefined,
     FechaEmision: formatFechaDgii(
@@ -117,7 +138,40 @@ function emisorFromDraft(draft) {
 function compradorFromDraft(draft, tipoeCF) {
   const c = draft.comprador || {};
   const rnc = digitsOnly(c.rncCliente || c.rncComprador || c.rnc);
-  const razon = str(c.nombreRazon || c.razonSocialComprador).slice(0, 150) || 'EMPRESA';
+  if (Number(tipoeCF) === 31 && (rnc.length < 9 || rnc.length > 11)) {
+    throw Object.assign(
+      new Error('El RNC del comprador es obligatorio (9 a 11 dígitos) para crédito fiscal. No se enviará.'),
+      { status: 400, code: 'DGII_XML_PREFLIGHT' }
+    );
+  }
+  const razon = str(c.nombreRazon || c.razonSocialComprador).slice(0, 150);
+  if (razon.length < 2) {
+    throw Object.assign(new Error('Falta la razón social del comprador. No se enviará a Impuestos Internos.'), {
+      status: 400,
+      code: 'DGII_XML_PREFLIGHT'
+    });
+  }
+  const telComp = telefonoDgiiXml(c.telefono);
+  if (!telComp) {
+    throw Object.assign(
+      new Error('El teléfono del comprador debe ser ###-###-#### (809/829/849). No se enviará a Impuestos Internos.'),
+      { status: 400, code: 'DGII_XML_PREFLIGHT' }
+    );
+  }
+  const email = str(c.email).slice(0, 80);
+  if (!EMAIL_RE.test(email)) {
+    throw Object.assign(new Error('El correo del comprador es obligatorio y debe ser válido. No se enviará.'), {
+      status: 400,
+      code: 'DGII_XML_PREFLIGHT'
+    });
+  }
+  const dir = str(c.direccion).replace(/\s+/g, ' ').slice(0, 100);
+  if (dir.length < 5) {
+    throw Object.assign(new Error('La dirección del comprador es obligatoria. No se enviará.'), {
+      status: 400,
+      code: 'DGII_XML_PREFLIGHT'
+    });
+  }
   // XSD DGII: RNCComprador (o IdentificadorExtranjero) y después RazonSocialComprador.
   const out = {};
   if (rnc.length >= 9) {
@@ -127,10 +181,9 @@ function compradorFromDraft(draft, tipoeCF) {
     if (idExt) out.IdentificadorExtranjero = idExt.slice(0, 20);
   }
   out.RazonSocialComprador = razon;
-  if (str(c.email)) out.CorreoComprador = str(c.email).slice(0, 80);
-  if (str(c.direccion)) out.DireccionComprador = str(c.direccion).replace(/\s+/g, ' ').slice(0, 100);
-  const telComp = telefonoDgii(c.telefono);
-  if (telComp) out.TelefonoAdicional = telComp;
+  out.CorreoComprador = email;
+  out.DireccionComprador = dir;
+  out.TelefonoAdicional = telComp;
   return prune(out);
 }
 
@@ -185,17 +238,14 @@ function indicadorFacturacion(linea) {
 function mapItem(linea, index) {
   const qty = Number(linea.cantidad ?? linea.CantidadItem ?? 1) || 1;
   const precio = round4(linea.precioUnitario ?? linea.PrecioUnitarioItem ?? 0);
-  const monto = round2(
-    linea.importeLinea != null && linea.itbisLinea == null && !linea.gravadoItbis
-      ? linea.importeLinea
-      : linea.MontoItem != null
-        ? linea.MontoItem
-        : precio * qty
-  );
-  // Para gravados: MontoItem = cantidad * precio (sin ITBIS) cuando IndicadorMontoGravado=0
-  const montoItem = linea.gravadoItbis
-    ? round2(precio * qty)
-    : round2(linea.importeLinea ?? monto);
+  const desc = round2(linea.descuentoLinea ?? linea.DescuentoMonto ?? 0);
+  const baseMonto = round2(Math.max(0, round2(precio * qty) - desc));
+  const gravado = indicadorFacturacion(linea) !== 4;
+  const montoItem = gravado
+    ? baseMonto
+    : round2(
+        Number.isFinite(Number(linea.importeLinea)) ? Math.max(0, Number(linea.importeLinea)) : baseMonto
+      );
 
   return prune({
     NumeroLinea: index + 1,
@@ -206,24 +256,64 @@ function mapItem(linea, index) {
     CantidadItem: round2(qty),
     UnidadMedida: 43,
     PrecioUnitarioItem: precio,
+    DescuentoMonto: desc > 0 ? desc : undefined,
     MontoItem: montoItem
   });
 }
 
+function lineImporte(linea) {
+  const qty = Number(linea.cantidad ?? 1) || 1;
+  const precio = Number(linea.precioUnitario ?? 0) || 0;
+  const desc = Number(linea.descuentoLinea ?? 0) || 0;
+  const base = round2(Math.max(0, round2(precio * qty) - desc));
+  if (linea.gravadoItbis === false || indicadorFacturacion(linea) === 4) {
+    const imp = Number(linea.importeLinea);
+    if (Number.isFinite(imp) && imp !== 0) return round2(imp);
+    return base;
+  }
+  return base;
+}
+
+function esLineaLey10(linea) {
+  return /10\s*%\s*ley/i.test(String(linea?.descripcion || linea?.NombreItem || '').trim());
+}
+
+/**
+ * En XML DGII, MontoExento junta 10% ley y otras exentas.
+ * En impresión se separan: ley10 vs Otras Tasas Exentas (como Eventos).
+ */
+function splitExentoPrint(draft, totales) {
+  const montoExento = round2(Number(totales?.MontoExento || 0));
+  const lineas = Array.isArray(draft?.lineas) ? draft.lineas : [];
+  const leyFromLines = round2(lineas.filter(esLineaLey10).reduce((s, ln) => s + lineImporte(ln), 0));
+  const draftLey = round2(Number(draft?.totales?.ley10 || 0));
+  let ley10 = leyFromLines > 0 ? leyFromLines : draftLey;
+  if (ley10 > montoExento) ley10 = montoExento;
+  const otras = round2(Math.max(0, montoExento - ley10));
+  return { ley10, otras, montoExento };
+}
+
 function totalesFromDraft(draft) {
   const t = draft.totales || {};
+  const lineas = draft.lineas || [];
+  const flagged = lineas.some((ln) => ln.gravadoItbis === true || ln.gravadoItbis === false);
   let gravadoCalc = 0;
   let exentoCalc = 0;
-  for (const ln of draft.lineas || []) {
-    const qty = Number(ln.cantidad ?? 1) || 1;
-    const precio = Number(ln.precioUnitario ?? 0) || 0;
-    if (ln.gravadoItbis) gravadoCalc += precio * qty;
-    else exentoCalc += Number(ln.importeLinea ?? precio * qty) || 0;
+  const itbis = round2(t.itbis ?? t.TotalITBIS ?? 0);
+  for (const ln of lineas) {
+    const monto = lineImporte(ln);
+    if (flagged) {
+      if (ln.gravadoItbis) gravadoCalc += monto;
+      else exentoCalc += monto;
+    } else if (itbis > 0) {
+      gravadoCalc += monto;
+    } else {
+      exentoCalc += monto;
+    }
   }
   gravadoCalc = round2(gravadoCalc || t.subtotalGravado || t.tarifaBase || 0);
   exentoCalc = round2(exentoCalc || t.subtotalExento || 0);
 
-  const itbis = round2(t.itbis ?? t.TotalITBIS ?? 0);
   const montoTotal = round2(t.totalRD ?? t.MontoTotal ?? gravadoCalc + exentoCalc + itbis);
 
   return prune({
@@ -291,7 +381,246 @@ export function draftToIecfDocument(draft, { encf, tipoeCF } = {}) {
   return { document: doc, tipoeCF: tipo, encf: eNCF, totales };
 }
 
+/**
+ * Vista / impresión con los mismos valores que el XML DGII
+ * (teléfono 10 dígitos, dirección en una línea, montos de ítem sin ITBIS).
+ */
+export function printModelFromDraft(draft, { encf, esPreview } = {}) {
+  const tipo = normalizeTipoeCF(draft?.tipoeCF, draft?.comprador || {});
+  const ncfReal = str(encf || draft?.documento?.ncf);
+  const ncfMap = ncfReal || `E${String(tipo).padStart(2, '0')}0000000000`;
+  const { document, totales } = draftToIecfDocument(draft, { encf: ncfMap, tipoeCF: tipo });
+  const enc = document?.ECF?.Encabezado || {};
+  const em = enc.Emisor || {};
+  const co = enc.Comprador || {};
+  const idDoc = enc.IdDoc || {};
+  let items = document?.ECF?.DetallesItems?.Item;
+  if (!Array.isArray(items)) items = items ? [items] : [];
+  const telRaw = em.TablaTelefonoEmisor?.TelefonoEmisor;
+  const telEmisor = Array.isArray(telRaw) ? telRaw[0] : telRaw;
+  const ncfVista = esPreview && !ncfReal ? 'SIN e-NCF (se asigna al emitir)' : ncfMap;
+  const tipoTitulo =
+    tipo === 31 ? 'FACTURA DE CRÉDITO FISCAL ELECTRÓNICA' : `e-CF tipo ${tipo}`;
+  return {
+    emisor: {
+      nombreComercial: em.NombreComercial || em.RazonSocialEmisor || '',
+      rnc: em.RNCEmisor || '',
+      direccion: em.DireccionEmisor || '',
+      telefono: telEmisor || '',
+      email: em.CorreoEmisor || ''
+    },
+    comprador: {
+      nombreRazon: co.RazonSocialComprador || '',
+      rncCliente: co.RNCComprador || '',
+      email: co.CorreoComprador || '',
+      telefono: co.TelefonoAdicional || '',
+      direccion: co.DireccionComprador || ''
+    },
+    documento: {
+      ncf: ncfVista,
+      tipo: tipoTitulo,
+      tipoTituloContrato: tipoTitulo,
+      validaHastaLabel: idDoc.FechaVencimientoSecuencia
+        ? `Válida hasta ${idDoc.FechaVencimientoSecuencia}`
+        : ''
+    },
+    transaccion: {
+      fechaEmisionEtiqueta: em.FechaEmision || '',
+      numeroFacturaInterna: em.NumeroFacturaInterna || '',
+      condicionPago: idDoc.TipoPago === 1 ? 'CONTADO' : ''
+    },
+    lineas: items.map((it) => ({
+      descripcion: it.DescripcionItem || it.NombreItem || '',
+      cantidad: it.CantidadItem,
+      unidad: 'UND',
+      precioUnitario: it.PrecioUnitarioItem,
+      descuentoLinea: it.DescuentoMonto != null ? it.DescuentoMonto : null,
+      itbisLinea: null,
+      importeLinea: it.MontoItem,
+      gravadoItbis: Number(it.IndicadorFacturacion) !== 4
+    })),
+    totales: (() => {
+      const split = splitExentoPrint(draft, totales);
+      const src = draft?.totales || {};
+      return {
+        totalRD: totales.MontoTotal,
+        MontoTotal: totales.MontoTotal,
+        itbis: totales.TotalITBIS,
+        subtotalGravado: totales.MontoGravadoTotal,
+        tarifaBase: totales.MontoGravadoTotal,
+        subtotalExento: split.otras,
+        ley10: split.ley10,
+        ley10Pct: src.ley10Pct != null ? src.ley10Pct : 10,
+        subTotal: round2(Number(totales.MontoGravadoTotal || 0) + Number(split.montoExento || 0)),
+        descuento: src.descuento,
+        descuentoPct: src.descuentoPct,
+        tieneDescuento: src.tieneDescuento,
+        moneda: src.moneda === 'USD' ? 'USD' : 'DOP'
+      };
+    })(),
+    verificacion: draft?.verificacion || {},
+    observacionLegal: draft?.observacionLegal
+  };
+}
+
+export function forzarTelefonosEnXml(xml) {
+  const fmt = (raw) => {
+    const d = telefonoDgii(raw);
+    return d ? `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}` : '';
+  };
+  return String(xml || '')
+    .replace(/<TelefonoEmisor>([^<]*)<\/TelefonoEmisor>/g, (m, v) => {
+      const t = fmt(v);
+      return t ? `<TelefonoEmisor>${t}</TelefonoEmisor>` : m;
+    })
+    .replace(/<TelefonoAdicional>([^<]*)<\/TelefonoAdicional>/g, (m, v) => {
+      const t = fmt(v);
+      return t ? `<TelefonoAdicional>${t}</TelefonoAdicional>` : m;
+    });
+}
+
 export function iecfDocumentToXml(document) {
   const transformer = new Transformer();
-  return ordenarCompradorXml(transformer.json2xml(document, true));
+  return forzarTelefonosEnXml(ordenarCompradorXml(transformer.json2xml(document, true)));
+}
+
+function failXml(message) {
+  const err = new Error(message);
+  err.status = 400;
+  err.code = 'DGII_XML_PREFLIGHT';
+  throw err;
+}
+
+function tagsXml(xml, tag) {
+  const out = [];
+  const re = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'gi');
+  let m;
+  while ((m = re.exec(xml))) {
+    const inner = String(m[1] || '').replace(/\s+/g, ' ').trim();
+    if (!inner || inner.includes('<')) continue;
+    out.push(inner);
+  }
+  return out;
+}
+
+/**
+ * Cero excepciones: si un campo del XML no cumple el formato DGII, no se envía.
+ */
+export function assertXmlCumpleDgii(xml, { tipoeCF, encf } = {}) {
+  const raw = String(xml || '');
+  if (!raw.includes('<ECF')) failXml('El XML no es un e-CF. No se enviará a Impuestos Internos.');
+  const tipo = Number(tipoeCF) || Number((tagsXml(raw, 'TipoeCF')[0] || '').replace(/\D/g, '')) || 31;
+
+  const mun = tagsXml(raw, 'Municipio')[0] || '';
+  if (!/^\d{6}$/.test(mun)) {
+    failXml('El Municipio del emisor en el XML debe ser 6 dígitos DGII. No se enviará.');
+  }
+  const prov = tagsXml(raw, 'Provincia')[0] || '';
+  if (!/^\d{6}$/.test(prov)) {
+    failXml('La Provincia del emisor en el XML debe ser 6 dígitos DGII. No se enviará.');
+  }
+
+  const telsEmisor = tagsXml(raw, 'TelefonoEmisor');
+  if (!telsEmisor.length) failXml('Falta TelefonoEmisor en el XML (###-###-#### 809/829/849). No se enviará.');
+  for (const t of telsEmisor) {
+    if (!TEL_DGII_RE.test(t)) {
+      failXml(`TelefonoEmisor inválido (${t || 'vacío'}). Debe ser ###-###-#### con 809, 829 o 849. No se enviará.`);
+    }
+  }
+  const telsComp = tagsXml(raw, 'TelefonoAdicional');
+  if (!telsComp.length) failXml('Falta TelefonoAdicional del comprador en el XML. No se enviará.');
+  for (const t of telsComp) {
+    if (!TEL_DGII_RE.test(t)) {
+      failXml(`TelefonoAdicional inválido (${t || 'vacío'}). Debe ser ###-###-#### con 809, 829 o 849. No se enviará.`);
+    }
+  }
+  if (/<TelefonoEmisor>\s*\+?1?\s*\d{10}\s*</i.test(raw) || /<TelefonoAdicional>\s*\+?1?\s*\d{10}\s*</i.test(raw)) {
+    failXml('Hay un teléfono en el XML sin el formato ###-###-####. No se enviará (evita códigos 1273/1503).');
+  }
+
+  const rncEmisor = (tagsXml(raw, 'RNCEmisor')[0] || '').replace(/\D/g, '');
+  if (rncEmisor.length !== 9 && rncEmisor.length !== 11) {
+    failXml('El RNC del emisor en el XML no es válido. No se enviará.');
+  }
+  const rncComp = (tagsXml(raw, 'RNCComprador')[0] || '').replace(/\D/g, '');
+  if (tipo === 31 && (rncComp.length < 9 || rncComp.length > 11)) {
+    failXml('El RNC del comprador en el XML es obligatorio (9 a 11 dígitos) para crédito fiscal. No se enviará.');
+  }
+  const razon = tagsXml(raw, 'RazonSocialComprador')[0] || '';
+  if (razon.length < 2) failXml('Falta la razón social del comprador en el XML. No se enviará.');
+  const dirEm = tagsXml(raw, 'DireccionEmisor')[0] || '';
+  if (dirEm.length < 5) failXml('Falta la dirección del emisor en el XML. No se enviará.');
+  const dirCo = tagsXml(raw, 'DireccionComprador')[0] || '';
+  if (dirCo.length < 5) failXml('Falta la dirección del comprador en el XML. No se enviará.');
+
+  const mailEm = tagsXml(raw, 'CorreoEmisor')[0] || '';
+  if (!EMAIL_RE.test(mailEm)) failXml('El correo del emisor en el XML no es válido. No se enviará.');
+  const mailCo = tagsXml(raw, 'CorreoComprador')[0] || '';
+  if (!EMAIL_RE.test(mailCo)) failXml('El correo del comprador en el XML no es válido. No se enviará.');
+
+  const fecha = tagsXml(raw, 'FechaEmision')[0] || '';
+  if (!FECHA_DGII_RE.test(fecha)) failXml('La fecha de emisión en el XML debe ser DD-MM-AAAA. No se enviará.');
+
+  const encfXml = (tagsXml(raw, 'eNCF')[0] || '').toUpperCase();
+  if (encf) {
+    if (encfXml !== String(encf).toUpperCase()) {
+      failXml('El e-NCF del XML no coincide con el reservado. No se enviará.');
+    }
+  } else if (!/^E\d{12,}$/.test(encfXml)) {
+    failXml('El e-NCF del XML no tiene el formato de Impuestos Internos. No se enviará.');
+  }
+
+  const monto = Number(String(tagsXml(raw, 'MontoTotal')[0] || '').replace(',', '.'));
+  if (!Number.isFinite(monto) || monto <= 0) {
+    failXml('El MontoTotal del XML es inválido. No se enviará.');
+  }
+  return true;
+}
+
+/**
+ * Arma el XML con un e-NCF ficticio y valida todos los requisitos DGII
+ * ANTES de reservar secuencia real. Sin excepciones.
+ */
+export function assertXmlListoParaEmitir(draft, tipoeCF) {
+  const tipo = normalizeTipoeCF(tipoeCF ?? draft?.tipoeCF, draft?.comprador || {});
+  const dummy = `E${String(tipo).padStart(2, '0')}0000000000`;
+  const mun = digitsOnly(process.env.DGII_EMISOR_MUNICIPIO || '010100');
+  const prov = digitsOnly(process.env.DGII_EMISOR_PROVINCIA || '010000');
+  if (mun.length !== 6) {
+    failXml('El Municipio del emisor no está configurado (6 dígitos DGII). No se gastará e-NCF.');
+  }
+  if (prov.length !== 6) {
+    failXml('La Provincia del emisor no está configurada (6 dígitos DGII). No se gastará e-NCF.');
+  }
+  if (!telefonoDgii(draft?.comprador?.telefono)) {
+    failXml(
+      'El teléfono de la empresa no es válido para Impuestos Internos: un solo número de 10 dígitos (809, 829 o 849). No se gastará e-NCF.'
+    );
+  }
+  if (!telefonoDgii(draft?.emisor?.telefono || process.env.FACTURA_EMISOR_TELEFONO || '8095664292')) {
+    failXml('El teléfono del emisor no es válido (809/829/849). No se gastará e-NCF.');
+  }
+  const rnc = digitsOnly(
+    draft?.comprador?.rncCliente || draft?.comprador?.rncComprador || draft?.comprador?.rnc
+  );
+  if (tipo === 31 && (rnc.length < 9 || rnc.length > 11)) {
+    failXml('El RNC de la empresa no es válido para crédito fiscal (9 a 11 dígitos). No se gastará e-NCF.');
+  }
+  const emailCo = String(draft?.comprador?.email || '').trim();
+  if (!EMAIL_RE.test(emailCo)) {
+    failXml('El correo de la empresa es obligatorio y debe ser válido. No se gastará e-NCF.');
+  }
+  const dirCo = String(draft?.comprador?.direccion || '').trim();
+  if (dirCo.length < 5) {
+    failXml('La dirección de la empresa es obligatoria. No se gastará e-NCF.');
+  }
+  let xml = '';
+  try {
+    const { document } = draftToIecfDocument(draft, { encf: dummy, tipoeCF: tipo });
+    xml = setFechaHoraFirma(iecfDocumentToXml(document));
+  } catch (e) {
+    failXml(`No se pudo armar el XML (${e?.message || 'error'}). No se gastará e-NCF.`);
+  }
+  assertXmlCumpleDgii(xml, { tipoeCF: tipo });
+  return xml;
 }

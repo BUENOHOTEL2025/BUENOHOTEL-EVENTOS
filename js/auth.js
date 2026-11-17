@@ -176,6 +176,53 @@ function ensureToast() {
   };
 }
 
+function pagePath() {
+  return String(window.location.pathname || '').toLowerCase();
+}
+
+function isPage(name) {
+  var p = pagePath();
+  return p.endsWith('/' + name) || p.endsWith('/' + name + '.html');
+}
+
+function loginHref() {
+  return pagePath().indexOf('.html') !== -1 ? 'login.html' : '/login';
+}
+
+function dashboardHref() {
+  return pagePath().indexOf('.html') !== -1 ? 'dashboard.html' : '/dashboard';
+}
+
+function showAuthBusy(text) {
+  var el = document.getElementById('bh-auth-busy');
+  if (!el) {
+    if (!document.getElementById('bh-auth-busy-style')) {
+      var st = document.createElement('style');
+      st.id = 'bh-auth-busy-style';
+      st.textContent =
+        '#bh-auth-busy{position:fixed;inset:0;z-index:120000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:rgba(248,250,252,.92);backdrop-filter:blur(6px);text-align:center;padding:24px}' +
+        '#bh-auth-busy .bh-auth-spin{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#fbb03b;border-radius:50%;animation:bh-auth-spin .7s linear infinite}' +
+        '#bh-auth-busy p{margin:0;font-weight:800;color:#1f2937;font-size:1rem}' +
+        '#bh-auth-busy span{color:#6b7280;font-size:.9rem}' +
+        '@keyframes bh-auth-spin{to{transform:rotate(360deg)}}';
+      (document.head || document.documentElement).appendChild(st);
+    }
+    el = document.createElement('div');
+    el.id = 'bh-auth-busy';
+    el.setAttribute('role', 'status');
+    el.innerHTML = '<div class="bh-auth-spin" aria-hidden="true"></div><p data-auth-wait-text></p><span>Un momento, por favor.</span>';
+    (document.body || document.documentElement).appendChild(el);
+  }
+  var t = el.querySelector('[data-auth-wait-text]');
+  if (t) t.textContent = text || 'Validando sesión…';
+  el.hidden = false;
+}
+
+function hideAuthBusy() {
+  var el = document.getElementById('bh-auth-busy');
+  if (el) el.hidden = true;
+}
+
 // Función para verificar si el usuario está autenticado
 function getSessionStart() {
   const v = localStorage.getItem(SESSION_START_KEY);
@@ -288,6 +335,7 @@ async function login(email, password) {
     }
     localStorage.setItem(USER_DATA_KEY, JSON.stringify(finalUser));
     setSessionStart(Date.now());
+    syncCrossSiteAuthCookies(token, finalUser);
     try { window.dispatchEvent(new CustomEvent('auth:userUpdated')); } catch(_){}
     try { window.dispatchEvent(new CustomEvent('auth:userUpdated')); } catch(_){ }
 
@@ -298,15 +346,33 @@ async function login(email, password) {
   }
 }
 
+function syncCrossSiteAuthCookies(token, user) {
+  try {
+    if (!/(^|\.)buenohotel\.com\.do$/i.test(String(location.hostname || ''))) return;
+    const base = 'Domain=.buenohotel.com.do; Path=/; Secure; SameSite=Lax';
+    if (token) {
+      document.cookie = AUTH_TOKEN_KEY + '=' + encodeURIComponent(token) + '; ' + base + '; Max-Age=604800';
+      if (user) {
+        document.cookie = USER_DATA_KEY + '=' + encodeURIComponent(JSON.stringify(user)) + '; ' + base + '; Max-Age=604800';
+      }
+    } else {
+      document.cookie = AUTH_TOKEN_KEY + '=; Domain=.buenohotel.com.do; Path=/; Max-Age=0; Secure; SameSite=Lax';
+      document.cookie = USER_DATA_KEY + '=; Domain=.buenohotel.com.do; Path=/; Max-Age=0; Secure; SameSite=Lax';
+    }
+  } catch (_) {}
+}
+
 // Función para cerrar sesión
 function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(USER_DATA_KEY);
   localStorage.removeItem(SESSION_START_KEY);
+  syncCrossSiteAuthCookies('', null);
   // No tocar LOGOUT_REASON_KEY aquí; quien invoca logout puede setearlo antes
   ensureToast();
   showToast({ title: 'Sesión cerrada', message: 'Has salido correctamente', type: 'success', duration: 1200 });
-  setTimeout(() => { window.location.href = 'login.html'; }, 900);
+  showAuthBusy('Cerrando sesión…');
+  setTimeout(() => { window.location.href = loginHref(); }, 900);
 }
 
 // Función para registrar un nuevo usuario
@@ -334,6 +400,7 @@ async function register(userData) {
       localStorage.setItem(AUTH_TOKEN_KEY, token);
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
       setSessionStart(Date.now());
+      syncCrossSiteAuthCookies(token, user);
     }
     // Si en el futuro devolvemos recoveryCodes, también podríamos pasarlos aquí
     const recoveryCodes = data.recoveryCodes || data?.data?.recoveryCodes || null;
@@ -346,7 +413,7 @@ async function register(userData) {
 
 // Función para proteger rutas
 function protectRoute() {
-  if (!isAuthenticated() && !window.location.href.includes('login.html') && !window.location.href.includes('register.html')) {
+  if (!isAuthenticated() && !isPage('login') && !isPage('register')) {
     // Si hay token pero expiró, limpiamos y avisamos
     if (localStorage.getItem(AUTH_TOKEN_KEY) && hasSessionExpired()) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -358,14 +425,16 @@ function protectRoute() {
     }
     ensureToast();
     showToast({ title: 'Acceso restringido', message: 'Debes iniciar sesión para continuar', type: 'error', duration: 1600 });
-    setTimeout(() => { window.location.href = 'login.html'; }, 900);
+    showAuthBusy('Redirigiendo al inicio de sesión…');
+    setTimeout(() => { window.location.href = loginHref(); }, 900);
   }
 }
 
 // Función para redirigir si el usuario ya está autenticado
 function redirectIfAuthenticated() {
-  if (isAuthenticated() && (window.location.href.includes('login.html') || window.location.href.includes('register.html'))) {
-    window.location.href = 'dashboard.html';
+  if (isAuthenticated() && (isPage('login') || isPage('register'))) {
+    showAuthBusy('Ya tienes sesión. Entrando…');
+    window.location.href = dashboardHref();
   }
 }
 
@@ -377,10 +446,10 @@ function initAuth() {
   try { ensureToast(); } catch(_) {}
   
   // Páginas públicas que NO requieren autenticación (eventos es público)
-  const path = window.location.pathname.toLowerCase();
+  const path = pagePath();
   const isPublicPage = path.endsWith('index.html') || path.endsWith('/') || path === '' || path.endsWith('/eventos') || path.endsWith('/eventos/');
-  const isAuthPage = path.includes('login.html') || path.includes('register.html') || path.includes('forgot.html') || path.includes('reset.html');
-  const isProtectedPage = path.includes('dashboard.html') || path.includes('mis-reservas.html') || path.includes('admin');
+  const isAuthPage = isPage('login') || isPage('register') || isPage('forgot') || isPage('reset');
+  const isProtectedPage = isPage('dashboard') || isPage('mis-reservas') || path.includes('admin');
   
   // Si la sesión está expirada, limpiar datos (pero no redirigir si estamos en página pública)
   if (localStorage.getItem(AUTH_TOKEN_KEY) && hasSessionExpired()) {
@@ -390,7 +459,7 @@ function initAuth() {
     localStorage.setItem(LOGOUT_REASON_KEY, 'session_expired');
     if (isProtectedPage) {
       showToast({ title: 'Sesión expirada', message: 'Por seguridad, tu sesión se cerró automáticamente luego de 12 horas.', type: 'error', duration: 2200 });
-      setTimeout(() => { window.location.href = 'login.html'; }, 900);
+      setTimeout(() => { window.location.href = loginHref(); }, 900);
       return;
     }
   }
@@ -425,7 +494,7 @@ function initAuth() {
       if (!isAuthenticated() || !isAdmin()){
         ensureToast();
         showToast({ title: 'Acceso restringido', message: 'Necesitas permisos de administrador', type: 'error', duration: 1800 });
-        setTimeout(()=>{ window.location.href = 'dashboard.html'; }, 900);
+        setTimeout(()=>{ window.location.href = dashboardHref(); }, 900);
         return;
       }
     }
@@ -439,7 +508,7 @@ function initAuth() {
       e.preventDefault();
       ensureToast();
       showToast({ title: 'Inicia sesión', message: 'Necesitas iniciar sesión para acceder.', type: 'error', duration: 1600 });
-      setTimeout(() => { window.location.href = 'login.html'; }, 900);
+      setTimeout(() => { window.location.href = loginHref(); }, 900);
     }
   }, true);
 
@@ -457,7 +526,7 @@ function initAuth() {
         localStorage.removeItem(SESSION_START_KEY);
         localStorage.setItem(LOGOUT_REASON_KEY, 'session_expired');
         showToast({ title: 'Sesión expirada', message: 'Por seguridad, tu sesión se cerró automáticamente luego de 12 horas.', type: 'error', duration: 2200 });
-        setTimeout(() => { window.location.href = 'login.html'; }, 900);
+        setTimeout(() => { window.location.href = loginHref(); }, 900);
       } else {
         // Programar logout automático en esta pestaña
         try {
@@ -468,7 +537,7 @@ function initAuth() {
               localStorage.removeItem(SESSION_START_KEY);
               localStorage.setItem(LOGOUT_REASON_KEY, 'session_expired');
               showToast({ title: 'Sesión expirada', message: 'Por seguridad, tu sesión se cerró automáticamente luego de 12 horas.', type: 'error', duration: 2200 });
-              setTimeout(() => { window.location.href = 'login.html'; }, 900);
+              setTimeout(() => { window.location.href = loginHref(); }, 900);
             }
           }, remaining);
         } catch(_) {}
@@ -532,7 +601,7 @@ function initAuth() {
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(USER_DATA_KEY);
         localStorage.removeItem(SESSION_START_KEY);
-        window.location.href = 'login.html';
+        window.location.href = loginHref();
       } else if (countEl) {
         countEl.textContent = String(remaining);
       }
@@ -552,7 +621,7 @@ function initAuth() {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_DATA_KEY);
       localStorage.removeItem(SESSION_START_KEY);
-      window.location.href = 'login.html';
+      window.location.href = loginHref();
     });
   }
 
@@ -567,6 +636,8 @@ function initAuth() {
 document.addEventListener('DOMContentLoaded', initAuth);
 
 // Exportar funciones para uso global
+window.showAuthBusy = showAuthBusy;
+window.hideAuthBusy = hideAuthBusy;
 window.auth = {
   isAuthenticated,
   getAuthToken,
@@ -577,5 +648,9 @@ window.auth = {
   register,
   protectRoute,
   redirectIfAuthenticated,
-  initAuth
+  initAuth,
+  loginHref,
+  dashboardHref,
+  showAuthBusy,
+  hideAuthBusy
 };

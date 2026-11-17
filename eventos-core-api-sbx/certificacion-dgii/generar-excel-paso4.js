@@ -9,7 +9,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import XLSX from 'xlsx';
+import { XLSX, readWorkbook, writeWorkbook } from './lib/xlsxIo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -40,7 +40,7 @@ function main() {
     process.exit(1);
   }
 
-  const wb = XLSX.readFile(baseExcel, { cellDates: true });
+  const wb = readWorkbook(baseExcel, { cellDates: true });
   const outWb = XLSX.utils.book_new();
 
   for (const sheetName of wb.SheetNames) {
@@ -82,8 +82,8 @@ function main() {
   }
 
   fs.mkdirSync(path.dirname(outCopy), { recursive: true });
-  XLSX.writeFile(outWb, outExcel);
-  XLSX.writeFile(outWb, outCopy);
+  writeWorkbook(outWb, outExcel);
+  writeWorkbook(outWb, outCopy);
 
   console.log('Excel Paso 4 generado:');
   console.log(' ', outExcel);

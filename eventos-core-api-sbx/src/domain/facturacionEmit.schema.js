@@ -54,12 +54,39 @@ export function validateDirectEmitPayload(body) {
     return { ok: false, error: 'lineas[] requerido cuando no hay registroId' };
   }
   const nombre = String(comprador.nombreRazon || comprador.razonSocialComprador || '').trim();
-  if (!nombre) return { ok: false, error: 'comprador.nombreRazon requerido' };
+  if (!nombre) return { ok: false, error: 'comprador.nombreRazon requerido (razón social de la empresa)' };
+  const rnc = digitsOnly(comprador.rncCliente || comprador.rncComprador || comprador.rnc);
+  if (rnc.length < 9 || rnc.length > 11) {
+    return { ok: false, error: 'comprador.rnc de la empresa requerido (9–11 dígitos)' };
+  }
+  const email = String(comprador.email || comprador.correo || comprador.emailFiscal || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: 'comprador.email de la empresa requerido' };
+  }
+  const tel = digitsOnly(comprador.telefono || comprador.telefonoFiscal || '');
+  if (tel.length !== 10 || !/^8(09|29|49)/.test(tel)) {
+    return { ok: false, error: 'comprador.telefono: 10 dígitos que empiecen por 809, 829 o 849' };
+  }
+  const dir = String(comprador.direccion || comprador.direccionFiscal || '').trim();
+  if (!dir) return { ok: false, error: 'comprador.direccion de la empresa requerida' };
+  for (let i = 0; i < lineas.length; i += 1) {
+    const desc = String(lineas[i]?.descripcion || lineas[i]?.NombreItem || '').trim();
+    if (!desc) return { ok: false, error: `lineas[${i}].descripcion requerida` };
+  }
   const total = Number(totales.totalRD ?? totales.MontoTotal ?? totales.montoTotal);
   if (!Number.isFinite(total) || total <= 0) {
     return { ok: false, error: 'totales.totalRD / MontoTotal inválido' };
   }
   return { ok: true };
+}
+
+/** Misma regla para panel, Booking, Eventos o cualquier otro origen. */
+export function validateDraftEmit(draft) {
+  return validateDirectEmitPayload({
+    comprador: draft?.comprador || {},
+    lineas: Array.isArray(draft?.lineas) ? draft.lineas : [],
+    totales: draft?.totales || {}
+  });
 }
 
 export function isDryRunDefault() {

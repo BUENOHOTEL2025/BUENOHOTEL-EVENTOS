@@ -21,6 +21,22 @@ body { background:#f7f8fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, san
 .badge.canceled { background:#fdeaea; color:#a11313; border:1px solid #f2b8b8; }
 .actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
 .btn { display:inline-flex; align-items:center; justify-content:center; padding:10px 22px; border:none; border-radius:20px; font-weight:700; font-size:0.98rem; font-family:Arial, Helvetica, sans-serif; cursor:pointer; }
+@keyframes bh-admin-btn-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .tab, .bh-admin-nav a, .bh-admin-nav button {
+    animation: bh-admin-btn-pulse 1.7s ease-in-out infinite;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .btn:hover, .tab:hover, .bh-admin-nav a:hover, .bh-admin-nav button:hover {
+    animation: none;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+  }
+  .btn:disabled { animation: none; transform: none; }
+}
 .btn-approve { background:#22c55e; color:#fff; }
 .btn-pending { background:#fbb03b; color:#222; }
 .btn-pending:hover { background:#e19a2e; color:#222; }

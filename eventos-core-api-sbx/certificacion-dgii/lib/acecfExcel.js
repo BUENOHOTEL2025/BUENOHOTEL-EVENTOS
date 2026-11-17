@@ -1,4 +1,4 @@
-import XLSX from 'xlsx';
+import { XLSX, readWorkbook } from './xlsxIo.js';
 
 const ACECF_COLUMNS = [
   'Version',
@@ -24,7 +24,7 @@ function rowToRecord(headers, values) {
 }
 
 export function parseCommercialApprovalExcel(excelPath) {
-  const wb = XLSX.readFile(excelPath);
+  const wb = readWorkbook(excelPath);
   const sheetName = wb.SheetNames.find((n) => /aceecf/i.test(n)) || wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
   if (!ws) throw new Error('Excel sin hojas: ' + excelPath);

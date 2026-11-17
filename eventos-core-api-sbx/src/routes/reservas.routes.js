@@ -1,31 +1,29 @@
 import { Router } from 'express';
-import { 
-  getMyReservas, 
-  getReservasByUser, 
-  getReservaById, 
-  listPagos, 
-  updatePagoEstado, 
+import {
+  getMyReservas,
+  getReservasByUser,
+  getReservaById,
+  listPagos,
+  updatePagoEstado,
   addPago,
   deleteReserva,
   deletePago,
   patchComprobanteCliente,
   patchFacturaConfig
 } from '../controllers/reservas.controller.js';
+import { requirePanelJwt, requireVerifiedJwt } from '../middleware/jwtGuard.middleware.js';
 
 const router = Router();
 
-// Admin
-router.get('/mias', getMyReservas);
-router.get('/pagos', listPagos); // <── AQUÍ, ANTES DE "/:id"
-router.get('/', getReservasByUser);
-router.patch('/:id/comprobante-cliente', patchComprobanteCliente);
-router.patch('/:id/factura-config', patchFacturaConfig);
-router.get('/:id', getReservaById);
-router.post('/:id/pagos', addPago);
-router.patch('/:id/pagos/:pagoId/estado', updatePagoEstado);
-// Eliminar pago individual
-router.delete('/:id/pagos/:pagoId', deletePago);
-// Eliminar registro completo
-router.delete('/:id', deleteReserva);
+router.get('/mias', requireVerifiedJwt, getMyReservas);
+router.get('/pagos', requirePanelJwt, listPagos);
+router.get('/', requirePanelJwt, getReservasByUser);
+router.patch('/:id/comprobante-cliente', requirePanelJwt, patchComprobanteCliente);
+router.patch('/:id/factura-config', requirePanelJwt, patchFacturaConfig);
+router.get('/:id', requireVerifiedJwt, getReservaById);
+router.post('/:id/pagos', requirePanelJwt, addPago);
+router.patch('/:id/pagos/:pagoId/estado', requirePanelJwt, updatePagoEstado);
+router.delete('/:id/pagos/:pagoId', requirePanelJwt, deletePago);
+router.delete('/:id', requirePanelJwt, deleteReserva);
 
 export default router;

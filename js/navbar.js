@@ -62,13 +62,65 @@
           var u = (window.getUserData && window.getUserData()) || {};
           userGreeting.textContent = u.nombre || u.name || u.email || 'Mi Cuenta';
           var drop = document.getElementById('user-dropdown');
-          if (drop && window.isAdmin && window.isAdmin() && !document.getElementById('bh-admin-link')) {
-            var adminA = document.createElement('a');
-            adminA.id = 'bh-admin-link';
-            adminA.href = 'admin.html';
-            adminA.textContent = 'Admin';
-            adminA.style.cssText = 'display:block;padding:12px 16px;color:#222;text-decoration:none;font-weight:500;border-bottom:1px solid #eee;';
-            drop.insertBefore(adminA, drop.firstChild);
+          if (drop && window.isAdmin && window.isAdmin()) {
+            var itemCss = 'display:block;padding:12px 16px;color:#222;text-decoration:none;font-weight:500;border-bottom:1px solid #eee;';
+            if (!document.getElementById('bh-admin-link')) {
+              var adminA = document.createElement('a');
+              adminA.id = 'bh-admin-link';
+              adminA.href = 'admin.html';
+              adminA.textContent = 'Admin';
+              adminA.style.cssText = itemCss;
+              drop.insertBefore(adminA, drop.firstChild);
+            }
+            if (!document.getElementById('bh-comprobantes-link')) {
+              var compA = document.createElement('a');
+              compA.id = 'bh-comprobantes-link';
+              compA.href = 'https://ecommerce.buenohotel.com.do/admin/comprobantes';
+              compA.target = '_blank';
+              compA.rel = 'noopener';
+              compA.textContent = 'Comprobantes';
+              compA.style.cssText = itemCss;
+              var adminLink = document.getElementById('bh-admin-link');
+              if (adminLink && adminLink.nextSibling) drop.insertBefore(compA, adminLink.nextSibling);
+              else if (adminLink) adminLink.insertAdjacentElement('afterend', compA);
+              else drop.insertBefore(compA, drop.firstChild);
+            }
+            if (!document.getElementById('bh-difusion-link')) {
+              var difA = document.createElement('a');
+              difA.id = 'bh-difusion-link';
+              difA.href = 'https://buenohotel.com/admin/difusion';
+              difA.target = '_blank';
+              difA.rel = 'noopener';
+              difA.textContent = 'Lista de difusión';
+              difA.style.cssText = itemCss;
+              var after = document.getElementById('bh-comprobantes-link') || document.getElementById('bh-admin-link');
+              if (after) after.insertAdjacentElement('afterend', difA);
+              else drop.insertBefore(difA, drop.firstChild);
+            }
+            if (!document.getElementById('bh-paquetes-admin-link')) {
+              var pkgA = document.createElement('a');
+              pkgA.id = 'bh-paquetes-admin-link';
+              pkgA.href = 'https://buenohotel.com/admin/paquetes';
+              pkgA.target = '_blank';
+              pkgA.rel = 'noopener';
+              pkgA.textContent = 'Paquetes turísticos';
+              pkgA.style.cssText = itemCss;
+              var afterDif = document.getElementById('bh-difusion-link') || document.getElementById('bh-comprobantes-link');
+              if (afterDif) afterDif.insertAdjacentElement('afterend', pkgA);
+              else drop.insertBefore(pkgA, drop.firstChild);
+            }
+            if (!document.getElementById('bh-galeria-link')) {
+              var galA = document.createElement('a');
+              galA.id = 'bh-galeria-link';
+              galA.href = 'https://buenohotel.com/admin/fotos-eventos';
+              galA.target = '_blank';
+              galA.rel = 'noopener';
+              galA.textContent = 'Galería';
+              galA.style.cssText = itemCss;
+              var afterPkg = document.getElementById('bh-paquetes-admin-link') || document.getElementById('bh-difusion-link');
+              if (afterPkg) afterPkg.insertAdjacentElement('afterend', galA);
+              else drop.insertBefore(galA, drop.firstChild);
+            }
           }
         } catch (_) {}
       }

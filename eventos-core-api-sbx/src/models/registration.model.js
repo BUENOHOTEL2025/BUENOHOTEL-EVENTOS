@@ -1,5 +1,6 @@
 import { DynamoDBDocumentClient, PutCommand, QueryCommand, ScanCommand, UpdateCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { dynamoDBClient } from '../config/db.config.js';
+import { pickMontoFiscal } from './comprobanteEcf.model.js';
 
 const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
 const TABLE_NAME = process.env.DDB_REGISTROS_TABLE || 'registros_eventos';
@@ -528,6 +529,12 @@ class RegistrationModel {
           codigoSeguridad: det.codigoSeguridad || null,
           fechaFirmaDigital: det.fechaFirmaDigital || null,
           emitidoAt: det.dgiiEmitidoAt || it.fechaActualizacion || null,
+          montoTotal: pickMontoFiscal(
+            det.totales,
+            det.dgiiMontoTotal,
+            det.totales?.precioAPagar,
+            det.totales?.precioAPagarGravado
+          ),
           environment: det.dgiiEnvironment || null,
           dryRun: det.dgiiDryRun ?? null,
           fileName: det.dgiiFileName || null,

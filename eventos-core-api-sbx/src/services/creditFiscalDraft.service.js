@@ -3,7 +3,7 @@ import RegistrationModel from '../models/registration.model.js';
 import { TIPO_COMPROBANTE, decimalRD } from '../domain/creditFiscalInvoice.schema.js';
 import { getTasaCambio } from './tasaCambio.service.js';
 import { enrichVerificacionQr } from './ecfQr.service.js';
-import { formatFechaDgii } from './facturacionIecf.mapper.js';
+import { formatFechaDgii, telefonoDgii } from './facturacionIecf.mapper.js';
 import { resolveDgiiEnvironment } from '../domain/facturacionEmit.schema.js';
 
 function str(v) {
@@ -149,19 +149,50 @@ const EMISOR_DEFECTO_EVENTOS = Object.freeze({
   nombreComercial: 'BUENOHOTEL S.R.L',
   rnc: '131631088',
   email: 'info@buenohotel.com',
-  telefono: '+1 809 566 4292',
+  telefono: '8095664292',
   direccion: 'C/ Dario Concepción no. 18, San Gerónimo,\nSanto Domingo DN. 10104'
 });
 
+function direccionEmisorLimpia(raw, fallback) {
+  const t = str(raw);
+  if (!t) return fallback;
+  if (/�|\uFFFD|\u00C3[\u00A1-\u00BA]/.test(t)) return fallback;
+  if (/Concepci/.test(t) && !/Concepci[oó]n/i.test(t)) return fallback;
+  if (/Ger/.test(t) && !/Ger[oó]nimo/i.test(t) && /Ger./i.test(t)) return fallback;
+  return t;
+}
+
 function loadEmisorFromEnv() {
   const d = EMISOR_DEFECTO_EVENTOS;
+  const direccion = direccionEmisorLimpia(process.env.FACTURA_EMISOR_DIRECCION, d.direccion);
   return {
-    nombreComercial: str(process.env.FACTURA_EMISOR_NOMBRE) || d.nombreComercial,
-    direccion: str(process.env.FACTURA_EMISOR_DIRECCION) || d.direccion,
-    telefono: str(process.env.FACTURA_EMISOR_TELEFONO) || d.telefono,
-    rnc: str(process.env.FACTURA_EMISOR_RNC) || d.rnc,
+    nombreComercial:
+      str(process.env.FACTURA_EMISOR_NOMBRE) ||
+      str(process.env.FACTURA_EMISOR_RAZON) ||
+      d.nombreComercial,
+    direccion,
+    telefono:
+      telefonoDgii(process.env.FACTURA_EMISOR_TELEFONO) ||
+      telefonoDgii(d.telefono) ||
+      '8095664292',
+    rnc: str(process.env.FACTURA_EMISOR_RNC) || str(process.env.DGII_FE_RNC) || d.rnc,
     email: str(process.env.FACTURA_EMISOR_EMAIL) || d.email,
     sloganLeyenda: str(process.env.FACTURA_EMISOR_SLOGAN)
+  };
+}
+
+/** Datos legales de BuenoHotel para preview, XML e impresión (completan un emisor vacío). */
+export function mergeEmisorFactura(partial) {
+  const base = loadEmisorFromEnv();
+  const o = partial && typeof partial === 'object' ? partial : {};
+  const rnc = String(o.rnc || '').replace(/\D/g, '');
+  return {
+    nombreComercial: str(o.nombreComercial || o.razonSocial) || base.nombreComercial,
+    direccion: str(o.direccion) || base.direccion,
+    telefono: telefonoDgii(o.telefono) || base.telefono,
+    rnc: rnc.length >= 9 ? rnc : base.rnc,
+    email: str(o.email) || base.email,
+    sloganLeyenda: str(o.sloganLeyenda) || base.sloganLeyenda
   };
 }
 
@@ -502,11 +533,16 @@ export async function buildCreditFiscalDraftFromRegistration(registroId) {
 
   const fechaEmision = safeEmissionDate(reg);
 
-  const rncCliente = str(det.rncComprobanteFiscal || det.rncCliente || det.rnc);
-  const razonCliente = str(det.razonSocialCliente);
-  const direccionCliente = str(det.direccionFiscalCliente).replace(/\s+/g, ' ').slice(0, 100);
-  const emailCliente = str(det.emailFiscalCliente);
-  const telefonoCliente = str(det.telefonoFiscalCliente);
+  const rncCliente = str(det.rncComprobanteFiscal || det.rncCliente || det.rnc || reg.rnc);
+  const razonCliente = str(det.razonSocialCliente || det.nombreRazon || det.razonSocial || reg.razonSocial);
+  const direccionCliente = str(det.direccionFiscalCliente || det.direccion || reg.direccion)
+    .replace(/\s+/g, ' ')
+    .slice(0, 100);
+  const emailCliente = str(det.emailFiscalCliente || det.email || det.correo || reg.email);
+  const telefonoCliente =
+    telefonoDgii(
+      det.telefonoFiscalCliente || det.telefonoCliente || det.telefono || reg.telefono || ''
+    ) || str(det.telefonoFiscalCliente || det.telefonoCliente || det.telefono || '');
   const refInterna =
     str(det.numeroFacturaInterna) ||
     (reg.codigoCorto ? `REG-${String(reg.codigoCorto)}` : `REG-${String(reg.id).slice(0, 8)}`);

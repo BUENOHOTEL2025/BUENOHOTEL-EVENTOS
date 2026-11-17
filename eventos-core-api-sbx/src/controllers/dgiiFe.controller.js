@@ -191,21 +191,8 @@ export async function postAprobacionComercial(req, res) {
 
 /** GET /fe/_health — verificación de despliegue (no es endpoint DGII) */
 export function getFeHealth(_req, res) {
-  const sw = getDgiiFeSoftwareInfo();
   res.json({
     ok: true,
-    dgiiFe: {
-      certConfigured: isDgiiFeCertConfigured(),
-      rnc: sw.rnc,
-      software: sw.nombre,
-      version: sw.version,
-      endpoints: {
-        semilla: '/fe/autenticacion/api/semilla',
-        validacionCertificado: '/fe/autenticacion/api/validacioncertificado',
-        recepcion: '/fe/recepcion/api/ecf',
-        aprobacionComercial: '/fe/aprobacioncomercial/api/ecf'
-      }
-    },
-    ts: new Date().toISOString()
+    ready: isDgiiFeCertConfigured()
   });
 }

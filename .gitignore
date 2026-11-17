@@ -18,6 +18,13 @@ node_modules/
 *.zip
 deploy-lambda.zip
 _tmp-*.json
+eventos-core-api-sbx/deploy-lambda.zip
+**/node_modules/
+
+# Snapshots locales de certificación DGII
+certificacion-dgii/_paquete-*/
+**/salida/ecf-firmados/
+**/salida/envio-resultados/
 
 # Logs
 npm-debug.log*

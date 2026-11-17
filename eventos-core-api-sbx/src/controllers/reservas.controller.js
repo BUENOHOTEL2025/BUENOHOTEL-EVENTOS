@@ -66,6 +66,16 @@ export async function getReservaById(req, res) {
     let item = await RegistrationModel.getById(id);
     if (!item) item = await RegistrationModel.getByShortCode(id);
     if (!item) return res.status(404).json({ success: false, message: 'No encontrado' });
+    const p = req.jwtPayload || {};
+    const email = String(p.email || '').trim().toLowerCase();
+    const userId = String(p.sub || p.user_id || '').trim();
+    const admin = isAdminEmailReservas(email) || isAdminFromJwtPayload(p);
+    const belongs =
+      (item.userId && userId && String(item.userId) === userId) ||
+      (item?.datosPersona?.email && email && String(item.datosPersona.email).toLowerCase() === email);
+    if (!admin && !belongs) {
+      return res.status(403).json({ success: false, message: 'No autorizado' });
+    }
     res.json({ success: true, data: item });
   } catch (e) {
     console.error('❌ Error en getReservaById:', e);
