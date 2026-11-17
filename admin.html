@@ -19,7 +19,7 @@
   <script src="js/auth.js?v=20261117a"></script>
   <script src="https://buenohotel.com/js/config.js?v=20261029e"></script>
   <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
-  <script src="https://buenohotel.com/js/site-shell.js?v=20261117t"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261117v"></script>
   <script src="js/navbar.js?v=20261117u"></script>
   <script src="js/admin-core.js?v=20260930q"></script>
   <script src="js/admin-ecf.js?v=20261002s"></script>
@@ -473,9 +473,9 @@
     <div class="card" style="margin-bottom:14px;">
       <nav class="bh-admin-nav" aria-label="Panel">
         <a class="is-on" href="/admin">Eventos</a>
-        <a href="https://buenohotel.com/admin/fotos-eventos">Galería</a>
-        <a href="https://buenohotel.com/admin/difusion">Difusión</a>
-        <a href="https://buenohotel.com/admin/paquetes">Paquetes</a>
+        <a href="https://buenohotel.com/admin/fotos-eventos" target="_blank" rel="noopener">Galería</a>
+        <a href="https://buenohotel.com/admin/difusion" target="_blank" rel="noopener">Difusión</a>
+        <a href="https://buenohotel.com/admin/paquetes" target="_blank" rel="noopener">Paquetes</a>
       </nav>
       <p class="muted" style="margin:10px 0 0;">Galería general en S3: una foto sirve para Eventos, Tours, ecommerce y el sitio.</p>
     </div>
@@ -553,7 +553,7 @@
           <h2 style="margin:0; font-size:1.3rem; color:#1a365d;">Galería BUENOHOTEL</h2>
           <a class="btn" href="https://buenohotel.com/admin/fotos-eventos" target="_blank" rel="noopener" style="background:#FBB03B; color:#222; border:1px solid #E19A2E; text-decoration:none; font-weight:700;">Subir / notas</a>
         </div>
-        <p class="muted" style="margin:0 0 12px;">Las mismas fotos de la galería general. Pasa el mouse (lupa) y pulsa para verlas a tamaño original.</p>
+        <p class="muted" style="margin:0 0 12px;">Las mismas fotos de la galería general. Conservan su proporción. Pulsa una para verla original.</p>
         <div id="bh-fotos-galeria" class="bh-fotos-galeria-grid"></div>
       </div>
     </div>
@@ -4127,11 +4127,16 @@
         .bh-foto-zoom{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.88);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
         .bh-foto-zoom img{max-width:min(96vw,1400px);max-height:92vh;width:auto;height:auto;object-fit:contain;border-radius:8px}
         .bh-foto-lupa{cursor:zoom-in}
-        .bh-fotos-galeria-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-        .bh-fotos-galeria-grid .bh-foto-card{background:#fff;border:1px solid #eee;border-radius:10px;overflow:hidden}
-        .bh-fotos-galeria-grid .bh-foto-lupa{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left}
-        .bh-fotos-galeria-grid .bh-foto-lupa img{width:100%;height:150px;object-fit:cover;display:block;background:#f3f4f6}
-        .bh-pick-card img{width:100%;height:110px;object-fit:cover;display:block;background:#f3f4f6;pointer-events:none}`;
+        .bh-fotos-galeria-grid{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;width:100%}
+        .bh-fotos-galeria-grid .bh-foto-card{position:relative;box-sizing:border-box;flex:1 1 auto;min-width:0;margin:0;background:#e8ecf1;border:0;border-radius:6px;overflow:hidden;padding:0;line-height:0;-webkit-appearance:none;appearance:none}
+        .bh-fotos-galeria-grid .bh-foto-lupa{display:block;width:100%;height:100%;padding:0;border:0;background:transparent;text-align:left;cursor:zoom-in}
+        .bh-fotos-galeria-grid .bh-foto-lupa img{width:100%;height:100%;object-fit:cover;display:block;background:#dbe3ee}
+        .bh-fotos-galeria-grid .bh-foto-cap{position:absolute;left:0;right:0;bottom:0;padding:8px 10px;color:#fff;font-size:.78rem;background:linear-gradient(180deg,transparent,rgba(15,23,42,.82));opacity:0;pointer-events:none}
+        .bh-fotos-galeria-grid .bh-foto-card:hover .bh-foto-cap{opacity:1}
+        .bh-fotos-galeria-grid .bh-ver-ref{position:absolute;left:8px;bottom:8px;z-index:1;margin:0;padding:0;border:0;background:none;color:#fff;font-weight:800;text-decoration:underline;cursor:pointer}
+        .bh-pick-card img{width:100%;height:100%;object-fit:cover;display:block;background:#dbe3ee;pointer-events:none}
+        #bh-fotos-picker-grid{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;width:100%}
+        #bh-fotos-picker-grid .bh-pick-card{border:0!important;box-shadow:none}`;
       document.head.appendChild(style);
     })();
 
@@ -4956,8 +4961,8 @@
             <button type="button" class="bh-foto-lupa" data-zoom="${url}" title="Ver original">
               <img src="${thumb}" alt="" loading="lazy">
             </button>
-            ${note ? `<small style="display:block;padding:8px;color:#333;">${note}</small>` : ''}
-            ${refs.length ? `<button type="button" class="bh-ver-ref" data-refs="${refs.join('|').replace(/"/g,'')}" style="display:block;margin:0 8px 10px;padding:0;border:0;background:none;color:#1a365d;font-weight:800;text-decoration:underline;cursor:pointer;">Ver referencia${refs.length > 1 ? 's (' + refs.length + ')' : ''}</button>` : ''}
+            ${note ? `<small class="bh-foto-cap">${note}</small>` : ''}
+            ${refs.length ? `<button type="button" class="bh-ver-ref" data-refs="${refs.join('|').replace(/"/g,'')}">Ver referencia${refs.length > 1 ? 's (' + refs.length + ')' : ''}</button>` : ''}
           </div>`;
         }).join('');
         box.querySelectorAll('[data-zoom]').forEach((btn) => {
@@ -4969,7 +4974,79 @@
             window.openBhFotoRefs(String(btn.getAttribute('data-refs') || '').split('|'));
           });
         });
+        const layout = () => window.layoutBhFotosMosaic(box);
+        layout();
+        requestAnimationFrame(layout);
+        box.querySelectorAll('img').forEach((img) => {
+          if (img.complete && img.naturalWidth) return;
+          img.addEventListener('load', layout);
+        });
       };
+
+      window.layoutBhFotosMosaic = function(grid){
+        if (!grid) return;
+        const cards = [].slice.call(grid.querySelectorAll('.bh-foto-card'));
+        if (!cards.length) return;
+        const gap = 6;
+        const maxW = Math.floor(grid.getBoundingClientRect().width);
+        if (maxW < 40) return;
+        const targetH = maxW > 900 ? 220 : maxW > 640 ? 180 : 140;
+        let row = [];
+        let used = 0;
+        const ratio = (card) => {
+          const stored = Number(card.getAttribute('data-ratio'));
+          if (stored > 0.08) return stored;
+          const img = card.querySelector('img');
+          if (img && img.naturalWidth && img.naturalHeight) {
+            const r = img.naturalWidth / img.naturalHeight;
+            card.setAttribute('data-ratio', String(r));
+            return r;
+          }
+          return 1.333;
+        };
+        const flush = () => {
+          if (!row.length) return;
+          const widths = row.map((c) => ratio(c) * targetH);
+          const sum = widths.reduce((a, b) => a + b, 0);
+          const avail = Math.max(1, maxW - gap * (row.length - 1));
+          const scale = avail / sum;
+          let assigned = 0;
+          row.forEach((c, i) => {
+            const w = i === row.length - 1
+              ? Math.max(1, avail - assigned)
+              : Math.max(1, Math.round(widths[i] * scale));
+            if (i < row.length - 1) assigned += w;
+            c.style.boxSizing = 'border-box';
+            c.style.flex = '1 1 ' + w + 'px';
+            c.style.width = w + 'px';
+            c.style.height = Math.round(targetH * scale) + 'px';
+            c.style.minWidth = '0';
+            c.style.margin = '0';
+            c.style.padding = '0';
+            c.style.border = '0';
+          });
+          row = [];
+          used = 0;
+        };
+        cards.forEach((c) => {
+          const w = ratio(c) * targetH;
+          if (row.length && used + gap + w > maxW + 1) flush();
+          row.push(c);
+          used += (row.length > 1 ? gap : 0) + w;
+        });
+        if (row.length) flush();
+      };
+      if (!window.__bhFotosMosaicResize) {
+        window.__bhFotosMosaicResize = 1;
+        let t;
+        window.addEventListener('resize', () => {
+          clearTimeout(t);
+          t = setTimeout(() => {
+            const g = document.getElementById('bh-fotos-galeria');
+            if (g) window.layoutBhFotosMosaic(g);
+          }, 120);
+        });
+      }
       if (document.querySelector('.tab[data-tab="fotos"].active')) window.renderBhFotosTab();
 
       function applyGaleriaPick(overlay, mode, url){
@@ -5001,7 +5078,7 @@
             </div>
             <input type="file" id="bh-fotos-picker-file" accept="image/*" multiple style="display:none;">
             <p class="muted" id="bh-fotos-picker-hint" style="margin:8px 0 12px;"></p>
-            <div id="bh-fotos-picker-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;"></div>
+            <div id="bh-fotos-picker-grid" class="bh-fotos-galeria-grid"></div>
             <div style="position:sticky;bottom:0;display:flex;justify-content:flex-end;padding:12px 0 0;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 40%);">
               <button type="button" id="bh-fotos-picker-use" class="btn" disabled style="background:#FBB03B;color:#1a365d;border:0;font-weight:800;min-height:42px;border-radius:10px;padding:0 18px;">Usar este</button>
             </div>
@@ -5061,11 +5138,18 @@
             const url = String(f.url||'').replace(/"/g,'');
             const thumb = String(f.thumbUrl || f.thumb || url).replace(/"/g,'');
             const note = String(f.note||'').replace(/[&<>]/g,'');
-            return `<button type="button" class="bh-pick-card" data-url="${url}" style="border:2px solid #eee;border-radius:8px;overflow:hidden;background:#fff;padding:0;cursor:pointer;text-align:left;">
+            return `<button type="button" class="bh-foto-card bh-pick-card" data-url="${url}" style="padding:0;cursor:pointer;text-align:left;">
               <img src="${thumb}" alt="">
-              ${note ? `<small style="display:block;padding:6px;font-size:11px;color:#555;">${note}</small>` : ''}
+              ${note ? `<small class="bh-foto-cap">${note}</small>` : ''}
             </button>`;
           }).join('');
+          const layoutPick = () => window.layoutBhFotosMosaic && window.layoutBhFotosMosaic(grid);
+          layoutPick();
+          requestAnimationFrame(layoutPick);
+          grid.querySelectorAll('img').forEach((img) => {
+            if (img.complete && img.naturalWidth) return;
+            img.addEventListener('load', layoutPick);
+          });
           grid.querySelectorAll('.bh-pick-card').forEach((card) => {
             card.addEventListener('click', () => {
               grid.querySelectorAll('.bh-pick-card').forEach((c) => {
