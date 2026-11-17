@@ -55,6 +55,20 @@ function corsOriginAllowed(origin) {
   return /^https:\/\/([a-z0-9-]+\.)?buenohotel\.com(\.do)?$/i.test(origin);
 }
 
+const CORS_HEADERS = [
+  'content-type',
+  'authorization',
+  'cookie',
+  'accept',
+  'origin',
+  'x-requested-with',
+  'x-user-email',
+  'x-user-name',
+  'x-user-id',
+  'cache-control',
+  'pragma',
+  'if-none-match'
+];
 app.use(
   cors({
     origin(origin, cb) {
@@ -62,10 +76,14 @@ app.use(
       if (corsOriginAllowed(origin)) return cb(null, origin);
       return cb(null, false);
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: CORS_HEADERS,
+    maxAge: 86400
   })
 );
 app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') return next();
   const origin = String(req.headers.origin || '');
   if (origin && corsOriginAllowed(origin)) {
     res.set('Access-Control-Allow-Origin', origin);
@@ -141,11 +159,13 @@ app.get('/', (req, res) => {
 // Manejador de errores global
 app.use((err, req, res, _next) => {
   const status = Number(err?.status) || Number(err?.statusCode) || 500;
-  console.error(err?.stack || err?.message || err);
+  const message = String(err?.message || 'Error interno del servidor').slice(0, 500);
+  const code = err?.code != null ? String(err.code).slice(0, 80) : undefined;
+  console.error('[api-error]', status, message);
   res.status(status).json({
     success: false,
-    message: err?.status || err?.statusCode ? (err.message || 'Error') : 'Error interno del servidor',
-    code: err?.code || undefined
+    message: status >= 500 ? 'Error interno del servidor' : (message || 'Error'),
+    code
   });
 });
 

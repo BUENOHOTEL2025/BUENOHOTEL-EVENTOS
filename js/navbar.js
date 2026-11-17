@@ -17,7 +17,7 @@
           '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>' +
         '</a>' +
         '<div id="user-dropdown" style="display:none;position:absolute;right:0;top:100%;background:#fff;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,.12);border-radius:8px;overflow:hidden;z-index:1000;">' +
-          '<a href="dashboard.html" data-requires-auth style="display:block;padding:12px 16px;color:#222;text-decoration:none;font-weight:500;border-bottom:1px solid #eee;">Mi Perfil</a>' +
+          '<a id="bh-perfil-link" href="dashboard.html#perfil" data-requires-auth style="display:block;padding:12px 16px;color:#222;text-decoration:none;font-weight:500;border-bottom:1px solid #eee;">Mi Perfil</a>' +
           '<a href="mis-reservas.html" data-requires-auth style="display:block;padding:12px 16px;color:#222;text-decoration:none;font-weight:500;border-bottom:1px solid #eee;">Mis Reservas</a>' +
           '<a href="#" id="logout-btn" style="display:block;padding:12px 16px;color:#222;text-decoration:none;font-weight:500;">Cerrar Sesión</a>' +
         '</div>' +
@@ -64,13 +64,18 @@
           var drop = document.getElementById('user-dropdown');
           if (drop && window.isAdmin && window.isAdmin()) {
             var itemCss = 'display:block;padding:12px 16px;color:#222;text-decoration:none;font-weight:500;border-bottom:1px solid #eee;';
+            var reservasA = drop.querySelector('a[href="mis-reservas.html"]');
+            function insertStaff(el) {
+              if (reservasA) drop.insertBefore(el, reservasA);
+              else drop.appendChild(el);
+            }
             if (!document.getElementById('bh-admin-link')) {
               var adminA = document.createElement('a');
               adminA.id = 'bh-admin-link';
               adminA.href = 'admin.html';
               adminA.textContent = 'Admin';
               adminA.style.cssText = itemCss;
-              drop.insertBefore(adminA, drop.firstChild);
+              insertStaff(adminA);
             }
             if (!document.getElementById('bh-comprobantes-link')) {
               var compA = document.createElement('a');
@@ -80,10 +85,7 @@
               compA.rel = 'noopener';
               compA.textContent = 'Comprobantes';
               compA.style.cssText = itemCss;
-              var adminLink = document.getElementById('bh-admin-link');
-              if (adminLink && adminLink.nextSibling) drop.insertBefore(compA, adminLink.nextSibling);
-              else if (adminLink) adminLink.insertAdjacentElement('afterend', compA);
-              else drop.insertBefore(compA, drop.firstChild);
+              insertStaff(compA);
             }
             if (!document.getElementById('bh-difusion-link')) {
               var difA = document.createElement('a');
@@ -93,9 +95,7 @@
               difA.rel = 'noopener';
               difA.textContent = 'Lista de difusión';
               difA.style.cssText = itemCss;
-              var after = document.getElementById('bh-comprobantes-link') || document.getElementById('bh-admin-link');
-              if (after) after.insertAdjacentElement('afterend', difA);
-              else drop.insertBefore(difA, drop.firstChild);
+              insertStaff(difA);
             }
             if (!document.getElementById('bh-paquetes-admin-link')) {
               var pkgA = document.createElement('a');
@@ -105,9 +105,7 @@
               pkgA.rel = 'noopener';
               pkgA.textContent = 'Paquetes turísticos';
               pkgA.style.cssText = itemCss;
-              var afterDif = document.getElementById('bh-difusion-link') || document.getElementById('bh-comprobantes-link');
-              if (afterDif) afterDif.insertAdjacentElement('afterend', pkgA);
-              else drop.insertBefore(pkgA, drop.firstChild);
+              insertStaff(pkgA);
             }
             if (!document.getElementById('bh-galeria-link')) {
               var galA = document.createElement('a');
@@ -117,9 +115,7 @@
               galA.rel = 'noopener';
               galA.textContent = 'Galería';
               galA.style.cssText = itemCss;
-              var afterPkg = document.getElementById('bh-paquetes-admin-link') || document.getElementById('bh-difusion-link');
-              if (afterPkg) afterPkg.insertAdjacentElement('afterend', galA);
-              else drop.insertBefore(galA, drop.firstChild);
+              insertStaff(galA);
             }
           }
         } catch (_) {}
@@ -138,25 +134,63 @@
       });
     }
 
+    applyTasaFromCache();
     loadTasaCambio();
   }
 
-  async function loadTasaCambio() {
+  function parseTasaCambio(data) {
+    var n = Number(
+      data && (data.data && (data.data.tasaCambio || data.data.tasa)) ||
+      (data && (data.tasaCambio || data.tasa || data.valor))
+    );
+    return isFinite(n) && n > 0 ? n : null;
+  }
+
+  function applyTasaDisplay(tasa) {
+    var n = Number(tasa);
+    if (!isFinite(n) || n <= 0) return;
     try {
-      var tasaDisplay = document.getElementById('tasa-display');
-      var tasaValor = document.getElementById('tasa-valor');
-      if (!tasaDisplay || !tasaValor) return;
-      var API_BASE = window.getAuthApiBase ? window.getAuthApiBase() : 'https://core-api.buenohotel.com.do';
-      var resp = await fetch(API_BASE + '/api/config/tasa-cambio');
-      if (!resp.ok) throw new Error('tasa');
-      var data = await resp.json();
-      var tasa = data && (data.tasa || (data.data && data.data.tasa) || data.valor);
-      if (tasa && !isNaN(Number(tasa))) {
-        tasaValor.textContent = Number(tasa).toFixed(2);
-        tasaDisplay.style.display = 'inline-flex';
-      }
+      localStorage.setItem('tasaCambio', String(n));
+      localStorage.setItem('buenohotel_tasa_cambio', String(n));
+    } catch (_) {}
+    var tasaDisplay = document.getElementById('tasa-display');
+    var tasaValor = document.getElementById('tasa-valor');
+    if (tasaValor) tasaValor.textContent = n.toFixed(2);
+    if (tasaDisplay) tasaDisplay.style.display = 'inline-flex';
+  }
+
+  function applyTasaFromCache() {
+    try {
+      applyTasaDisplay(localStorage.getItem('tasaCambio') || localStorage.getItem('buenohotel_tasa_cambio'));
     } catch (_) {}
   }
+
+  async function loadTasaCambio() {
+    var urls = [
+      'https://h0q597no4j.execute-api.us-east-1.amazonaws.com/admin/eventos/tasa-cambio'
+    ];
+    try {
+      var API_BASE = window.getAuthApiBase ? window.getAuthApiBase() : 'https://core-api.buenohotel.com.do';
+      if (API_BASE) urls.push(String(API_BASE).replace(/\/$/, '') + '/api/config/tasa-cambio');
+    } catch (_) {}
+    for (var i = 0; i < urls.length; i++) {
+      try {
+        var resp = await fetch(urls[i], { cache: 'no-store' });
+        if (!resp.ok) continue;
+        var data = await resp.json();
+        var tasa = parseTasaCambio(data);
+        if (tasa) {
+          applyTasaDisplay(tasa);
+          return;
+        }
+      } catch (_) {}
+    }
+  }
+
+  window.BH_applyTasaCambio = applyTasaDisplay;
+  window.addEventListener('bh-tasa-updated', function (ev) {
+    applyTasaDisplay(ev && ev.detail);
+  });
 
   function readyAuth() {
     attachAuthNav();

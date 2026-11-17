@@ -10,6 +10,24 @@ function escapeHtml(s) {
 const EVENTOS_PUBLIC_ORIGIN = 'https://eventos.buenohotel.com.do';
 const BRAND_LOGO_WHITE_URL = `${EVENTOS_PUBLIC_ORIGIN}/assets/logo/logo-white.png`;
 
+const ORIGEN_MARCA = {
+  eventos: 'Eventos',
+  ecommerce: 'Ecommerce',
+  booking: 'Booking',
+  tours: 'Tours',
+  seguro: 'Seguro',
+  manual: 'Manual'
+};
+
+/** Etiqueta de canal en lista e impresión (no hardcodear Eventos). */
+export function etiquetaOrigen(origen) {
+  const raw = String(origen || '').trim();
+  const key = raw.toLowerCase();
+  if (!key || key === 'consulta') return 'BuenoHotel';
+  if (ORIGEN_MARCA[key]) return ORIGEN_MARCA[key];
+  return raw.slice(0, 24);
+}
+
 function formatDocMoney(n, moneda) {
   const x = Number(n);
   if (!Number.isFinite(x)) return moneda === 'USD' ? '$0.00' : 'RD$0.00';
@@ -144,6 +162,7 @@ export function renderFacturaOperativaHtml(draft) {
     .join('');
 
   const docTitle = escapeHtml(String(doc.tipoTituloContrato || doc.tipo || 'DOCUMENTO DE COBRO'));
+  const marca = escapeHtml(etiquetaOrigen(draft._meta?.origen));
 
   return `<!DOCTYPE html>
 <html lang="es-DO"><head><meta charset="utf-8"/>
@@ -256,7 +275,7 @@ export function renderFacturaOperativaHtml(draft) {
       <img src="${escapeHtml(BRAND_LOGO_WHITE_URL)}" alt="BuenoHotel" width="180" height="44" />
       <div class="bh-brand-tagline">Agencia de Viajes y Tour Operador Receptivo-Emisivo</div>
     </div>
-    <span class="bh-tag">Eventos</span>
+    <span class="bh-tag">${marca}</span>
   </div>
   <div class="bh-accent"></div>
   <div class="bh-content">

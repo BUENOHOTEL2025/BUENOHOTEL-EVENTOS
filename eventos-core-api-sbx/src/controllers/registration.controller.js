@@ -4,6 +4,8 @@ import { buildCreditFiscalDraftFromRegistration } from '../services/creditFiscal
 import { renderFacturaOperativaHtml } from '../services/creditFiscalPrint.template.js';
 import { printModelFromDraft } from '../services/facturacionIecf.mapper.js';
 import { SAMPLE_FACTURA_OPERAHOTEL } from '../domain/creditFiscalInvoice.schema.js';
+import { tokenFromRequest } from '../services/jwtBuenoHotel.service.js';
+import { findUserByEmail, isPanelAdminUser } from './adminsEcf.controller.js';
 
 const nowISO = () => new Date().toISOString();
 const asNumber = (v) => {
@@ -51,10 +53,27 @@ export const listPayments = async (req, res, next) => {
 function isAdminEmailFromJwt(email) {
   const e = String(email || '').trim().toLowerCase();
   if (!e) return false;
-  if (e.endsWith('@buenohotel.com.do')) return true;
+  if (e.endsWith('@buenohotel.com.do') || e === 'info@buenohotel.com') return true;
   const raw = String(process.env.FACTURA_ADMIN_EMAILS || process.env.ADMIN_NOTIFY_EMAILS || '');
   const allow = raw.split(/[,;]/).map((s) => s.trim().toLowerCase()).filter(Boolean);
   return allow.length > 0 && allow.includes(e);
+}
+
+async function resolveCaller(req) {
+  const token = tokenFromRequest(req);
+  const payload = req.jwtPayload && typeof req.jwtPayload === 'object'
+    ? req.jwtPayload
+    : parseJwtPayload(token ? `Bearer ${token}` : (req.headers?.authorization || req.headers?.Authorization || ''));
+  const email = String(payload.email || '').trim().toLowerCase();
+  const userId = String(payload.sub || payload.user_id || '').trim();
+  let admin = isAdminEmailFromJwt(email) || isAdminFromJwtPayload(payload);
+  if (!admin && email) {
+    try {
+      const db = await findUserByEmail(email);
+      admin = isPanelAdminUser({ ...(db || {}), email, rol: (db && db.rol) || payload.rol || payload.role });
+    } catch (_) {}
+  }
+  return { payload, email, userId, admin };
 }
 
 function isAdminFromJwtPayload(payload) {
@@ -104,9 +123,7 @@ export const getFacturaBorrador = async (req, res, _next) => {
       return res.json({ success: true, data: SAMPLE_FACTURA_OPERAHOTEL, esSoloReferenciaVisual: true });
     }
 
-    const payload = parseJwtPayload(req.headers['authorization'] || '');
-    const email = String(payload.email || '').trim().toLowerCase();
-    const userId = String(payload.sub || payload.user_id || '').trim();
+    const { payload, email, userId, admin } = await resolveCaller(req);
     if (!userId && !email) {
       return res.status(401).json({ success: false, message: 'Inicia sesión para ver el comprobante.' });
     }
@@ -118,7 +135,6 @@ export const getFacturaBorrador = async (req, res, _next) => {
     const belongs =
       (item.userId && userId && String(item.userId) === userId) ||
       (item?.datosPersona?.email && email && String(item.datosPersona.email).toLowerCase() === email);
-    const admin = isAdminEmailFromJwt(email) || isAdminFromJwtPayload(payload);
 
     if (!admin && !belongs) {
       return res.status(403).json({ success: false, message: 'No autorizado' });
@@ -134,13 +150,13 @@ export const getFacturaBorrador = async (req, res, _next) => {
       });
     }
 
-    const draft = await buildCreditFiscalDraftFromRegistration(item.id);
+    const draft = await buildCreditFiscalDraftFromRegistration(item.id, { allowIncomplete: admin });
     const formato = String(req.query.formato || '').trim().toLowerCase();
     if (formato === 'html') {
       const encf = String(det.ncfElectronico || draft?.documento?.ncf || '').trim();
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.send(
-        renderFacturaOperativaHtml(printModelFromDraft(draft, { encf, esPreview: !encf }))
+        renderFacturaOperativaHtml(printModelFromDraft(draft, { encf, esPreview: !encf, origen: 'eventos' }))
       );
     }
     return res.json({ success: true, data: draft });
@@ -191,10 +207,7 @@ export const getRegistrationById = async (req, res, next) => {
       item = await RegistrationModel.getByShortCode(id);
     }
     if (!item) return res.status(404).json({ success:false, message:'No encontrado' });
-    const p = req.jwtPayload || parseJwtPayload(req.headers['authorization'] || '');
-    const email = String(p.email || '').trim().toLowerCase();
-    const userId = String(p.sub || p.user_id || '').trim();
-    const admin = isAdminEmailFromJwt(email) || isAdminFromJwtPayload(p);
+    const { email, userId, admin } = await resolveCaller(req);
     const belongs =
       (item.userId && userId && String(item.userId) === userId) ||
       (item?.datosPersona?.email && email && String(item.datosPersona.email).toLowerCase() === email);

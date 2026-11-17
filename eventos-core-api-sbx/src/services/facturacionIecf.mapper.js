@@ -385,7 +385,7 @@ export function draftToIecfDocument(draft, { encf, tipoeCF } = {}) {
  * Vista / impresión con los mismos valores que el XML DGII
  * (teléfono 10 dígitos, dirección en una línea, montos de ítem sin ITBIS).
  */
-export function printModelFromDraft(draft, { encf, esPreview } = {}) {
+export function printModelFromDraft(draft, { encf, esPreview, origen } = {}) {
   const tipo = normalizeTipoeCF(draft?.tipoeCF, draft?.comprador || {});
   const ncfReal = str(encf || draft?.documento?.ncf);
   const ncfMap = ncfReal || `E${String(tipo).padStart(2, '0')}0000000000`;
@@ -459,7 +459,11 @@ export function printModelFromDraft(draft, { encf, esPreview } = {}) {
       };
     })(),
     verificacion: draft?.verificacion || {},
-    observacionLegal: draft?.observacionLegal
+    observacionLegal: draft?.observacionLegal,
+    _meta: {
+      ...(draft?._meta && typeof draft._meta === 'object' ? draft._meta : {}),
+      origen: origen || draft?._meta?.origen || ''
+    }
   };
 }
 

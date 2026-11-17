@@ -528,7 +528,8 @@ export async function getEstadoEmision(registroIdOrTrack, opts = {}) {
 /** Vista previa HTML: no reserva e-NCF y no envía a DGII. */
 export async function previewFacturaHtml(body = {}) {
   const { draft } = await loadDraft(body);
-  return renderFacturaOperativaHtml(printModelFromDraft(draft, { esPreview: true }));
+  const origen = resolveOrigenEmision(body, body.registroId);
+  return renderFacturaOperativaHtml(printModelFromDraft(draft, { esPreview: true, origen }));
 }
 
 export function facturacionEmitHealth() {

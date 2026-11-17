@@ -519,12 +519,12 @@ function openEventoModal(evento, imagenes) {
   let carrusel = '';
   if (ABS_IMAGES.length > 0) {
     carrusel = `<div class="evento-carrusel">
-      <img id="evento-carrusel-img" src="${ABS_IMAGES.length>0?ABS_IMAGES[0]:''}" alt="Imagen del evento" class="evento-carrusel-img evento-modal-img">
-      <div class="evento-carrusel-indicadores">
-        ${ABS_IMAGES.map((_,i)=>`<span class="evento-carrusel-dot${i===0?' active':''}" data-idx="${i}"></span>`).join('')}
+      <div class="evento-carrusel-stage">
+        <img id="evento-carrusel-img" src="${ABS_IMAGES.length>0?ABS_IMAGES[0]:''}" alt="Imagen del evento" class="evento-carrusel-img evento-modal-img">
+        <button type="button" class="evento-carrusel-prev" aria-label="Imagen anterior">&#8592;</button>
+        <button type="button" class="evento-carrusel-next" aria-label="Imagen siguiente">&#8594;</button>
+        <div class="evento-carrusel-indicadores" role="tablist" aria-label="Fotos"></div>
       </div>
-      <button class="evento-carrusel-prev">&#8592;</button>
-      <button class="evento-carrusel-next">&#8594;</button>
     </div>`;
   }
   // Restaurantes: render desde JSON si existe
@@ -817,19 +817,58 @@ function openEventoModal(evento, imagenes) {
       }
     } catch(_) {}
   })();
-  // Carrusel funcionalidad
   let idx = 0;
+  const slides = ABS_IMAGES.filter(Boolean);
   const img = modal.querySelector('#evento-carrusel-img');
-  const dots = modal.querySelectorAll('.evento-carrusel-dot');
-  function showImg(i) {
-    idx = i;
-    img.src = ABS_IMAGES[idx];
-    img.classList.add('evento-modal-img'); // Asegura que siempre tenga la clase para el zoom
-    dots.forEach((d,di)=>d.classList.toggle('active',di===idx));
+  const dotsWrap = modal.querySelector('.evento-carrusel-indicadores');
+  function paintDots() {
+    if (!dotsWrap || slides.length <= 1) {
+      if (dotsWrap) dotsWrap.innerHTML = '';
+      return;
+    }
+    const n = slides.length;
+    const parts = [];
+    for (let i = 0; i < n; i++) {
+      parts.push(
+        `<button type="button" class="evento-carrusel-dot${i === idx ? ' active' : ''}" data-idx="${i}" aria-label="Foto ${i + 1} de ${n}"></button>`
+      );
+    }
+    dotsWrap.innerHTML = parts.join('');
+    dotsWrap.querySelectorAll('.evento-carrusel-dot').forEach((d) => {
+      d.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        showImg(Number(d.getAttribute('data-idx')));
+      });
+    });
   }
-  modal.querySelector('.evento-carrusel-prev')?.addEventListener('click',()=>showImg((idx-1+ABS_IMAGES.length)%ABS_IMAGES.length));
-  modal.querySelector('.evento-carrusel-next')?.addEventListener('click',()=>showImg((idx+1)%ABS_IMAGES.length));
-  dots.forEach((d,i)=>d.addEventListener('click',()=>showImg(i)));
+  function showImg(i) {
+    if (!img || !slides.length) return;
+    idx = ((Number(i) % slides.length) + slides.length) % slides.length;
+    img.src = slides[idx];
+    img.classList.add('evento-modal-img');
+    if (dotsWrap) {
+      dotsWrap.querySelectorAll('.evento-carrusel-dot').forEach((d) => {
+        d.classList.toggle('active', Number(d.getAttribute('data-idx')) === idx);
+      });
+      if (!dotsWrap.children.length) paintDots();
+    }
+  }
+  function bindCarruselBtn(sel, delta) {
+    const el = modal.querySelector(sel);
+    if (!el) return;
+    const clone = el.cloneNode(true);
+    el.replaceWith(clone);
+    clone.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      showImg(idx + delta);
+    });
+  }
+  bindCarruselBtn('.evento-carrusel-prev', -1);
+  bindCarruselBtn('.evento-carrusel-next', 1);
+  paintDots();
+  showImg(0);
   // Acordeones
   document.querySelectorAll('.accordion .acc-header').forEach(h=>{
     h.addEventListener('click',()=>{
@@ -842,16 +881,17 @@ function openEventoModal(evento, imagenes) {
 
 document.addEventListener('click', function(e) {
   const modal = document.querySelector('.evento-modal');
+  if (e.target.closest('.evento-carrusel-prev, .evento-carrusel-next, .evento-carrusel-dot')) return;
   if (modal && modal.contains(e.target) && e.target.tagName === 'IMG' && e.target.classList.contains('evento-modal-img')) {
+    e.preventDefault();
+    e.stopPropagation();
     mostrarZoomImagenModal(e.target.src);
   }
 });
 
 function mostrarZoomImagenModal(src) {
-  // Si ya existe el modal de zoom, elimínalo primero
   let zoomModal = document.getElementById('evento-zoom-modal');
   if (zoomModal) zoomModal.remove();
-  // Crea el modal de zoom
   zoomModal = document.createElement('div');
   zoomModal.id = 'evento-zoom-modal';
   zoomModal.className = 'evento-img-zoom-overlay';
@@ -862,7 +902,11 @@ function mostrarZoomImagenModal(src) {
     </div>
   `;
   document.body.appendChild(zoomModal);
-  zoomModal.querySelector('.evento-zoom-close')?.addEventListener('click', () => zoomModal.remove());
+  const closeZoom = () => zoomModal.remove();
+  zoomModal.querySelector('.evento-zoom-close')?.addEventListener('click', closeZoom);
+  zoomModal.addEventListener('click', (ev) => {
+    if (ev.target === zoomModal) closeZoom();
+  });
 }
 
 document.body.addEventListener('click',async function(e){

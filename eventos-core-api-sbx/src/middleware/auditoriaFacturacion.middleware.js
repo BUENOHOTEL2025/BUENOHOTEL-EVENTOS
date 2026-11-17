@@ -8,6 +8,7 @@ import {
 
 function skipPath(req) {
   const p = String(req.originalUrl || req.path || req.url || '').split('?')[0];
+  if (req.method === 'OPTIONS') return true;
   if (req.method === 'GET') return true;
   if (p.endsWith('/_health')) return true;
   if (req.method === 'GET' && /\/me\/?$/.test(p)) return true;

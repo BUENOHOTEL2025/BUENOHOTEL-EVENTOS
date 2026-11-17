@@ -16,7 +16,7 @@ import {
   buildCreditFiscalDraftFromRegistration,
   mergeEmisorFactura
 } from './creditFiscalDraft.service.js';
-import { renderFacturaOperativaHtml } from './creditFiscalPrint.template.js';
+import { etiquetaOrigen, renderFacturaOperativaHtml } from './creditFiscalPrint.template.js';
 import { enrichVerificacionQr } from './ecfQr.service.js';
 import { resolveDgiiEnvironment } from '../domain/facturacionEmit.schema.js';
 import { peekNextEncf } from './ncfSequence.service.js';
@@ -181,7 +181,7 @@ function ledgerToListRow(item) {
     registroId: item.registroId || null,
     codigoCorto: item.referenciaInterna || null,
     eventoId: null,
-    eventoNombre: item.origen === 'booking' ? 'Booking' : item.origen === 'eventos' ? 'Eventos' : item.origen || null,
+    eventoNombre: etiquetaOrigen(item.origen),
     clienteNombre: arreglarAcentos(item.razonSocial) || null,
     clienteEmail: item.emailComprador || null,
     telefonoComprador: item.telefonoComprador || null,
@@ -517,7 +517,9 @@ export async function htmlComprobante(id) {
       codigoSeguridad: ledger.codigoSeguridad,
       environment: ledger.environment
     });
-    return renderFacturaOperativaHtml(printModelFromDraft(draft, { encf: ledger.encf }));
+    return renderFacturaOperativaHtml(
+      printModelFromDraft(draft, { encf: ledger.encf, origen: ledger.origen })
+    );
   }
   const regId = ledger?.registroId || raw;
   const item = await RegistrationModel.getById(regId);
@@ -530,7 +532,9 @@ export async function htmlComprobante(id) {
   }
   const draft = await buildCreditFiscalDraftFromRegistration(item.id);
   const encf = String(item?.detalles?.ncfElectronico || ledger?.encf || draft?.documento?.ncf || '').trim();
-  return renderFacturaOperativaHtml(printModelFromDraft(draft, { encf }));
+  return renderFacturaOperativaHtml(
+    printModelFromDraft(draft, { encf, origen: ledger?.origen || 'eventos' })
+  );
 }
 
 async function clienteDgiiAutenticado() {

@@ -6,7 +6,13 @@
     "cookie",
     "accept",
     "origin",
-    "x-requested-with"
+    "x-requested-with",
+    "x-user-email",
+    "x-user-name",
+    "x-user-id",
+    "cache-control",
+    "pragma",
+    "if-none-match"
   ],
   "AllowMethods": ["GET", "POST", "OPTIONS", "PATCH", "PUT", "DELETE"],
   "AllowOrigins": [

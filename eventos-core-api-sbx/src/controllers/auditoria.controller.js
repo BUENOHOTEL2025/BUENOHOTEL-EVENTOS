@@ -104,10 +104,16 @@ export async function getLoginLock(req, res) {
       return res.status(200).json({ success: true, locked: false });
     }
     const st = await lockStatus(email);
+    if (!st.locked) {
+      return res.status(200).json({ success: true, locked: false, remainingSeg: 0 });
+    }
     res.status(200).json({
       success: true,
-      locked: Boolean(st.locked),
-      remainingSeg: st.locked ? st.remainingSeg : 0
+      locked: true,
+      remainingSeg: st.remainingSeg,
+      remainingMs: st.remainingMs,
+      lockMinutos: st.lockMinutos,
+      message: `Login inhabilitado ${st.lockMinutos || 5} minutos por 3 intentos fallidos.`
     });
   } catch (err) {
     console.error('auditoria lock:', err?.message || err);

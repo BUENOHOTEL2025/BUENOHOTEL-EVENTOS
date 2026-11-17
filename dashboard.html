@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Cuenta - BuenoHotel Eventos</title>
   <link rel="stylesheet" href="styles.css?v=20260923c">
-  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261107q">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261117t">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <!-- Favicon / App Icons -->
   <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
@@ -15,62 +15,86 @@
   <link rel="icon" href="assets/logo/icono-buenohotel.png?v=20260926m">
   <style>
     .dashboard-container {
-      max-width: 1200px;
-      margin: 40px auto;
+      max-width: 1120px;
+      margin: 28px auto 56px;
       padding: 0 20px;
+    }
+    body.is-perfil .dashboard-container {
+      max-width: 980px;
     }
     .welcome-section {
       text-align: center;
-      margin-bottom: 40px;
+      margin: 8px auto 28px;
+      max-width: 640px;
     }
     .welcome-section h1 {
-      color: #222;
-      font-size: 2.5rem;
-      margin-bottom: 10px;
+      color: #111;
+      font-size: clamp(1.7rem, 3vw, 2.15rem);
+      margin: 0 0 8px;
+      letter-spacing: -0.03em;
+      font-weight: 800;
     }
     .welcome-section p {
-      color: #555;
-      font-size: 1.1rem;
+      color: #6b7280;
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.5;
     }
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 250px 1fr;
-      gap: 30px;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+      justify-content: center;
+    }
+    body.is-perfil .dashboard-grid {
+      grid-template-columns: 220px minmax(0, 640px);
+      justify-content: center;
+      align-items: start;
     }
     .sidebar {
       background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      padding: 20px;
-      height: fit-content;
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      padding: 22px 16px 16px;
+      border: 1px solid #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      height: auto;
+      min-height: 0;
     }
     .user-profile {
       text-align: center;
-      padding: 20px 0;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 20px;
+      padding: 8px 8px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      margin-bottom: 14px;
     }
     .user-avatar {
-      width: 80px;
-      height: 80px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
-      background: #FBB03B;
-      color: #222;
+      background: linear-gradient(180deg, #ffd37a 0%, #FBB03B 100%);
+      color: #1a365d;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 0 auto 10px;
+      font-size: 1.85rem;
+      font-weight: 800;
+      margin: 0 auto 12px;
+      box-shadow: 0 8px 18px rgba(251, 176, 59, 0.35);
     }
     .user-name {
-      font-weight: 600;
-      font-size: 1.1rem;
-      margin-bottom: 5px;
+      font-weight: 700;
+      font-size: 1.02rem;
+      margin-bottom: 4px;
+      color: #111;
+      line-height: 1.3;
     }
     .user-email {
-      color: #777;
-      font-size: 0.9rem;
+      color: #6b7280;
+      font-size: 0.78rem;
+      word-break: break-all;
     }
     .nav-menu {
       list-style: none;
@@ -78,34 +102,49 @@
       margin: 0;
     }
     .nav-item {
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
     .nav-link {
       display: block;
-      padding: 12px 15px;
-      color: #444;
+      padding: 10px 14px;
+      color: #4b5563;
       text-decoration: none;
-      border-radius: 4px;
-      transition: all 0.3s;
-    }
-    .nav-link:hover, .nav-link.active {
-      background: #FBB03B;
-      color: #222;
+      border-radius: 12px;
+      transition: background .2s, color .2s, transform .2s;
       font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .nav-link:hover {
+      background: #fff7e8;
+      color: #111;
+    }
+    .nav-link.active {
+      background: #FBB03B;
+      color: #111;
+      box-shadow: 0 6px 14px rgba(251, 176, 59, 0.28);
     }
     .main-content {
       background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      padding: 30px;
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      padding: 28px 28px 24px;
+      border: 1px solid #f0f2f5;
+      min-width: 0;
+      height: auto;
+      box-sizing: border-box;
+    }
+    body.is-perfil .main-content {
+      padding: 26px 26px 22px;
     }
     .section-title {
-      color: #222;
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+      color: #111;
+      font-size: 1.25rem;
+      margin: 0 0 18px;
       padding-bottom: 10px;
       border-bottom: 2px solid #FBB03B;
+      letter-spacing: -0.02em;
     }
+    body.is-perfil .section-title { display: none; }
     .events-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -177,20 +216,147 @@
       color: #777;
       font-style: italic;
     }
+    .view-panel[hidden] { display: none !important; }
+    .profile-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      animation: pfIn .35s ease;
+    }
+    @keyframes pfIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    .profile-card {
+      border: 1px solid #eef1f4;
+      border-radius: 18px;
+      padding: 22px 22px 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .profile-card h3 {
+      margin: 0 0 4px;
+      font-size: 1.05rem;
+      color: #1a365d;
+      letter-spacing: -0.02em;
+    }
+    .profile-card .card-lead {
+      margin: 0 0 18px;
+      color: #6b7280;
+      font-size: 0.88rem;
+    }
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 16px;
+    }
+    .profile-grid .span-2 { grid-column: 1 / -1; }
+    .form-group { min-width: 0; }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: #374151;
+      font-size: 0.78rem;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .form-group .input,
+    .profile-card input.input,
+    .profile-card select.input {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 0.98rem;
+      background: #fff;
+      color: #111;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .profile-card input.input:disabled,
+    .profile-card select.input:disabled {
+      background: #f7f8fa;
+      color: #111;
+      cursor: default;
+      border-color: #eef0f3;
+    }
+    .profile-card.is-editing input.input:not(:disabled),
+    .profile-card.is-editing select.input:not(:disabled) {
+      background: #fff;
+      border-color: #fbb03b;
+      box-shadow: 0 0 0 3px rgba(251, 176, 59, 0.18);
+    }
+    .form-hint {
+      display: block;
+      color: #9ca3af;
+      margin-top: 6px;
+      font-size: 0.75rem;
+    }
+    #pf-telefono-preview { display: none; }
+    .profile-card.is-editing #pf-telefono-preview { display: block; }
+    .profile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .profile-actions .btn {
+      min-height: 42px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+    }
+    .profile-actions .btn-cancel {
+      background: #fff !important;
+      border: 1px solid #fecaca !important;
+      color: #b91c1c !important;
+    }
+    .profile-actions .is-hidden { display: none !important; }
+    .profile-more {
+      margin: 4px 0 0;
+      text-align: left;
+    }
+    .profile-more a {
+      color: #1a365d;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(26, 54, 93, 0.25);
+    }
+    .profile-more a:hover { color: #111; border-bottom-color: #FBB03B; }
+    #password-card[hidden] { display: none !important; }
+    @media (max-width: 900px) {
+      .dashboard-grid,
+      body.is-perfil .dashboard-grid { grid-template-columns: 1fr; }
+      .profile-grid { grid-template-columns: 1fr; }
+      .profile-grid .span-2 { grid-column: auto; }
+      .profile-actions { justify-content: stretch; }
+      .profile-actions .btn { flex: 1 1 auto; }
+    }
   </style>
 </head>
 <body>
   <!-- Shared navbar placeholder -->
   <div id="site-header"></div>
-  <script src="js/auth.js?v=20261117a"></script>
+  <script src="js/bh-password-policy.js?v=20261117v"></script>
+  <script src="js/auth.js?v=20261117v"></script>
   <script src="https://buenohotel.com/js/config.js?v=20261029e"></script>
   <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
-  <script src="https://buenohotel.com/js/site-shell.js?v=20261117n"></script>
-  <script src="js/navbar.js?v=20261117a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261117t"></script>
+  <script src="js/navbar.js?v=20261117t"></script>
+  <!-- dashboard layout 20261117w -->
 
   <div class="dashboard-container">
     <div class="welcome-section">
-      <h1>Bienvenido de vuelta, <span id="user-first-name">Usuario</span></h1>
+      <h1 id="welcome-title"><span id="welcome-prefix">Bienvenido de vuelta, </span><span id="user-first-name">Usuario</span></h1>
       <p>Gestiona tus eventos y reservas en un solo lugar</p>
     </div>
 
@@ -202,121 +368,106 @@
           <div class="user-email" id="user-email">usuario@ejemplo.com</div>
         </div>
         <ul class="nav-menu">
-          <li class="nav-item"><a href="dashboard.html" class="nav-link active" data-requires-auth>Mis Eventos</a></li>
+          <li class="nav-item"><a href="dashboard.html#perfil" id="nav-perfil" class="nav-link" data-requires-auth>Mi Perfil</a></li>
+          <li class="nav-item"><a href="dashboard.html#eventos" id="nav-eventos" class="nav-link" data-requires-auth>Mis Eventos</a></li>
           <li class="nav-item"><a href="mis-reservas.html" class="nav-link">Mis Reservas</a></li>
           <li class="nav-item"><a href="#" class="nav-link" id="sidebar-logout">Cerrar Sesión</a></li>
         </ul>
       </aside>
 
       <main class="main-content">
-        <h2 class="section-title">Mis Próximos Eventos</h2>
-        
-        <div class="events-grid" id="user-events">
-          <!-- Los eventos se cargarán aquí dinámicamente -->
-          <div class="no-events">No tienes eventos próximos. <a href="index.html">¡Explora nuestros eventos!</a></div>
-        </div>
+        <section id="view-eventos" class="view-panel">
+          <h2 class="section-title">Mis Próximos Eventos</h2>
+          <div class="events-grid" id="user-events">
+            <div class="no-events">No tienes eventos próximos. <a href="index.html">¡Explora nuestros eventos!</a></div>
+          </div>
+          <h2 class="section-title" style="margin-top: 50px;">Eventos Recomendados</h2>
+          <div class="events-grid" id="recommended-events"></div>
+        </section>
 
-        <h2 class="section-title" style="margin-top: 50px;">Eventos Recomendados</h2>
-        
-        <div class="events-grid" id="recommended-events">
-          <!-- Los eventos recomendados se cargarán aquí dinámicamente -->
-        </div>
-
-        <h2 class="section-title" style="margin: 50px auto 20px; text-align:center; font-size:2rem; color:#333; max-width:1200px; width:95%;">Mi Perfil</h2>
-        <div class="profile-sections" style="display:flex; justify-content:center; width:100%;">
-          <div class="profile-card" style="border:1px solid #eee; border-radius:12px; padding:24px; margin:0 auto 30px; max-width:1200px; width:95%; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-            <form id="profile-form">
-              <div class="pf-section" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap:30px; max-width:1200px; margin:0 auto; width:100%;">
-                <div style="padding:15px;">
-                  <div class="form-group" style="margin-bottom:20px;">
-                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Nombre</label>
-                    <input type="text" id="pf-nombre" name="nombre" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
+        <section id="view-perfil" class="view-panel" hidden>
+          <h2 class="section-title">Mi Perfil</h2>
+          <div class="profile-layout">
+            <div class="profile-card">
+              <h3>Datos personales</h3>
+              <p class="card-lead">Revisa tu información. Pulsa editar solo cuando quieras cambiar algo.</p>
+              <form id="profile-form">
+                <div class="profile-grid">
+                  <div class="form-group">
+                    <label for="pf-nombre">Nombre</label>
+                    <input type="text" id="pf-nombre" name="nombre" class="input" autocomplete="given-name" disabled>
                   </div>
-                  <div class="form-group" style="margin-bottom:20px;">
-                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Apellido</label>
-                    <input type="text" id="pf-apellido" name="apellido" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
+                  <div class="form-group">
+                    <label for="pf-apellido">Apellido</label>
+                    <input type="text" id="pf-apellido" name="apellido" class="input" autocomplete="family-name" disabled>
                   </div>
-                  <div class="form-group" style="margin-bottom:20px;">
-                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Correo Electrónico</label>
-                    <input type="email" id="pf-email" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; background-color: #f4f4f4; font-size:1rem;" disabled>
-                    <small style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;">El correo no se puede modificar</small>
+                  <div class="form-group span-2">
+                    <label for="pf-email">Correo electrónico</label>
+                    <input type="email" id="pf-email" class="input" autocomplete="email" disabled>
+                    <small class="form-hint">El correo no se puede modificar</small>
                   </div>
-                </div>
-                <div>
-                  <div class="form-group" style="margin-bottom:20px;">
-                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Teléfono</label>
-                    <input type="tel" id="pf-telefono" name="telefono" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
-                    <small id="pf-telefono-preview" style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;"></small>
+                  <div class="form-group">
+                    <label for="pf-telefono">Teléfono</label>
+                    <input type="tel" id="pf-telefono" name="telefono" class="input" autocomplete="tel" disabled>
+                    <small id="pf-telefono-preview" class="form-hint"></small>
                   </div>
-                  <div class="form-group" style="margin-bottom:20px;">
-                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Tipo de Documento</label>
-                    <select id="pf-tipoDocumento" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" disabled>
+                  <div class="form-group">
+                    <label for="pf-tipoDocumento">Tipo de documento</label>
+                    <select id="pf-tipoDocumento" class="input" disabled>
                       <option value="cedula">Cédula</option>
                       <option value="pasaporte">Pasaporte</option>
                     </select>
                   </div>
-                  <div class="form-group" style="margin-bottom:20px;">
-                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Número de Documento</label>
-                    <input type="text" id="pf-documento" name="documento" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" placeholder="001-0000000-1" disabled>
-                    <small id="pf-docHint" style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;">Formato cédula: 000-0000000-0</small>
+                  <div class="form-group">
+                    <label for="pf-documento">Número de documento</label>
+                    <input type="text" id="pf-documento" name="documento" class="input" placeholder="001-0000000-1" disabled>
+                    <small id="pf-docHint" class="form-hint">Formato cédula: 000-0000000-0</small>
                   </div>
-                  <div class="form-group" style="margin-bottom:20px;">
-                    <label style="display:block; margin-bottom:6px; font-weight:500; color:#555;">Fecha de Nacimiento</label>
-                    <input type="text" id="pf-fechaNacimiento" name="fechaNacimiento" class="input" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:1rem;" placeholder="dd/mm/yyyy" inputmode="numeric" disabled>
-                    <small style="display:block; color:#6c757d; margin-top:6px; font-size:0.875rem;">Formato: dd/mm/yyyy</small>
+                  <div class="form-group">
+                    <label for="pf-fechaNacimiento">Fecha de nacimiento</label>
+                    <input type="text" id="pf-fechaNacimiento" name="fechaNacimiento" class="input" placeholder="dd/mm/yyyy" inputmode="numeric" disabled>
+                    <small class="form-hint">Formato: dd/mm/yyyy</small>
                   </div>
                 </div>
-              </div>
-              <div id="pf-section-actions" style="margin-top:24px; display:flex; gap:12px; padding-top:12px; border-top:1px solid #eee;">
-                <button type="button" class="btn btn-outline" id="btn-profile-edit" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:6px; font-weight:500; font-size:1rem; cursor:pointer; transition:all 0.2s; border:1px solid #FBB03B; color:#FBB03B; background:transparent;">
-                  Editar Información
-                </button>
-                <button type="button" class="btn btn-outline" id="btn-profile-cancel" style="display:none; align-items:center; gap:8px; padding:10px 20px; border-radius:6px; font-weight:500; font-size:1rem; cursor:pointer; transition:all 0.2s; border:1px solid #dc3545; color:#dc3545; background:transparent;">
-                  Cancelar
-                </button>
-                <button type="button" class="btn" id="btn-profile-save" style="display:none; align-items:center; gap:8px; padding:10px 20px; border-radius:6px; font-weight:500; font-size:1rem; cursor:pointer; transition:all 0.2s; border:none; color:white; background-color:#FBB03B;">
-                  Guardar Cambios
-                </button>
-              </div>
-            </form>
-          </div>
+                <div id="pf-section-actions" class="profile-actions">
+                  <p class="profile-more" style="margin-right:auto;">
+                    <a href="#password-card" id="toggle-password-card">Cambiar contraseña</a>
+                  </p>
+                  <button type="button" class="btn" id="btn-profile-edit">Editar información</button>
+                  <button type="button" class="btn btn-cancel is-hidden" id="btn-profile-cancel">Cancelar</button>
+                  <button type="button" class="btn is-hidden" id="btn-profile-save">Guardar cambios</button>
+                </div>
+              </form>
+            </div>
 
-          <div class="profile-card" style="border:1px solid #eee; border-radius:8px; padding:16px;">
-            <h3 style="margin-top:0; color:#333;">Cambiar contraseña</h3>
-            <form id="password-form">
-              <div class="pf-section">
-                <div class="pf-row" style="padding-top:0;">
-                  <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:14px;">
-                    <div>
-                      <label>Contraseña actual</label>
-                      <input type="password" id="pf-old" name="oldPassword" class="input" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;" required disabled>
-                    </div>
-                    <div>
-                      <label>Nueva contraseña</label>
-                      <input type="password" id="pf-new" name="newPassword" class="input" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;" minlength="6" required disabled>
-                      <small style="display:block; color:#777; margin-top:6px;">Mínimo 6 caracteres</small>
-                    </div>
-                    <div>
-                      <label>Confirmar nueva contraseña</label>
-                      <input type="password" id="pf-confirm" name="confirmNewPassword" class="input" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;" minlength="6" required disabled>
-                    </div>
+            <div class="profile-card" id="password-card" hidden>
+              <h3>Contraseña</h3>
+              <p class="card-lead">Mínimo 8 caracteres, una mayúscula y una minúscula.</p>
+              <form id="password-form">
+                <div class="profile-grid">
+                  <div class="form-group span-2">
+                    <label for="pf-old">Contraseña actual</label>
+                    <input type="password" id="pf-old" name="oldPassword" class="input" autocomplete="current-password" required disabled>
+                  </div>
+                  <div class="form-group">
+                    <label for="pf-new">Nueva contraseña</label>
+                    <input type="password" id="pf-new" name="newPassword" class="input" minlength="8" autocomplete="new-password" required disabled>
+                    <div id="pf-new-meter"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="pf-confirm">Confirmar nueva contraseña</label>
+                    <input type="password" id="pf-confirm" name="confirmNewPassword" class="input" minlength="8" autocomplete="new-password" required disabled>
                   </div>
                 </div>
-              </div>
-              <div id="pf-pass-actions" style="margin-top:14px; display:flex; gap:10px;">
-                <button type="button" class="btn btn-outline" id="btn-pass-edit" title="Actualizar datos" style="display:inline-flex; align-items:center; gap:6px;">
-                  Editar
-                </button>
-                <button type="button" class="btn btn-outline" id="btn-pass-cancel" title="Cancelar" style="display:none; align-items:center; gap:6px;">
-                  Cancelar
-                </button>
-                <button type="button" class="btn" id="btn-pass-save" title="Guardar" style="display:none; align-items:center; gap:6px;">
-                  Guardar
-                </button>
-              </div>
-            </form>
+                <div id="pf-pass-actions" class="profile-actions">
+                  <button type="button" class="btn" id="btn-pass-edit">Cambiar contraseña</button>
+                  <button type="button" class="btn btn-cancel is-hidden" id="btn-pass-cancel">Cancelar</button>
+                  <button type="button" class="btn is-hidden" id="btn-pass-save">Guardar</button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   </div>
@@ -335,6 +486,41 @@
       document.getElementById('user-first-name').textContent = userData.nombre || 'Usuario';
       document.getElementById('user-full-name').textContent = `${userData.nombre || ''} ${userData.apellido || ''}`.trim() || 'Usuario';
       document.getElementById('user-email').textContent = userData.email || '';
+      const pfEmailEl = document.getElementById('pf-email');
+      if (pfEmailEl) pfEmailEl.value = userData.email || '';
+
+      function syncDashboardView() {
+        const isPerfil = (location.hash || '').replace('#', '') === 'perfil';
+        const viewEventos = document.getElementById('view-eventos');
+        const viewPerfil = document.getElementById('view-perfil');
+        const navPerfil = document.getElementById('nav-perfil');
+        const navEventos = document.getElementById('nav-eventos');
+        const welcomeH = document.getElementById('welcome-title');
+        const welcomePrefix = document.getElementById('welcome-prefix');
+        const welcomeName = document.getElementById('user-first-name');
+        const welcomeP = document.querySelector('.welcome-section p');
+        if (viewEventos) viewEventos.hidden = isPerfil;
+        if (viewPerfil) viewPerfil.hidden = !isPerfil;
+        if (navPerfil) navPerfil.classList.toggle('active', isPerfil);
+        if (navEventos) navEventos.classList.toggle('active', !isPerfil);
+        document.body.classList.toggle('is-perfil', isPerfil);
+        if (welcomeH && welcomePrefix && welcomeName) {
+          if (isPerfil) {
+            welcomePrefix.hidden = true;
+            welcomeName.textContent = 'Mi perfil';
+          } else {
+            welcomePrefix.hidden = false;
+            welcomeName.textContent = userData.nombre || 'Usuario';
+          }
+        }
+        if (welcomeP) {
+          welcomeP.textContent = isPerfil
+            ? 'Consulta y actualiza tus datos cuando lo necesites.'
+            : 'Gestiona tus eventos y reservas en un solo lugar';
+        }
+      }
+      syncDashboardView();
+      window.addEventListener('hashchange', syncDashboardView);
       
       // Mostrar inicial del nombre en el avatar
       const avatar = document.getElementById('user-avatar');
@@ -517,12 +703,18 @@
       let tipoDocOriginal = (userData.tipoDocumento || 'cedula').toLowerCase();
       let documentoOriginal = userData.documento || '';
       let fechaNacOriginal = (userData.fechaNacimiento || '').substring(0,10);
+      function setProfileEditing(on) {
+        document.getElementById('profile-form')?.closest('.profile-card')?.classList.toggle('is-editing', on);
+        btnProfileEdit.classList.toggle('is-hidden', on);
+        btnProfileCancel.classList.toggle('is-hidden', !on);
+        btnProfileSave.classList.toggle('is-hidden', !on);
+      }
       function enterProfileEdit(){
         pfNombre.disabled=false; pfApellido.disabled=false; pfTelefono.disabled=false;
         if (pfTipoDoc) pfTipoDoc.disabled = false;
         if (pfDocumento) pfDocumento.disabled = false;
         if (pfFechaNac) pfFechaNac.disabled = false;
-        btnProfileEdit.style.display='none'; btnProfileCancel.style.display='inline-flex'; btnProfileSave.style.display='inline-flex';
+        setProfileEditing(true);
         pfNombre.focus();
       }
       function exitProfileEdit(revert){
@@ -540,9 +732,7 @@
         if (pfTipoDoc) pfTipoDoc.disabled = true;
         if (pfDocumento) pfDocumento.disabled = true;
         if (pfFechaNac) pfFechaNac.disabled = true;
-        btnProfileEdit.style.display = 'inline-flex';
-        btnProfileCancel.style.display = 'none';
-        btnProfileSave.style.display = 'none';
+        setProfileEditing(false);
       }
       btnProfileEdit?.addEventListener('click', enterProfileEdit);
       btnProfileCancel?.addEventListener('click', ()=> exitProfileEdit(true));
@@ -593,11 +783,18 @@
           const res = await fetch(`${API_BASE}/api/auth/me`, { method:'PUT', headers:{ 'Content-Type':'application/json', ...(token? { 'Authorization':`Bearer ${token}` } : {}) }, body: JSON.stringify(payload) });
           const json = await res.json().catch(()=>({}));
           if (!res.ok) throw new Error(json?.errors?.map(e=>e.message).join(' | ') || json?.message || 'No se pudo actualizar el perfil');
-          const updated = json.data || {}; const merged = { ...userData, ...updated };
+          const updated = json.data || {};
+          const merged = { ...userData, ...updated };
+          Object.assign(userData, merged);
           localStorage.setItem('buenohotel_user_data', JSON.stringify(merged));
-          document.getElementById('user-first-name').textContent = merged.nombre || 'Usuario';
-          document.getElementById('user-full-name').textContent = `${merged.nombre || ''} ${merged.apellido || ''}`.trim() || 'Usuario';
-          if (merged.nombre) document.getElementById('user-avatar').textContent = merged.nombre.charAt(0).toUpperCase();
+          const firstNameEl = document.getElementById('user-first-name');
+          const fullNameEl = document.getElementById('user-full-name');
+          const avatarEl = document.getElementById('user-avatar');
+          if (firstNameEl && !document.body.classList.contains('is-perfil')) {
+            firstNameEl.textContent = merged.nombre || 'Usuario';
+          }
+          if (fullNameEl) fullNameEl.textContent = `${merged.nombre || ''} ${merged.apellido || ''}`.trim() || 'Usuario';
+          if (avatarEl && merged.nombre) avatarEl.textContent = merged.nombre.charAt(0).toUpperCase();
           // Actualizar originales
           nombreOriginal = merged.nombre ?? nombreOriginal;
           apellidoOriginal = merged.apellido ?? apellidoOriginal;
@@ -616,13 +813,41 @@
       const btnPassEdit = document.getElementById('btn-pass-edit');
       const btnPassCancel = document.getElementById('btn-pass-cancel');
       const btnPassSave = document.getElementById('btn-pass-save');
-      function enterPassEdit(){ pfOld.disabled=false; pfNew.disabled=false; pfConfirm.disabled=false; btnPassEdit.style.display='none'; btnPassCancel.style.display='inline-flex'; btnPassSave.style.display='inline-flex'; pfOld.focus(); }
+      function setPassEditing(on) {
+        document.getElementById('password-form')?.closest('.profile-card')?.classList.toggle('is-editing', on);
+        btnPassEdit.classList.toggle('is-hidden', on);
+        btnPassCancel.classList.toggle('is-hidden', !on);
+        btnPassSave.classList.toggle('is-hidden', !on);
+      }
+      const passwordCard = document.getElementById('password-card');
+      const togglePassword = document.getElementById('toggle-password-card');
+      function setPasswordCardOpen(open) {
+        if (!passwordCard || !togglePassword) return;
+        passwordCard.hidden = !open;
+        togglePassword.textContent = open ? 'Ocultar cambio de contraseña' : 'Cambiar contraseña';
+        if (!open) exitPassEdit(true);
+      }
+      togglePassword?.addEventListener('click', function (e) {
+        e.preventDefault();
+        const open = passwordCard ? passwordCard.hidden : true;
+        setPasswordCardOpen(open);
+        if (open) {
+          enterPassEdit();
+          passwordCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+      function enterPassEdit(){ pfOld.disabled=false; pfNew.disabled=false; pfConfirm.disabled=false; setPassEditing(true); pfOld.focus(); }
       function clearPassFields(){ pfOld.value=''; pfNew.value=''; pfConfirm.value=''; }
-      function exitPassEdit(revert){ if(revert) clearPassFields(); pfOld.disabled=true; pfNew.disabled=true; pfConfirm.disabled=true; btnPassEdit.style.display='inline-flex'; btnPassCancel.style.display='none'; btnPassSave.style.display='none'; }
+      function exitPassEdit(revert){ if(revert) clearPassFields(); pfOld.disabled=true; pfNew.disabled=true; pfConfirm.disabled=true; setPassEditing(false); }
       btnPassEdit?.addEventListener('click', enterPassEdit);
       btnPassCancel?.addEventListener('click', ()=> exitPassEdit(true));
       btnPassSave?.addEventListener('click', async ()=>{
-        if (pfNew.value.length < 6){ ensureToast(); showToast({ title:'Validación', message:'La nueva contraseña debe tener al menos 6 caracteres.', type:'error' }); return; }
+        if (window.BHPassword && window.BHPassword.issue(pfNew.value)) {
+          ensureToast();
+          showToast({ title:'Validación', message: window.BHPassword.issue(pfNew.value), type:'error' });
+          return;
+        }
+        if (!window.BHPassword && pfNew.value.length < 8){ ensureToast(); showToast({ title:'Validación', message:'La nueva contraseña debe tener al menos 8 caracteres.', type:'error' }); return; }
         if (pfNew.value !== pfConfirm.value){ ensureToast(); showToast({ title:'Validación', message:'La confirmación no coincide.', type:'error' }); return; }
         const prev = btnPassSave.textContent; btnPassSave.disabled = true; btnPassSave.textContent='Guardando...';
         try{
@@ -633,6 +858,7 @@
           clearPassFields();
           ensureToast(); showToast({ title:'Seguridad', message:'Contraseña actualizada.', type:'success' });
           exitPassEdit(false);
+          setPasswordCardOpen(false);
         }catch(err){ console.error(err); ensureToast(); showToast({ title:'Error', message:String(err.message||err), type:'error' }); }
         finally{ btnPassSave.disabled = false; btnPassSave.textContent = prev; }
       });
@@ -643,6 +869,7 @@
       const pfOld = document.getElementById('pf-old');
       const pfNew = document.getElementById('pf-new');
       const pfConfirm = document.getElementById('pf-confirm');
+      if (window.BHPassword) window.BHPassword.bindMeter(pfNew, document.getElementById('pf-new-meter'));
       passwordForm?.addEventListener('submit', async (e)=>{
         e.preventDefault();
         if (pfNew.value !== pfConfirm.value){ ensureToast(); showToast({ title:'Validación', message:'La confirmación no coincide.', type:'error' }); return; }

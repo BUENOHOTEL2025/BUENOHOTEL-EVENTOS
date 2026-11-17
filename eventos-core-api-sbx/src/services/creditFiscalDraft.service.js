@@ -381,7 +381,7 @@ export function assertPagoCompletoParaComprobante(reg, evento = null) {
   return { totalAprobado, precioTotal, ok: true };
 }
 
-export async function buildCreditFiscalDraftFromRegistration(registroId) {
+export async function buildCreditFiscalDraftFromRegistration(registroId, opts = {}) {
   const id = str(registroId);
   if (!id) throw new Error('registroId requerido');
 
@@ -424,7 +424,9 @@ export async function buildCreditFiscalDraftFromRegistration(registroId) {
       'No hay pagos aprobados para este registro. Cuando administración confirme al menos un abono, podrás generar tu comprobante desde Mis reservas.'
     );
   }
-  assertPagoCompletoParaComprobante(reg, evento);
+  if (!opts.allowIncomplete) {
+    assertPagoCompletoParaComprobante(reg, evento);
+  }
   const totalCobrado = decimalRD(decimalRD(totalAprobadoCalc) * tasaPagos);
 
   // Configuración ingresada por admin (antes de generar)

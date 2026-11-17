@@ -10,6 +10,7 @@ function deny(status, message, code) {
 
 /** JWT HS256 de BuenoHotel (header o cookie). No vale Cognito. */
 export async function requireVerifiedJwt(req, _res, next) {
+  if (req.method === 'OPTIONS') return next();
   try {
     const token = tokenFromRequest(req);
     if (!token) {
@@ -24,6 +25,7 @@ export async function requireVerifiedJwt(req, _res, next) {
 
 /** JWT válido + cuenta de administración del panel. */
 export async function requirePanelJwt(req, _res, next) {
+  if (req.method === 'OPTIONS') return next();
   try {
     const token = tokenFromRequest(req);
     if (!token) {

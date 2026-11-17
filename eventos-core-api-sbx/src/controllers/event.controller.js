@@ -3,11 +3,14 @@ import EventService from '../services/event.service.js';
 const SENSITIVE_EVENT_KEY =
   /password|secret|token|apikey|api_key|private|accesskey|internal|costo_interno|notas_internas/i;
 
-function publicEvent(ev) {
+const HEAVY_EVENT_KEY = /^(imagenes|restaurantes|servicios_hotel|condiciones_registro|politica_cancelacion|incluye)$/i;
+
+function publicEvent(ev, { light } = {}) {
   if (!ev || typeof ev !== 'object') return ev;
   const out = {};
   for (const [k, v] of Object.entries(ev)) {
     if (SENSITIVE_EVENT_KEY.test(k)) continue;
+    if (light && HEAVY_EVENT_KEY.test(k)) continue;
     out[k] = v;
   }
   return out;
@@ -16,10 +19,10 @@ function publicEvent(ev) {
 export const getAllEvents = async (req, res, next) => {
   try {
     const events = await EventService.getAll();
-    const data = (events || []).map(publicEvent);
+    const data = (events || []).map((ev) => publicEvent(ev, { light: true }));
     res.json({ success: true, count: data.length, data });
   } catch (error) {
-    console.error('Error en getAllEvents:', error);
+    console.error('Error en getAllEvents:', error?.name, error?.message);
     next(error);
   }
 };
@@ -27,12 +30,12 @@ export const getAllEvents = async (req, res, next) => {
 export const getEventById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const event = await EventService.getById(id);
+    const event = await EventService.getById(String(id || '').trim());
     if (!event)
       return res.status(404).json({ success: false, message: 'Evento no encontrado' });
     res.json({ success: true, data: publicEvent(event) });
   } catch (error) {
-    console.error('Error en getEventById:', error);
+    console.error('Error en getEventById:', error?.name, error?.message);
     next(error);
   }
 };

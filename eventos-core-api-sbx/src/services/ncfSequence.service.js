@@ -153,17 +153,20 @@ export async function peekNextEncf(tipoeCF) {
   const lastAssigned = Number(existing?.Item?.lastAssigned);
   const last = Number.isFinite(lastAssigned) ? lastAssigned : startFor(t) - 1;
   const max = maxFor(t);
+  const start = startFor(t);
   const next = last + 1;
+  const used = last >= start ? last - start + 1 : 0;
   const remaining = max > 0 ? Math.max(0, max - last) : null;
   const exhausted = max > 0 && next > max;
   return {
     tipoeCF: t,
     lastAssigned: last,
+    used,
     nextSequence: exhausted ? null : next,
     proximoEncf: exhausted ? null : formatEncf(t, next),
     maxSequence: max || null,
     remaining,
-    start: startFor(t),
+    start,
     table: TableName
   };
 }

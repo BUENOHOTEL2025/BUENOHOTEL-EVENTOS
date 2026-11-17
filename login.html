@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iniciar Sesión - BuenoHotel Eventos</title>
   <link rel="stylesheet" href="styles.css?v=20260923c">
-  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261107q">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261117t">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <!-- Favicon / App Icons -->
   <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
@@ -154,16 +154,28 @@
       margin-bottom: 20px;
       display: none;
     }
+    .error-message.is-lock {
+      color: #9a3412;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      font-weight: 700;
+    }
+    .btn-primary:disabled {
+      opacity: .7;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
   <!-- Shared navbar placeholder -->
   <div id="site-header"></div>
-  <script src="js/auth.js?v=20261117a"></script>
+  <script src="js/bh-password-policy.js?v=20261117v"></script>
+  <script src="js/auth.js?v=20261117v"></script>
+  <script src="js/bh-login-lock.js?v=20261117q"></script>
   <script src="https://buenohotel.com/js/config.js?v=20261029e"></script>
   <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
-  <script src="https://buenohotel.com/js/site-shell.js?v=20261117n"></script>
-  <script src="js/navbar.js?v=20261117a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261117t"></script>
+  <script src="js/navbar.js?v=20261117t"></script>
 
   <div class="main-content">
     <div class="auth-container">
@@ -298,7 +310,22 @@
       })();
       const loginForm = document.getElementById('loginForm');
       const errorMessage = document.getElementById('errorMessage');
-      const API_BASE = (window.getAuthApiBase ? window.getAuthApiBase() : ((location.port === '5500') ? 'http://localhost:3000' : ''));
+      const API_BASE = (window.getAuthApiBase ? window.getAuthApiBase() : ((location.port === '5500') ? 'http://localhost:3000' : 'https://core-api.buenohotel.com.do'));
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Iniciar Sesión';
+      const lockUi = window.bhLoginLock
+        ? window.bhLoginLock.attachUi({ errorEl: errorMessage, btn: submitBtn, idleLabel: originalBtnText, useInnerHTML: true })
+        : null;
+
+      function applyLock(lock) {
+        if (window.hideAuthBusy) window.hideAuthBusy();
+        if (lockUi) lockUi.start(lock);
+        else {
+          errorMessage.classList.add('is-lock');
+          errorMessage.style.display = 'block';
+          errorMessage.textContent = (lock && lock.message) || 'Login inhabilitado por intentos fallidos.';
+        }
+      }
       
       // Check if user is already logged in
       const token = localStorage.getItem('buenohotel_auth_token');
@@ -308,9 +335,21 @@
         return;
       }
 
+      const emailInput = document.getElementById('email');
+      async function peekLock() {
+        if (!window.bhLoginLock || !emailInput.value.trim()) return;
+        try {
+          const st = await window.bhLoginLock.check(emailInput.value);
+          if (st && st.locked) applyLock(st);
+        } catch (_) {}
+      }
+      emailInput.addEventListener('blur', peekLock);
+      peekLock();
+
       // Handle form submission
       loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        if (lockUi && lockUi.remaining() > 0) return;
         
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
@@ -329,30 +368,49 @@
           return;
         }
         
-        // Show loading state
-        const submitBtn = loginForm.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Iniciando sesión...';
         if (window.showAuthBusy) window.showAuthBusy('Validando acceso…');
         
         try {
-          const response = await fetch(`${API_BASE}/api/auth/login`, {
+          if (window.bhLoginLock) {
+            const pre = await window.bhLoginLock.check(email);
+            if (pre && pre.locked) {
+              applyLock(pre);
+              return;
+            }
+          }
+          const fetchFn = window.bhLoginLock && window.bhLoginLock.fetchTimeout
+            ? window.bhLoginLock.fetchTimeout
+            : fetch;
+          const response = await fetchFn(`${API_BASE}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
-          });
+          }, 15000);
 
           const data = await response.json().catch(() => ({}));
+          if (response.status === 429 || data.locked) {
+            applyLock(window.bhLoginLock ? window.bhLoginLock.parse(data, response.status) : data);
+            return;
+          }
           if (!response.ok) {
             const apiError = data?.message || data?.errors?.[0]?.message || 'Credenciales incorrectas';
             throw new Error(apiError);
           }
 
-          // Respuesta esperada del backend: { success, data: { user, token } }
-          const tokenValue = data?.data?.token || data?.token;
-          const userValue = data?.data?.user || data?.user;
-          if (!tokenValue || !userValue) throw new Error('Respuesta del servidor inválida');
+          let session = data;
+          if (data?.mustChangePassword && window.BHPassword) {
+            session = await window.BHPassword.afterLogin(data, {
+              apiBase: API_BASE,
+              oldPassword: password
+            });
+          }
+          const tokenValue = session?.data?.token || session?.token;
+          const userValue = session?.data?.user || session?.user;
+          if (!tokenValue || !userValue) throw new Error(data?.mustChangePassword
+            ? (data.message || 'Debes actualizar tu contraseña para continuar.')
+            : 'Respuesta del servidor inválida');
 
           localStorage.setItem('buenohotel_auth_token', tokenValue);
           localStorage.setItem('buenohotel_user_data', JSON.stringify(userValue));
@@ -365,13 +423,20 @@
         } catch (error) {
           console.error('Login error:', error);
           if (window.hideAuthBusy) window.hideAuthBusy();
-          showError(error.message || 'Error al iniciar sesión. Inténtalo de nuevo.', errorMessage);
+          const aborted = error && (error.name === 'AbortError' || /abort/i.test(String(error.message || '')));
+          showError(
+            aborted
+              ? 'El servidor tardó demasiado. Inténtalo de nuevo.'
+              : (error.message || 'Error al iniciar sesión. Inténtalo de nuevo.'),
+            errorMessage
+          );
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnText || 'Iniciar Sesión';
         }
       });
     });
   </script>
+  <div id="site-footer"></div>
 </body>
 </html>
 

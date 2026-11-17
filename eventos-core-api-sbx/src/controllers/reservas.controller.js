@@ -196,7 +196,7 @@ function parseJwtPayloadReservas(authHeader) {
 function isAdminEmailReservas(email) {
   const e = String(email || '').trim().toLowerCase();
   if (!e) return false;
-  if (e.endsWith('@buenohotel.com.do')) return true;
+  if (e.endsWith('@buenohotel.com.do') || e === 'info@buenohotel.com') return true;
   const raw = String(process.env.FACTURA_ADMIN_EMAILS || '');
   const allow = raw.split(/[,;]/).map((s) => s.trim().toLowerCase()).filter(Boolean);
   return allow.length > 0 && allow.includes(e);

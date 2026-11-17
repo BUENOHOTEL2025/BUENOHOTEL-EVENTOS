@@ -7,11 +7,31 @@ function sendError(res, err) {
   res.status(status).json({ success: false, message: err?.message || 'Error de fotos de eventos' });
 }
 
+export async function listPublic(req, res) {
+  try {
+    const categoria = String(req.query?.categoria || '').trim();
+    const fotos = await Fotos.listFotosPublico(categoria);
+    res.set('Cache-Control', 'public, max-age=60');
+    res.json({
+      success: true,
+      fotos,
+      categorias: Fotos.FOTO_CATEGORIAS
+    });
+  } catch (err) {
+    sendError(res, err);
+  }
+}
+
 export async function listAdmin(req, res) {
   try {
     await requirePanelAdmin(req);
     const items = await Fotos.listFotos();
-    res.json({ success: true, fotos: items, carpeta: 'https://buenohotel.com/assets/eventos-reales/' });
+    res.json({
+      success: true,
+      fotos: items,
+      categorias: Fotos.FOTO_CATEGORIAS,
+      carpeta: 'https://buenohotel.com/assets/eventos-reales/'
+    });
   } catch (err) {
     sendError(res, err);
   }
@@ -38,6 +58,7 @@ export async function loteAdmin(req, res) {
     const user = userFromReq(req);
     const data = await Fotos.saveLote({
       note: req.body?.note,
+      categoria: req.body?.categoria,
       photos: req.body?.photos,
       refs: req.body?.refs,
       uploadedBy: user?.email || ''
@@ -64,7 +85,8 @@ export async function patchAdmin(req, res) {
     await requirePanelAdmin(req);
     const data = await Fotos.updateFoto({
       key: req.body?.key,
-      note: req.body?.note
+      note: req.body?.note,
+      categoria: req.body?.categoria
     });
     res.json({ success: true, foto: data });
   } catch (err) {

@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel Admin - BuenoHotel Eventos</title>
   <link rel="stylesheet" href="styles.css?v=20260923c" />
-  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261107ad">
+  <link rel="stylesheet" href="https://buenohotel.com/css/site-chrome.css?v=20261117t">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <!-- Favicon / App Icons -->
   <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/icono-buenohotel.png?v=20260926m">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/logo-32.png?v=20260921j">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/logo/logo-32.png?v=20260921j">
   <link rel="shortcut icon" href="assets/logo/logo-32.png?v=20260921j">
-  <link rel="stylesheet" href="admin.css?v=20261107ad">
+  <link rel="stylesheet" href="admin.css?v=20261117z">
 </head>
 <body>
   <div id="site-header"></div>
   <script src="js/auth.js?v=20261117a"></script>
   <script src="https://buenohotel.com/js/config.js?v=20261029e"></script>
   <script src="https://buenohotel.com/js/i18n.js?v=20261002a"></script>
-  <script src="https://buenohotel.com/js/site-shell.js?v=20261117n"></script>
-  <script src="js/navbar.js?v=20261117a"></script>
+  <script src="https://buenohotel.com/js/site-shell.js?v=20261117t"></script>
+  <script src="js/navbar.js?v=20261117u"></script>
   <script src="js/admin-core.js?v=20260930q"></script>
   <script src="js/admin-ecf.js?v=20261002s"></script>
 
@@ -498,7 +498,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <span style="font-weight:600;">1 USD =</span>
-            <input type="number" id="tasa-cambio-input" min="1" step="0.01" value="61" 
+            <input type="number" id="tasa-cambio-input" min="1" step="0.01" placeholder="—"
               style="width:90px; padding:8px 12px; border:none; border-radius:6px; font-size:1.1rem; font-weight:700; text-align:center;">
             <span style="font-weight:600;">DOP</span>
             <button id="guardar-tasa-btn" class="btn ecf-btn-amber">
@@ -509,14 +509,33 @@
       </div>
 
       <div class="card" style="margin-bottom:14px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <h2 style="margin:0; font-size:1.3rem; color:#1a365d;">Gestión de Eventos</h2>
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <label for="events-page-size" class="muted">Por página:</label>
-            <select id="events-page-size"></select>
-            <button id="new-event-btn" class="btn" style="background:#FBB03B; color:#222; border:1px solid #E19A2E;">
-              + Nuevo Evento
-            </button>
+        <h2 style="margin:0 0 12px; font-size:1.3rem; color:#1a365d;">Gestión de Eventos</h2>
+        <div class="filter-bar">
+          <div class="filter-bar-search">
+            <span class="filter-search-ico" aria-hidden="true"></span>
+            <input id="events-search" type="search" placeholder="Buscar por nombre, fecha o lugar…" autocomplete="off" />
+            <button type="button" id="events-search-clear" class="filter-clear" hidden>Limpiar</button>
+          </div>
+          <div class="filter-bar-row">
+            <label class="filter-field">
+              <span>Tipo</span>
+              <select id="events-tipo-filter" aria-label="Tipo de evento">
+                <option value="todos">Todos</option>
+                <option value="proximos">Próximos</option>
+                <option value="galeria">Galería pasados</option>
+              </select>
+            </label>
+            <label class="filter-field filter-field-sm">
+              <span>Por página</span>
+              <select id="events-page-size"></select>
+            </label>
+            <div class="filter-bar-actions">
+              <button id="new-event-btn" class="btn filter-btn-primary" type="button">+ Nuevo Evento</button>
+            </div>
+          </div>
+          <div class="filter-bar-meta">
+            <span id="events-filter-count" class="filter-count"></span>
+            <button type="button" id="events-reset-filters" class="filter-reset" hidden>Quitar filtros</button>
           </div>
         </div>
         <div id="events-list" class="list">
@@ -535,7 +554,7 @@
           <a class="btn" href="https://buenohotel.com/admin/fotos-eventos" target="_blank" rel="noopener" style="background:#FBB03B; color:#222; border:1px solid #E19A2E; text-decoration:none; font-weight:700;">Subir / notas</a>
         </div>
         <p class="muted" style="margin:0 0 12px;">Las mismas fotos de la galería general. Pasa el mouse (lupa) y pulsa para verlas a tamaño original.</p>
-        <div id="bh-fotos-galeria" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px;"></div>
+        <div id="bh-fotos-galeria" class="bh-fotos-galeria-grid"></div>
       </div>
     </div>
 
@@ -548,17 +567,24 @@
             Refrescar
           </button>
         </div>
-        <div class="toolbar" style="margin-bottom:16px;">
-          <input id="users-search" type="text" placeholder="Buscar por nombre, email, teléfono..." style="flex:1; min-width:200px;" />
-          <div class="controls">
-            <label>Estado:</label>
-            <select id="users-status-filter">
-              <option value="">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-            </select>
-            <label for="users-page-size">Por página:</label>
-            <select id="users-page-size"></select>
+        <div class="filter-bar">
+          <div class="filter-bar-search">
+            <span class="filter-search-ico" aria-hidden="true"></span>
+            <input id="users-search" type="search" placeholder="Buscar por nombre, correo o teléfono…" autocomplete="off" />
+          </div>
+          <div class="filter-bar-row">
+            <label class="filter-field">
+              <span>Estado</span>
+              <select id="users-status-filter">
+                <option value="">Todos</option>
+                <option value="active">Activos</option>
+                <option value="inactive">Inactivos</option>
+              </select>
+            </label>
+            <label class="filter-field filter-field-sm">
+              <span>Por página</span>
+              <select id="users-page-size"></select>
+            </label>
           </div>
         </div>
         <div id="users-list" class="list">
@@ -573,28 +599,46 @@
 
     <div id="pagos-tab" class="tab-content">
     <div class="card" style="margin-bottom:14px;">
-      <div class="toolbar">
-        <input id="search" type="text" placeholder="Buscar por nombre, email, monto, método, ref, evento o registro..." />
-        <div class="controls">
-          <label>Usuario:</label>
-          <select id="userFilter">
-            <option value="">Todos</option>
-          </select>
-          <label>Evento:</label>
-          <select id="eventFilter">
-            <option value="">Todos</option>
-          </select>
-          <label>Estado:</label>
-          <select id="estadoFilter">
-            <option value="pendiente">Pendientes</option>
-            <option value="aprobado">Aprobados</option>
-            <option value="cancelado">Cancelados</option>
-            <option value="todos">Todos</option>
-          </select>
-          <button id="refresh" class="btn" style="background:#FBB03B; border:1px solid #E19A2E; color:#222;">Refrescar</button>
-          <button id="exportToggle" class="btn">Exportar</button>
-          <label for="pagos-page-size">Por página:</label>
-          <select id="pagos-page-size"></select>
+      <div class="filter-bar">
+        <div class="filter-bar-search">
+          <span class="filter-search-ico" aria-hidden="true"></span>
+          <input id="search" type="search" placeholder="Buscar por nombre, correo, evento, monto o referencia…" autocomplete="off" />
+          <button type="button" id="search-clear" class="filter-clear" hidden>Limpiar</button>
+        </div>
+        <div class="filter-bar-row">
+          <label class="filter-field">
+            <span>Usuario</span>
+            <select id="userFilter">
+              <option value="">Todos los usuarios</option>
+            </select>
+          </label>
+          <label class="filter-field">
+            <span>Evento</span>
+            <select id="eventFilter">
+              <option value="">Todos</option>
+            </select>
+          </label>
+          <label class="filter-field">
+            <span>Estado</span>
+            <select id="estadoFilter" aria-label="Estado del pago">
+              <option value="pendiente">Pendientes</option>
+              <option value="aprobado">Aprobados</option>
+              <option value="cancelado">Cancelados</option>
+              <option value="todos">Todos</option>
+            </select>
+          </label>
+          <label class="filter-field filter-field-sm">
+            <span>Por página</span>
+            <select id="pagos-page-size"></select>
+          </label>
+          <div class="filter-bar-actions">
+            <button id="refresh" class="btn filter-btn-ghost" type="button">Actualizar</button>
+            <button id="exportToggle" class="btn filter-btn-primary" type="button">Exportar</button>
+          </div>
+        </div>
+        <div class="filter-bar-meta">
+          <span id="pagos-filter-count" class="filter-count"></span>
+          <button type="button" id="pagos-reset-filters" class="filter-reset" hidden>Quitar filtros</button>
         </div>
       </div>
       <div id="state" class="muted">Cargando pagos pendientes...</div>
@@ -1206,62 +1250,60 @@
 
     // Helpers escapeHtml, highlight, setCounts cargados desde admin-core.js
 
-    function renderList(items){
-      const list = document.getElementById('list');
-      list.innerHTML = '';
-
-      if (!items.length){
-        list.innerHTML = '<div class="muted">No hay resultados con los filtros aplicados.</div>';
-        // Si no hay items cargados, ambos conteos deben ser 0
-        setCounts(0, 0);
-        renderAdminPager(document.getElementById('pagos-pager'), { total: 0 }, () => {});
-        return null;
+    function syncPagosFilterChrome(total, filtered, pageShown) {
+      const q = (document.getElementById('search')?.value || '').trim();
+      const estado = document.getElementById('estadoFilter')?.value || 'pendiente';
+      const user = (document.getElementById('userFilter')?.value || '').trim();
+      const eventId = (document.getElementById('eventFilter')?.value || '').trim();
+      const clearBtn = document.getElementById('search-clear');
+      if (clearBtn) clearBtn.hidden = !q;
+      const countEl = document.getElementById('pagos-filter-count');
+      if (countEl) {
+        const matched = Number(filtered || 0);
+        const all = Number(total || 0);
+        const onPage = Number(pageShown != null ? pageShown : matched);
+        const pageSize = typeof getAdminPageSize === 'function' ? getAdminPageSize() : 10;
+        if (!all) {
+          countEl.textContent = '';
+        } else if (pageSize === 'todas' || onPage === matched) {
+          countEl.textContent = matched === all
+            ? `${matched} registro${matched === 1 ? '' : 's'}`
+            : `Mostrando ${matched} de ${all}`;
+        } else {
+          countEl.textContent = `Mostrando ${onPage} de ${matched}`;
+        }
       }
-      const queryRaw = document.getElementById('search').value || '';
-      const q = queryRaw.toLowerCase().trim();
-      const f = document.getElementById('estadoFilter').value;
-      const selUser = (document.getElementById('userFilter')?.value || '').trim();
-      const selEvent = (document.getElementById('eventFilter')?.value || '').trim();
+      const resetBtn = document.getElementById('pagos-reset-filters');
+      if (resetBtn) resetBtn.hidden = !(q || user || eventId || (estado && estado !== 'todos'));
+    }
 
-      const filtered = items.filter(it => {
-        const est = String(it?.pago?.estado || '').toLowerCase();
-        const matchesE = (f==='todos') || (est===f);
-        const userIdVal = String(it?.usuarioId||'').trim();
-        const userEmailVal = String(it?.usuario?.email||'').trim().toLowerCase();
-        const selUserLower = selUser.toLowerCase();
-        const matchesUser = !selUser
-          || userIdVal === selUser
-          || (userEmailVal && userEmailVal === selUserLower);
-        const matchesEvent = !selEvent || String(it?.eventoId||'') === selEvent;
-        // Campos para búsqueda: nombre, email, evento, método, tipo, referencia, monto, registroId
-        const nombre = (it?.usuario?.nombreCompleto || '').toLowerCase();
-        const email = (it?.usuario?.email || '').toLowerCase();
-        const evento = String(getEventLabel(it?.eventoId) || it?.eventoId || '').toLowerCase();
-        const metodo = String(it?.pago?.metodo || '').toLowerCase();
-        const tipo = String(it?.pago?.tipo || '').toLowerCase();
-        const ref = String(it?.pago?.referencia || '').toLowerCase();
-        const montoNum = Number(it?.pago?.monto || 0);
-        const montoStr = String(montoNum);
-        const montoCur = montoNum.toLocaleString('es-DO',{style:'currency',currency:'DOP'}).toLowerCase();
-        const regId = String(it?.registroId || '').toLowerCase();
-        const codeShort = String(it?.codigoCorto || '').toLowerCase();
-        const hayTexto = [nombre, email, evento, metodo, tipo, ref, montoStr, montoCur, regId, codeShort].join(' ');
-        const matchesQ = !q || hayTexto.includes(q);
+    function pagoMatchesSearchUserEvent(it, q, selUser, selEvent) {
+      const userIdVal = String(it?.usuarioId || '').trim();
+      const userEmailVal = String(it?.usuario?.email || '').trim().toLowerCase();
+      const selUserLower = String(selUser || '').toLowerCase();
+      const matchesUser = !selUser
+        || userIdVal === selUser
+        || (userEmailVal && userEmailVal === selUserLower);
+      const matchesEvent = !selEvent || String(it?.eventoId || '') === selEvent;
+      const nombre = (it?.usuario?.nombreCompleto || '').toLowerCase();
+      const email = (it?.usuario?.email || '').toLowerCase();
+      const evento = String(getEventLabel(it?.eventoId) || it?.eventoId || '').toLowerCase();
+      const metodo = String(it?.pago?.metodo || '').toLowerCase();
+      const tipo = String(it?.pago?.tipo || '').toLowerCase();
+      const ref = String(it?.pago?.referencia || '').toLowerCase();
+      const montoNum = Number(it?.pago?.monto || 0);
+      const montoStr = String(montoNum);
+      const montoCur = montoNum.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' }).toLowerCase();
+      const regId = String(it?.registroId || '').toLowerCase();
+      const codeShort = String(it?.codigoCorto || '').toLowerCase();
+      const hayTexto = [nombre, email, evento, metodo, tipo, ref, montoStr, montoCur, regId, codeShort].join(' ');
+      const matchesQ = !q || hayTexto.includes(q);
+      return matchesUser && matchesEvent && matchesQ;
+    }
 
-        return matchesE && matchesUser && matchesEvent && matchesQ;
-      });
-
-      // Calcular total de registros únicos en CACHE (sin filtrar)
-      const allRegistrosSet = new Set();
-      items.forEach(it => {
-        const key = it?.registroId || it?.codigoCorto || '';
-        if (key) allRegistrosSet.add(key);
-      });
-      const totalRegistros = allRegistrosSet.size;
-
-      // Agrupar por registroId para mostrar 1 fila por registro (filtrados)
+    function groupPagosByRegistro(items) {
       const groupedByRegistro = {};
-      filtered.forEach(it => {
+      items.forEach((it) => {
         const key = it?.registroId || it?.codigoCorto || `unknown-${Math.random()}`;
         if (!groupedByRegistro[key]) {
           groupedByRegistro[key] = {
@@ -1272,6 +1314,8 @@
             usuarioId: it?.usuarioId,
             solicitaComprobanteFiscal: !!it?.solicitaComprobanteFiscal,
             rncComprobanteFiscal: it?.rncComprobanteFiscal || '',
+            totalAprobado: Number(it?.totalAprobado || 0) || 0,
+            montoTotal: Number(it?.montoTotal || 0) || 0,
             pagos: []
           };
         } else {
@@ -1279,15 +1323,71 @@
           if (it?.rncComprobanteFiscal && !groupedByRegistro[key].rncComprobanteFiscal) {
             groupedByRegistro[key].rncComprobanteFiscal = it.rncComprobanteFiscal;
           }
+          const totA = Number(it?.totalAprobado || 0) || 0;
+          const totM = Number(it?.montoTotal || 0) || 0;
+          if (totA > groupedByRegistro[key].totalAprobado) groupedByRegistro[key].totalAprobado = totA;
+          if (totM > groupedByRegistro[key].montoTotal) groupedByRegistro[key].montoTotal = totM;
         }
         groupedByRegistro[key].pagos.push(it?.pago);
       });
-      const registros = Object.values(groupedByRegistro);
+      return Object.values(groupedByRegistro);
+    }
 
-      // Actualizar contador: total de registros únicos vs filtrados (todo el conjunto, no solo la página)
+    function registroBucketEstado(reg) {
+      const pagos = Array.isArray(reg?.pagos) ? reg.pagos : [];
+      const ests = pagos.map((p) => String(p?.estado || '').toLowerCase());
+      if (ests.some((e) => e === 'pendiente')) return 'pendiente';
+      if (ests.some((e) => e === 'aprobado')) return 'aprobado';
+      if (ests.some((e) => e === 'cancelado')) return 'cancelado';
+      return 'pendiente';
+    }
+
+    function registroMatchesEstadoFilter(reg, f) {
+      if (!f || f === 'todos') return true;
+      return registroBucketEstado(reg) === f;
+    }
+
+    function badgeFromRegistro(reg, completo) {
+      if (completo) return { cls: 'badge approved', text: 'Completo' };
+      const bucket = registroBucketEstado(reg);
+      if (bucket === 'aprobado') return { cls: 'badge approved', text: 'Aprobado' };
+      if (bucket === 'cancelado') return { cls: 'badge canceled', text: 'Cancelado' };
+      return { cls: 'badge pending', text: 'Pendiente' };
+    }
+
+    function renderList(items){
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+
+      if (!items.length){
+        list.innerHTML = '<div class="muted">No hay resultados con los filtros aplicados.</div>';
+        // Si no hay items cargados, ambos conteos deben ser 0
+        setCounts(0, 0);
+        syncPagosFilterChrome(0, 0, 0);
+        renderAdminPager(document.getElementById('pagos-pager'), { total: 0 }, () => {});
+        return null;
+      }
+      const queryRaw = document.getElementById('search').value || '';
+      const q = queryRaw.toLowerCase().trim();
+      const f = document.getElementById('estadoFilter').value;
+      const selUser = (document.getElementById('userFilter')?.value || '').trim();
+      const selEvent = (document.getElementById('eventFilter')?.value || '').trim();
+
+      const scoped = items.filter((it) => pagoMatchesSearchUserEvent(it, q, selUser, selEvent));
+      const allRegistros = groupPagosByRegistro(scoped);
+      const registros = allRegistros.filter((reg) => registroMatchesEstadoFilter(reg, f));
+
+      const allRegistrosSet = new Set();
+      items.forEach((it) => {
+        const key = it?.registroId || it?.codigoCorto || '';
+        if (key) allRegistrosSet.add(key);
+      });
+      const totalRegistros = allRegistrosSet.size;
+
       setCounts(totalRegistros, registros.length);
 
       if (!registros.length){
+        syncPagosFilterChrome(totalRegistros, 0, 0);
         list.innerHTML = '<div class="muted">No hay resultados con los filtros aplicados.</div>';
         renderAdminPager(document.getElementById('pagos-pager'), { total: 0 }, () => {});
         return null;
@@ -1296,6 +1396,7 @@
       const pagosPageState = sliceAdminPage(registros, pagosPage, getAdminPageSize());
       pagosPage = pagosPageState.page;
       const pageRegistros = pagosPageState.items;
+      syncPagosFilterChrome(totalRegistros, registros.length, pageRegistros.length);
       renderAdminPager(document.getElementById('pagos-pager'), pagosPageState, (p) => {
         pagosPage = p;
         renderList(CACHE);
@@ -1958,15 +2059,9 @@
                     return;
                   }
 
-                  let base = '';
-                  try { if (window.getAuthApiBase) base = String(window.getAuthApiBase()).replace(/\/$/, ''); } catch (_) {}
-                  if (!base) base = 'https://core-api.buenohotel.com.do';
                   try {
-                    const url = `${base}/api/registrations/${encodeURIComponent(registroId)}/factura-borrador?formato=html`;
                     await withAdminWait('Abriendo la factura… espera un momento.', async () => {
-                      const resp = await fetch(url, { headers: authHeaders() });
-                      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                      const html = await resp.text();
+                      const html = await fetchFacturaHtml(registroId);
                       openFacturaPreviewModal(html, { registroId });
                     });
                     try {
@@ -2047,15 +2142,9 @@
                       { type: 'success' }
                     );
                     try {
-                      let base = '';
-                      try { if (window.getAuthApiBase) base = String(window.getAuthApiBase()).replace(/\/$/, ''); } catch (_) {}
-                      if (!base) base = 'https://core-api.buenohotel.com.do';
-                      const url = `${base}/api/registrations/${encodeURIComponent(registroId)}/factura-borrador?formato=html`;
                       await withAdminWait('Abriendo la factura… espera un momento.', async () => {
-                        const resp = await fetch(url, { headers: authHeaders() });
-                        if (resp.ok) {
-                          openFacturaPreviewModal(await resp.text(), { registroId });
-                        }
+                        const html = await fetchFacturaHtml(registroId);
+                        openFacturaPreviewModal(html, { registroId });
                       });
                       try { await enableComprobanteCliente(registroId); } catch (_) {}
                     } catch (_) {}
@@ -2307,6 +2396,10 @@
         const cancelados = pagos.filter(p => String(p?.estado||'').toLowerCase() === 'cancelado');
         const montoAprobado = aprobados.reduce((s,p) => s + Number(p?.monto||0), 0);
         const montoTotal = pagos.reduce((s,p) => s + Number(p?.monto||0), 0);
+        const cubreLista = typeof pagoCubrePrecioTotal === 'function'
+          ? pagoCubrePrecioTotal(Number(reg.totalAprobado || montoAprobado), Number(reg.montoTotal || 0))
+          : false;
+        const badgeIni = badgeFromRegistro(reg, cubreLista);
         
         // Determinar moneda del evento (USD/DOP) según configuración del admin
         const eventoDataRow = window.EVENTS_FULL_MAP?.[reg.eventoId] || {};
@@ -2339,7 +2432,7 @@
           </div>
           <div>
             <div class="badges" style="margin-bottom:6px;">
-              <span class="badge pending" data-badge-pago="1">Pendiente</span>
+              <span class="${badgeIni.cls}" data-badge-pago="1">${badgeIni.text}</span>
             </div>
             <div class="muted" style="font-size:0.85rem;">Click para ver detalles</div>
           </div>
@@ -2378,13 +2471,9 @@
               ? pagoCubrePrecioTotal(totalAprobadoReal, montoEventoTotal)
               : (montoEventoTotal > 0 && Number(totalAprobadoReal.toFixed(2)) >= Number(montoEventoTotal.toFixed(2)));
             if (pagoBadge) {
-              if (completo) {
-                pagoBadge.className = 'badge approved';
-                pagoBadge.textContent = 'Completo';
-              } else {
-                pagoBadge.className = 'badge pending';
-                pagoBadge.textContent = 'Pendiente';
-              }
+              const b = badgeFromRegistro(reg, completo);
+              pagoBadge.className = b.cls;
+              pagoBadge.textContent = b.text;
             }
             if (facturaBtn) {
               const falta = Math.max(0, Number((montoEventoTotal - totalAprobadoReal).toFixed(2)));
@@ -2414,16 +2503,9 @@
           } catch(_){
             // Fallback: si no se puede calcular, conservar heurística anterior
             if (pagoBadge) {
-              if (pendientes.length > 0) {
-                pagoBadge.className = 'badge pending';
-                pagoBadge.textContent = 'Pendientes';
-              } else if (aprobados.length > 0 && pendientes.length === 0) {
-                pagoBadge.className = 'badge approved';
-                pagoBadge.textContent = 'Completo';
-              } else {
-                pagoBadge.className = 'badge pending';
-                pagoBadge.textContent = 'Pendiente';
-              }
+              const b = badgeFromRegistro(reg, false);
+              pagoBadge.className = b.cls;
+              pagoBadge.textContent = b.text;
             }
           }
         })();
@@ -2512,15 +2594,9 @@
               }
 
               (async () => {
-                let base = '';
-                try { if (window.getAuthApiBase) base = String(window.getAuthApiBase()).replace(/\/$/, ''); } catch (_) {}
-                if (!base) base = 'https://core-api.buenohotel.com.do';
                 try {
-                  const url = `${base}/api/registrations/${encodeURIComponent(registroId)}/factura-borrador?formato=html`;
                   await withAdminWait('Abriendo la factura… espera un momento.', async () => {
-                    const resp = await fetch(url, { headers: authHeaders() });
-                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                    const html = await resp.text();
+                    const html = await fetchFacturaHtml(registroId);
                     openFacturaPreviewModal(html, { registroId });
                   });
                   const patchBody = JSON.stringify({
@@ -2571,37 +2647,13 @@
       const f = document.getElementById('estadoFilter')?.value || 'todos';
       const selUser = (document.getElementById('userFilter')?.value || '').trim();
       const selEvent = (document.getElementById('eventFilter')?.value || '').trim();
-
-      const filtered = items.filter(it => {
-        const est = String(it?.pago?.estado || '').toLowerCase();
-        const matchesE = (f==='todos') || (est===f);
-        const userIdVal = String(it?.usuarioId||'').trim();
-        const userEmailVal = String(it?.usuario?.email||'').trim().toLowerCase();
-        const selUserLower = selUser.toLowerCase();
-        const matchesUser = !selUser
-          || userIdVal === selUser
-          || (userEmailVal && userEmailVal === selUserLower);
-        const matchesEvent = !selEvent || String(it?.eventoId||'') === selEvent;
-
-        const nombre = (it?.usuario?.nombreCompleto || '').toLowerCase();
-        const email = (it?.usuario?.email || '').toLowerCase();
-        const evento = String(getEventLabel(it?.eventoId) || it?.eventoId || '').toLowerCase();
-        const metodo = String(it?.pago?.metodo || '').toLowerCase();
-        const tipo = String(it?.pago?.tipo || '').toLowerCase();
-        const ref = String(it?.pago?.referencia || '').toLowerCase();
-        const montoNum = Number(it?.pago?.monto || 0);
-        const montoStr = String(montoNum);
-        const montoCur = montoNum.toLocaleString('es-DO',{style:'currency',currency:'DOP'}).toLowerCase();
-        const regId = String(it?.registroId || '').toLowerCase();
-        const codeShort = String(it?.codigoCorto || '').toLowerCase();
-        const hayTexto = [nombre, email, evento, metodo, tipo, ref, montoStr, montoCur, regId, codeShort].join(' ');
-        const matchesQ = !q || hayTexto.includes(q);
-
-        return matchesE && matchesUser && matchesEvent && matchesQ;
-      });
-
-      // No modificar UI desde exportación; solo devolver datos
-      return filtered;
+      const scoped = items.filter((it) => pagoMatchesSearchUserEvent(it, q, selUser, selEvent));
+      const allowed = new Set(
+        groupPagosByRegistro(scoped)
+          .filter((reg) => registroMatchesEstadoFilter(reg, f))
+          .map((reg) => String(reg.registroId || reg.codigoCorto || ''))
+      );
+      return scoped.filter((it) => allowed.has(String(it?.registroId || it?.codigoCorto || '')));
     }
 
     // downloadBlob, uniqByRegistroId, unwrapDynamoValue cargados desde admin-core.js
@@ -3272,7 +3324,30 @@
       if (refreshBtn) refreshBtn.addEventListener('click', loadData);
       
       const searchInput = document.getElementById('search');
-      if (searchInput) searchInput.addEventListener('input', () => { pagosPage = 1; renderList(CACHE); });
+      let searchTimer = 0;
+      if (searchInput) searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => { pagosPage = 1; renderList(CACHE); }, 160);
+      });
+      const searchClear = document.getElementById('search-clear');
+      if (searchClear) searchClear.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        pagosPage = 1;
+        renderList(CACHE);
+        searchInput?.focus();
+      });
+      const resetFilters = document.getElementById('pagos-reset-filters');
+      if (resetFilters) resetFilters.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        const userSel = document.getElementById('userFilter');
+        const eventSel = document.getElementById('eventFilter');
+        const estadoSel = document.getElementById('estadoFilter');
+        if (userSel) userSel.value = '';
+        if (eventSel) eventSel.value = '';
+        if (estadoSel) estadoSel.value = 'pendiente';
+        pagosPage = 1;
+        renderList(CACHE);
+      });
       
       const estadoFilter = document.getElementById('estadoFilter');
       if (estadoFilter) estadoFilter.addEventListener('change', () => { pagosPage = 1; renderList(CACHE); });
@@ -3475,7 +3550,15 @@
       if (!base) base = 'https://core-api.buenohotel.com.do';
       const url = `${base}/api/registrations/${encodeURIComponent(rid)}/factura-borrador?formato=html`;
       const resp = await fetch(url, { headers: authHeaders() });
-      if (!resp.ok) throw new Error(`No se pudo abrir la factura (HTTP ${resp.status}).`);
+      if (!resp.ok) {
+        const raw = await resp.text().catch(() => '');
+        let msg = '';
+        try { msg = String(JSON.parse(raw)?.message || '').trim(); } catch (_) {}
+        if (!msg && raw) {
+          msg = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 220);
+        }
+        throw new Error(msg || `No se pudo abrir la factura (HTTP ${resp.status}).`);
+      }
       return resp.text();
     }
 
@@ -4043,7 +4126,12 @@
       style.textContent = `@keyframes admin-upload-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .bh-foto-zoom{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.88);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
         .bh-foto-zoom img{max-width:min(96vw,1400px);max-height:92vh;width:auto;height:auto;object-fit:contain;border-radius:8px}
-        .bh-foto-lupa{cursor:zoom-in}`;
+        .bh-foto-lupa{cursor:zoom-in}
+        .bh-fotos-galeria-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+        .bh-fotos-galeria-grid .bh-foto-card{background:#fff;border:1px solid #eee;border-radius:10px;overflow:hidden}
+        .bh-fotos-galeria-grid .bh-foto-lupa{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left}
+        .bh-fotos-galeria-grid .bh-foto-lupa img{width:100%;height:150px;object-fit:cover;display:block;background:#f3f4f6}
+        .bh-pick-card img{width:100%;height:110px;object-fit:cover;display:block;background:#f3f4f6;pointer-events:none}`;
       document.head.appendChild(style);
     })();
 
@@ -4064,6 +4152,42 @@
           syncAdminPageSizeSelects();
           window.__adminEventsPage = 1;
           if (typeof window.__paintAdminEventsPage === 'function') window.__paintAdminEventsPage();
+        });
+      }
+      const eventsSearchEl = document.getElementById('events-search');
+      const eventsSearchClear = document.getElementById('events-search-clear');
+      const eventsTipoEl = document.getElementById('events-tipo-filter');
+      const eventsResetEl = document.getElementById('events-reset-filters');
+      let eventsSearchTimer = 0;
+      function refreshEventsList() {
+        window.__adminEventsPage = 1;
+        if (typeof window.__paintAdminEventsPage === 'function') window.__paintAdminEventsPage();
+      }
+      if (eventsSearchEl && !eventsSearchEl.dataset.bound) {
+        eventsSearchEl.dataset.bound = '1';
+        eventsSearchEl.addEventListener('input', () => {
+          clearTimeout(eventsSearchTimer);
+          eventsSearchTimer = setTimeout(refreshEventsList, 160);
+        });
+      }
+      if (eventsSearchClear && !eventsSearchClear.dataset.bound) {
+        eventsSearchClear.dataset.bound = '1';
+        eventsSearchClear.addEventListener('click', () => {
+          if (eventsSearchEl) eventsSearchEl.value = '';
+          eventsSearchEl?.focus();
+          refreshEventsList();
+        });
+      }
+      if (eventsTipoEl && !eventsTipoEl.dataset.bound) {
+        eventsTipoEl.dataset.bound = '1';
+        eventsTipoEl.addEventListener('change', refreshEventsList);
+      }
+      if (eventsResetEl && !eventsResetEl.dataset.bound) {
+        eventsResetEl.dataset.bound = '1';
+        eventsResetEl.addEventListener('click', () => {
+          if (eventsSearchEl) eventsSearchEl.value = '';
+          if (eventsTipoEl) eventsTipoEl.value = 'todos';
+          refreshEventsList();
         });
       }
       
@@ -4826,10 +4950,11 @@
         box.innerHTML = published.map((f) => {
           const note = String(f.note || '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
           const url = String(f.url || '').replace(/"/g, '');
+          const thumb = String(f.thumbUrl || f.thumb || url).replace(/"/g, '');
           const refs = (f.refs || []).map((r) => r && r.url).filter(Boolean);
-          return `<div style="background:#fff;border:1px solid #eee;border-radius:10px;overflow:hidden;">
-            <button type="button" class="bh-foto-lupa" data-zoom="${url}" style="display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;">
-              <img src="${url}" alt="" style="width:100%;height:auto;display:block;background:none;">
+          return `<div class="bh-foto-card">
+            <button type="button" class="bh-foto-lupa" data-zoom="${url}" title="Ver original">
+              <img src="${thumb}" alt="" loading="lazy">
             </button>
             ${note ? `<small style="display:block;padding:8px;color:#333;">${note}</small>` : ''}
             ${refs.length ? `<button type="button" class="bh-ver-ref" data-refs="${refs.join('|').replace(/"/g,'')}" style="display:block;margin:0 8px 10px;padding:0;border:0;background:none;color:#1a365d;font-weight:800;text-decoration:underline;cursor:pointer;">Ver referencia${refs.length > 1 ? 's (' + refs.length + ')' : ''}</button>` : ''}
@@ -4934,9 +5059,10 @@
           }
           grid.innerHTML = published.map((f) => {
             const url = String(f.url||'').replace(/"/g,'');
+            const thumb = String(f.thumbUrl || f.thumb || url).replace(/"/g,'');
             const note = String(f.note||'').replace(/[&<>]/g,'');
             return `<button type="button" class="bh-pick-card" data-url="${url}" style="border:2px solid #eee;border-radius:8px;overflow:hidden;background:#fff;padding:0;cursor:pointer;text-align:left;">
-              <img src="${url}" alt="" style="width:100%;height:auto;display:block;background:none;pointer-events:none;">
+              <img src="${thumb}" alt="">
               ${note ? `<small style="display:block;padding:6px;font-size:11px;color:#555;">${note}</small>` : ''}
             </button>`;
           }).join('');
@@ -5985,6 +6111,7 @@
           });
           
           if (proximos.length === 0 && galeria.length === 0) {
+            window.__adminEventsData = { proximos: [], galeria: [] };
             eventsContainer.innerHTML = `
               <div style="text-align:center; padding:20px; color:#666;">
                 No hay eventos disponibles
@@ -5995,6 +6122,8 @@
                 </div>
               </div>`;
             renderAdminPager(document.getElementById('events-pager'), { total: 0 }, () => {});
+            const countEl = document.getElementById('events-filter-count');
+            if (countEl) countEl.textContent = '';
             return;
           }
           
@@ -6044,7 +6173,7 @@
               return `
                 <div class="event-item" data-tipo="galeria" style="display:flex; justify-content:space-between; align-items:center; padding:12px; margin-bottom:10px; background:#fff; border-radius:8px; border:1px solid #eee; box-shadow:0 1px 3px rgba(26,54,93,0.06);">
                   <div style="flex:1;">
-                    <div style="font-weight:600; margin-bottom:4px; font-size:1.1em; color:#1a365d;">${escapeHtml(nombre)}</div>
+                    <div data-event-name="1" style="font-weight:600; margin-bottom:4px; font-size:1.1em; color:#1a365d;">${escapeHtml(nombre)}</div>
                     <div style="font-size:0.9em; color:#666; margin-bottom:4px;">
                       <i class="fas fa-calendar-alt" style="margin-right:5px; width:16px; text-align:center;"></i>
                       ${fecha || 'Fecha no especificada'}
@@ -6067,7 +6196,7 @@
             return `
               <div class="event-item" data-tipo="proximos" style="display:flex; justify-content:space-between; align-items:center; padding:12px; margin-bottom:10px; background:#fff; border-radius:8px; border:1px solid #eee; box-shadow:0 1px 3px rgba(26,54,93,0.06);">
                 <div style="flex:1;">
-                  <div style="font-weight:600; margin-bottom:4px; font-size:1.1em; color:#1a365d;">${escapeHtml(nombre)}</div>
+                  <div data-event-name="1" style="font-weight:600; margin-bottom:4px; font-size:1.1em; color:#1a365d;">${escapeHtml(nombre)}</div>
                   <div style="font-size:0.9em; color:#666; margin-bottom:4px;">
                     <i class="fas fa-calendar-alt" style="margin-right:5px; width:16px; text-align:center;"></i>
                     ${fecha || 'Fecha no especificada'}
@@ -6103,10 +6232,47 @@
           window.__adminEventsData = { proximos, galeria };
           window.__adminEventsPage = 1;
 
+          function eventSearchBlob(event) {
+            const nombre = String(event?.nombre?.S || event?.nombre || '');
+            const fecha = String(event?.fecha?.S || event?.fecha || '');
+            const lugar = String(event?.lugar?.S || event?.lugar || '');
+            const id = String(event?.id?.S || event?.id || '');
+            return [nombre, fecha, lugar, id].join(' ').toLowerCase();
+          }
+
+          function syncEventsFilterChrome(matched, all, onPage) {
+            const q = (document.getElementById('events-search')?.value || '').trim();
+            const tipo = document.getElementById('events-tipo-filter')?.value || 'todos';
+            const clearBtn = document.getElementById('events-search-clear');
+            if (clearBtn) clearBtn.hidden = !q;
+            const resetBtn = document.getElementById('events-reset-filters');
+            if (resetBtn) resetBtn.hidden = !(q || (tipo && tipo !== 'todos'));
+            const countEl = document.getElementById('events-filter-count');
+            if (!countEl) return;
+            const pageSize = typeof getAdminPageSize === 'function' ? getAdminPageSize() : 10;
+            if (!all) {
+              countEl.textContent = '';
+              return;
+            }
+            if (pageSize === 'todas' || onPage === matched) {
+              countEl.textContent = matched === all
+                ? `${matched} evento${matched === 1 ? '' : 's'}`
+                : `Mostrando ${matched} de ${all}`;
+            } else {
+              countEl.textContent = `Mostrando ${onPage} de ${matched}`;
+            }
+          }
+
           window.__paintAdminEventsPage = function(){
             const data = window.__adminEventsData || { proximos: [], galeria: [] };
-            const prox = data.proximos || [];
-            const gal = data.galeria || [];
+            const proxAll = data.proximos || [];
+            const galAll = data.galeria || [];
+            const allCount = proxAll.length + galAll.length;
+            const q = (document.getElementById('events-search')?.value || '').trim().toLowerCase();
+            const tipo = document.getElementById('events-tipo-filter')?.value || 'todos';
+            const matchQ = (ev) => !q || eventSearchBlob(ev).includes(q);
+            const prox = (tipo === 'galeria' ? [] : proxAll).filter(matchQ);
+            const gal = (tipo === 'proximos' ? [] : galAll).filter(matchQ);
             const flat = [
               ...prox.map(ev => ({ ev, isGaleria: false })),
               ...gal.map(ev => ({ ev, isGaleria: true }))
@@ -6116,13 +6282,18 @@
             const pageItems = pageState.items;
             const pageProx = pageItems.filter(x => !x.isGaleria).map(x => x.ev);
             const pageGal = pageItems.filter(x => x.isGaleria).map(x => x.ev);
+            syncEventsFilterChrome(flat.length, allCount, pageItems.length);
 
             let htmlContent = '';
+            if (!flat.length) {
+              htmlContent = '<div class="muted" style="padding:18px 4px;">No hay eventos con los filtros aplicados.</div>';
+            }
             if (pageProx.length > 0) {
               htmlContent += `
                 <div class="events-section" style="margin-bottom:24px;">
                   <h3 style="margin:0 0 12px 0; padding:10px 0; border-bottom:2px solid #FBB03B; color:#1a365d; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-                    <i class="fas fa-calendar-check"></i> Próximos Eventos (${prox.length})
+                    <i class="fas fa-calendar-check"></i> Próximos Eventos
+                    <span class="muted" style="font-weight:600; font-size:0.85rem;">${pageProx.length} de ${prox.length}</span>
                   </h3>
                   ${pageProx.map(ev => renderEventItem(ev, false)).join('')}
                 </div>
@@ -6132,7 +6303,8 @@
               htmlContent += `
                 <div class="events-section" style="margin-bottom:24px;">
                   <h3 style="margin:0 0 12px 0; padding:10px 0; border-bottom:2px solid #FBB03B; color:#1a365d; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-                    <i class="fas fa-images"></i> Galería de Eventos Pasados (${gal.length})
+                    <i class="fas fa-images"></i> Galería de Eventos Pasados
+                    <span class="muted" style="font-weight:600; font-size:0.85rem;">${pageGal.length} de ${gal.length}</span>
                   </h3>
                   ${pageGal.map(ev => renderEventItem(ev, true)).join('')}
                 </div>
@@ -6160,7 +6332,7 @@
             eventsContainer.querySelectorAll('.btn-delete-event').forEach(btn => {
               btn.addEventListener('click', async () => {
                 const evId = btn.getAttribute('data-event-id');
-                const nombre = btn.closest('.event-item')?.querySelector('strong')?.textContent || evId;
+                const nombre = btn.closest('.event-item')?.querySelector('[data-event-name]')?.textContent || evId;
                 if (!evId) return;
 
                 const ok = await showAdminConfirm(`¿Seguro que deseas eliminar el evento "${nombre}"? Esta acción no se puede deshacer.`, {
@@ -8065,32 +8237,52 @@
   <!-- Tasa de Cambio Script -->
   <script>
     (function(){
+      const TASA_URL = 'https://h0q597no4j.execute-api.us-east-1.amazonaws.com/admin/eventos/tasa-cambio';
       const tasaInput = document.getElementById('tasa-cambio-input');
       const guardarBtn = document.getElementById('guardar-tasa-btn');
-      
-      // Cargar tasa de cambio al iniciar
-      async function cargarTasaCambio(){
+
+      function parseTasaCambio(data) {
+        const n = Number(data?.data?.tasaCambio ?? data?.tasaCambio ?? data?.tasa ?? data?.valor);
+        return Number.isFinite(n) && n > 0 ? n : null;
+      }
+
+      function applyTasaLocal(tasa) {
+        const n = Number(tasa);
+        if (!Number.isFinite(n) || n <= 0) return;
+        if (tasaInput) tasaInput.value = String(n);
         try {
-          const resp = await fetch('https://h0q597no4j.execute-api.us-east-1.amazonaws.com/admin/eventos/tasa-cambio');
-          if (resp.ok){
-            const data = await resp.json();
-            const tasa = data?.data?.tasaCambio || 61;
-            if (tasaInput) tasaInput.value = tasa;
-            localStorage.setItem('tasaCambio', tasa);
-          }
-        } catch(e){
+          localStorage.setItem('tasaCambio', String(n));
+          localStorage.setItem('buenohotel_tasa_cambio', String(n));
+        } catch (_) {}
+        if (typeof window.BH_applyTasaCambio === 'function') window.BH_applyTasaCambio(n);
+        try { window.dispatchEvent(new CustomEvent('bh-tasa-updated', { detail: n })); } catch (_) {}
+      }
+
+      function applyCachedTasa() {
+        try {
+          applyTasaLocal(localStorage.getItem('tasaCambio') || localStorage.getItem('buenohotel_tasa_cambio'));
+        } catch (_) {}
+      }
+
+      async function cargarTasaCambio(){
+        applyCachedTasa();
+        try {
+          const resp = await fetch(TASA_URL, { cache: 'no-store' });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const data = await resp.json();
+          const tasa = parseTasaCambio(data);
+          if (tasa) applyTasaLocal(tasa);
+        } catch (e) {
           console.warn('Error cargando tasa de cambio:', e);
-          // Usar valor de localStorage como fallback
-          const cached = localStorage.getItem('tasaCambio');
-          if (cached && tasaInput) tasaInput.value = cached;
+          applyCachedTasa();
         }
       }
 
-      // Guardar tasa de cambio
       async function guardarTasaCambio(){
-        const tasa = parseFloat(tasaInput?.value || 61);
+        const tasa = parseFloat(tasaInput?.value);
         if (!tasa || tasa <= 0){
-          alert('Por favor ingresa una tasa válida');
+          if (typeof showAdminAlert === 'function') showAdminAlert('Por favor ingresa una tasa válida', { type: 'warning' });
+          else alert('Por favor ingresa una tasa válida');
           return;
         }
 
@@ -8098,48 +8290,42 @@
         guardarBtn.textContent = 'Guardando...';
 
         try {
-          const resp = await fetch('https://h0q597no4j.execute-api.us-east-1.amazonaws.com/admin/eventos/tasa-cambio', {
+          const resp = await fetch(TASA_URL, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...(typeof authHeaders === 'function' ? authHeaders() : {}) },
             body: JSON.stringify({ tasaCambio: tasa })
           });
-          const data = await resp.json();
+          const data = await resp.json().catch(() => ({}));
 
-          if (resp.ok && data.success){
-            localStorage.setItem('tasaCambio', tasa);
+          if (resp.ok && (data.success || parseTasaCambio(data))){
+            applyTasaLocal(parseTasaCambio(data) || tasa);
             guardarBtn.textContent = 'Guardado';
             setTimeout(() => { guardarBtn.textContent = 'Guardar'; }, 2000);
           } else {
-            alert('Error al guardar: ' + (data.message || 'Error desconocido'));
+            const msg = 'Error al guardar: ' + (data.message || 'Error desconocido');
+            if (typeof showAdminAlert === 'function') showAdminAlert(msg, { type: 'error' });
+            else alert(msg);
             guardarBtn.textContent = 'Guardar';
           }
-        } catch(e){
+        } catch (e) {
           console.error('Error guardando tasa:', e);
-          alert('Error de conexión al guardar la tasa');
+          if (typeof showAdminAlert === 'function') showAdminAlert('Error de conexión al guardar la tasa', { type: 'error' });
+          else alert('Error de conexión al guardar la tasa');
           guardarBtn.textContent = 'Guardar';
         } finally {
           guardarBtn.disabled = false;
         }
       }
 
-      // Event listeners
       guardarBtn?.addEventListener('click', guardarTasaCambio);
 
-      // Cargar al mostrar pestaña de eventos
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
-          if (tab.dataset.tab === 'eventos'){
-            cargarTasaCambio();
-          }
+          if (tab.dataset.tab === 'eventos') cargarTasaCambio();
         });
       });
 
-      // Cargar al inicio si ya está en eventos
-      if (document.querySelector('.tab[data-tab="eventos"].active')){
-        cargarTasaCambio();
-      }
-
-      // Exponer globalmente
+      cargarTasaCambio();
       window.cargarTasaCambio = cargarTasaCambio;
     })();
   </script>

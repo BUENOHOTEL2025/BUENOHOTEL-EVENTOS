@@ -304,25 +304,49 @@ async function enrichUserWithProfile(token, base){
 async function login(email, password) {
   try {
     const base = getAuthApiBase();
-    const response = await fetch(`${base}/api/auth/login`, {
+    const lockApi = window.bhLoginLock;
+    if (lockApi && lockApi.check) {
+      const pre = await lockApi.check(email);
+      if (pre && pre.locked) {
+        return { success: false, locked: true, remainingSeg: pre.remainingSeg, message: pre.message };
+      }
+    }
+    const fetchFn = lockApi && lockApi.fetchTimeout ? lockApi.fetchTimeout.bind(lockApi) : fetch;
+    const response = await fetchFn(`${base}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email, password }),
-    });
+    }, 15000);
 
-    const data = await response.json();
+    let data = await response.json().catch(() => ({}));
+    if (response.status === 429 || data.locked) {
+      const st = lockApi && lockApi.parse ? lockApi.parse(data, response.status) : data;
+      return {
+        success: false,
+        locked: true,
+        remainingSeg: st.remainingSeg || data.remainingSeg,
+        message: st.message || data.message || 'Login inhabilitado por intentos fallidos.'
+      };
+    }
 
     if (!response.ok) {
       throw new Error(data.message || 'Error al iniciar sesión');
+    }
+
+    if (data.mustChangePassword && window.BHPassword) {
+      const done = await window.BHPassword.afterLogin(data, { apiBase: base, oldPassword: password });
+      data = { token: done.token, user: done.user };
     }
 
     // Guardar token y datos del usuario
     const token = data.token || data?.data?.token;
     const user = data.user || data?.data?.user;
     if (!token || !user) {
-      throw new Error('Respuesta de autenticación inválida');
+      throw new Error(data.mustChangePassword
+        ? (data.message || 'Debes actualizar tu contraseña para continuar.')
+        : 'Respuesta de autenticación inválida');
     }
     localStorage.setItem(AUTH_TOKEN_KEY, token);
     // Enriquecer si no trae rol
@@ -638,6 +662,7 @@ document.addEventListener('DOMContentLoaded', initAuth);
 // Exportar funciones para uso global
 window.showAuthBusy = showAuthBusy;
 window.hideAuthBusy = hideAuthBusy;
+window.getAuthApiBase = getAuthApiBase;
 window.auth = {
   isAuthenticated,
   getAuthToken,

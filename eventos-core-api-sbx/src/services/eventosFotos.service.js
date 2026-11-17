@@ -14,6 +14,30 @@ const REGION = process.env.AWS_REGION || 'us-east-1';
 const BUCKET = process.env.PAQUETES_IMAGE_BUCKET || 'buenohotel-com-website-bucket';
 const PUBLIC = process.env.PAQUETES_IMAGE_PUBLIC || 'https://buenohotel.com';
 export const PREFIX = 'assets/eventos-reales/';
+export const FOTO_CATEGORIAS = [
+  { id: 'general', label: 'General' },
+  { id: 'tours', label: 'Tours' },
+  { id: 'eventos', label: 'Eventos' },
+  { id: 'hoteles', label: 'Hoteles' },
+  { id: 'paquetes', label: 'Paquetes' },
+  { id: 'traslados', label: 'Traslados' }
+];
+const FOTO_CAT_IDS = new Set(FOTO_CATEGORIAS.map((c) => c.id));
+
+export function normalizeCategoria(raw) {
+  const id = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  if (FOTO_CAT_IDS.has(id)) return id;
+  if (id === 'tour') return 'tours';
+  if (id === 'evento' || id === 'congreso' || id === 'retiro') return 'eventos';
+  if (id === 'hotel' || id === 'hospedaje') return 'hoteles';
+  if (id === 'paquete') return 'paquetes';
+  if (id === 'traslado' || id === 'transfer') return 'traslados';
+  return 'general';
+}
 const PREFIX_REFS = `${PREFIX}refs/`;
 const PREFIX_THUMBS = `${PREFIX}thumbs/`;
 const PREFIX_META = `${PREFIX}meta/`;
@@ -183,13 +207,15 @@ function attachLotes(fotos, lotes) {
   }
   return fotos.map((f) => {
     const lote = byKey.get(f.key);
-    if (!lote) return { ...f, note: '', refs: [], loteId: '' };
+    if (!lote) return { ...f, note: '', refs: [], loteId: '', categoria: 'general' };
+    const photo = (lote.photos || []).find((p) => p && p.key === f.key) || {};
     return {
       ...f,
       note: String(lote.note || ''),
       refs: Array.isArray(lote.refs) ? lote.refs : [],
       loteId: String(lote.id || ''),
-      uploadedBy: lote.uploadedBy || ''
+      uploadedBy: lote.uploadedBy || '',
+      categoria: normalizeCategoria(photo.categoria || lote.categoria)
     };
   });
 }
@@ -212,6 +238,19 @@ export async function listFotos() {
   return attachLotes(items, lotes);
 }
 
+export async function listFotosPublico(categoria) {
+  const cat = categoria ? normalizeCategoria(categoria) : '';
+  const items = await listFotos();
+  return items
+    .filter((f) => !cat || f.categoria === cat)
+    .map((f) => ({
+      url: f.url,
+      thumbUrl: f.thumbUrl || f.url,
+      categoria: f.categoria || 'general',
+      alt: String(f.note || '').slice(0, 160)
+    }));
+}
+
 async function putMeta(item) {
   await s3.send(
     new PutObjectCommand({
@@ -231,28 +270,43 @@ export async function deleteFoto(key) {
   return { ok: true };
 }
 
-export async function updateFoto({ key, note }) {
+export async function updateFoto({ key, note, categoria }) {
   const k = String(key || '').replace(/^\/+/, '');
   if (!k.startsWith(PREFIX) || k.includes('..')) deny(400, 'Esa ruta no es válida.');
-  const noteStr = String(note || '').trim().slice(0, 2000);
+  const hasNote = note !== undefined;
+  const hasCat = categoria !== undefined;
+  if (!hasNote && !hasCat) deny(400, 'Nada que actualizar.');
+  const noteStr = hasNote ? String(note || '').trim().slice(0, 2000) : undefined;
+  const cat = hasCat ? normalizeCategoria(categoria) : undefined;
   const lotes = await loadLotes();
   const lote = lotes.find((l) => (l.photos || []).some((p) => p && p.key === k));
   if (lote) {
-    lote.note = noteStr;
+    if (hasNote) lote.note = noteStr;
+    if (hasCat) {
+      lote.categoria = cat;
+      lote.photos = (lote.photos || []).map((p) => (p && p.key === k ? { ...p, categoria: cat } : p));
+    }
     lote.updatedAt = new Date().toISOString();
     await putMeta(lote);
-    return { key: k, url: publicUrl(k), note: noteStr, loteId: lote.id };
+    return {
+      key: k,
+      url: publicUrl(k),
+      note: lote.note || '',
+      categoria: normalizeCategoria((lote.photos || []).find((p) => p && p.key === k)?.categoria || lote.categoria),
+      loteId: lote.id
+    };
   }
   const item = {
     id: `lote-${Date.now()}-${randomBytes(3).toString('hex')}`,
-    note: noteStr,
-    photos: [{ key: k, url: publicUrl(k) }],
+    note: hasNote ? noteStr : '',
+    categoria: cat || 'general',
+    photos: [{ key: k, url: publicUrl(k), categoria: cat || 'general' }],
     refs: [],
     uploadedBy: '',
     uploadedAt: new Date().toISOString()
   };
   await putMeta(item);
-  return { key: k, url: publicUrl(k), note: noteStr, loteId: item.id };
+  return { key: k, url: publicUrl(k), note: item.note, categoria: item.categoria, loteId: item.id };
 }
 
 function normFiles(list) {
@@ -270,15 +324,17 @@ function normFiles(list) {
     .filter((x) => x.key.startsWith(PREFIX) && !x.key.includes('..'));
 }
 
-export async function saveLote({ note, photos, refs, uploadedBy }) {
+export async function saveLote({ note, photos, refs, uploadedBy, categoria }) {
   const pics = normFiles(photos);
   const rfs = normFiles(refs);
   if (!pics.length) deny(400, 'No hay fotos en este lote.');
+  const cat = normalizeCategoria(categoria);
   const id = `lote-${Date.now()}-${randomBytes(3).toString('hex')}`;
   const item = {
     id,
     note: String(note || '').trim().slice(0, 2000),
-    photos: pics,
+    categoria: cat,
+    photos: pics.map((p) => ({ ...p, categoria: normalizeCategoria(p.categoria || cat) })),
     refs: rfs,
     uploadedBy: String(uploadedBy || '').slice(0, 160),
     uploadedAt: new Date().toISOString()

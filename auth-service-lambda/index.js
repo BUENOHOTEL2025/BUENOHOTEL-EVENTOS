@@ -15,7 +15,7 @@ const {
 } = require("@aws-sdk/client-secrets-manager");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { randomUUID } = require("crypto");
+const { randomUUID, timingSafeEqual } = require("crypto");
 
 // ========= Config =========
 const REGION = process.env.AWS_REGION || "us-east-1";
@@ -34,13 +34,13 @@ const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL = 160;
 const MAX_PASSWORD = 72;
 const MIN_PASSWORD = 8;
-const LOCK_FAILS = 5;
+const LOCK_FAILS = 3;
 const LOCK_FIVE_MS = 5 * 60 * 1000;
 const LOCK_THIRTY_MS = 30 * 60 * 1000;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://eventos.buenohotel.com.do";
 const CORS_ALLOWED = Array.from(
   new Set(
-    `${CORS_ORIGIN},https://eventos.buenohotel.com.do,https://ecommerce.buenohotel.com.do,https://www.buenohotel.com,https://buenohotel.com`
+    `${CORS_ORIGIN},https://eventos.buenohotel.com.do,https://ecommerce.buenohotel.com.do,https://tours.buenohotel.com.do,https://www.buenohotel.com,https://buenohotel.com`
       .split(/[,;\s]+/)
       .map((s) => s.trim())
       .filter(Boolean)
@@ -70,7 +70,30 @@ function passwordIssue(password, { login } = {}) {
     return "";
   }
   if (p.length < MIN_PASSWORD) return `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`;
+  if (!/[A-ZÁÉÍÓÚÜÑ]/.test(p)) return "La contraseña debe incluir una letra mayúscula.";
+  if (!/[a-záéíóúüñ]/.test(p)) return "La contraseña debe incluir una letra minúscula.";
   return "";
+}
+
+async function issueSession(user) {
+  const secret = await getJwtSecret();
+  const token = jwt.sign(
+    { sub: user.id, email: user.email, rol: user.rol },
+    secret,
+    { algorithm: "HS256", expiresIn: JWT_EXPIRES_IN }
+  );
+  return token;
+}
+
+function denyPwdChangeToken(claims) {
+  return String(claims?.purpose || "") === "pwd-change";
+}
+
+function sameSecret(a, b) {
+  const A = Buffer.from(String(a || ""), "utf8");
+  const B = Buffer.from(String(b || ""), "utf8");
+  if (!A.length || A.length !== B.length) return false;
+  return timingSafeEqual(A, B);
 }
 
 function safeUser(user) {
@@ -90,10 +113,42 @@ function safeUser(user) {
   };
 }
 
+function attrS(item, key) {
+  const v = item?.[key];
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "number") return String(v);
+  return String(v.S || v.N || "");
+}
+
+function attrN(item, key, fallback = 0) {
+  const v = item?.[key];
+  if (v == null) return fallback;
+  if (typeof v === "number") return Number.isFinite(v) ? v : fallback;
+  if (v.N != null) {
+    const n = Number(v.N);
+    return Number.isFinite(n) ? n : fallback;
+  }
+  const n = Number(v.S != null ? v.S : v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 function lockRemaining(item) {
-  const until = Date.parse(item?.lockUntil?.S || "");
+  const until = Date.parse(attrS(item, "lockUntil"));
   if (!Number.isFinite(until)) return 0;
   return Math.max(0, until - Date.now());
+}
+
+function lockPayload(ms) {
+  const remainingSeg = Math.ceil(ms / 1000);
+  const lockMinutos = remainingSeg > 300 ? 30 : 5;
+  return {
+    locked: true,
+    remainingSeg,
+    remainingMs: ms,
+    lockMinutos,
+    message: `Login inhabilitado ${lockMinutos} minutos por 3 intentos fallidos.`
+  };
 }
 
 async function lockGet(email) {
@@ -115,45 +170,61 @@ async function lockedResponse(email) {
   const item = await lockGet(email);
   const ms = lockRemaining(item);
   if (ms <= 0) return null;
-  return json(429, {
-    message: "Demasiados intentos fallidos. Espera unos minutos e inténtalo de nuevo.",
-    remainingSeg: Math.ceil(ms / 1000)
-  });
+  return json(429, lockPayload(ms));
+}
+
+async function handleLoginLock(evt) {
+  const q = evt.queryStringParameters || {};
+  const email = normEmail(q.email || q.correo || "");
+  if (!email) return json(200, { success: true, locked: false, remainingSeg: 0 });
+  const item = await lockGet(email);
+  const ms = lockRemaining(item);
+  if (ms <= 0) return json(200, { success: true, locked: false, remainingSeg: 0 });
+  return json(200, { success: true, ...lockPayload(ms) });
 }
 
 async function registerLoginFail(email) {
   const id = normEmail(email);
-  if (!id) return;
+  if (!id) return { locked: false };
   try {
-  const item = (await lockGet(id)) || {};
-  const fails = Number(item.fails?.N || 0) + 1;
-  if (fails < LOCK_FAILS) {
+    const item = (await lockGet(id)) || {};
+    const already = lockRemaining(item);
+    if (already > 0) return { locked: true, ...lockPayload(already) };
+    const fails = attrN(item, "fails", 0) + 1;
+    const nextLockMs = attrN(item, "nextLockMs", LOCK_FIVE_MS);
+    const totalLocks = attrN(item, "totalLocks", 0);
+    const lastLockMinutos = attrN(item, "lastLockMinutos", 0);
+    if (fails < LOCK_FAILS) {
+      const put = {
+        id: { S: id },
+        fails: { N: String(fails) },
+        lockUntil: { S: "" },
+        nextLockMs: { N: String(nextLockMs || LOCK_FIVE_MS) },
+        totalLocks: { N: String(totalLocks) },
+        updatedAt: { S: new Date().toISOString() }
+      };
+      if (lastLockMinutos) put.lastLockMinutos = { N: String(lastLockMinutos) };
+      await ddb.send(new PutItemCommand({ TableName: LOCK_TABLE, Item: put }));
+      return { locked: false, fails };
+    }
+    const lockMs = nextLockMs === LOCK_THIRTY_MS ? LOCK_THIRTY_MS : LOCK_FIVE_MS;
+    const lockMinutos = Math.round(lockMs / 60000);
     await ddb.send(new PutItemCommand({
       TableName: LOCK_TABLE,
       Item: {
         id: { S: id },
-        fails: { N: String(fails) },
-        lockUntil: { S: "" },
-        nextLockMs: { N: String(item.nextLockMs?.N || LOCK_FIVE_MS) },
+        fails: { N: "0" },
+        lockUntil: { S: new Date(Date.now() + lockMs).toISOString() },
+        nextLockMs: { N: String(lockMs === LOCK_FIVE_MS ? LOCK_THIRTY_MS : LOCK_FIVE_MS) },
+        totalLocks: { N: String(totalLocks + 1) },
+        lastLockMinutos: { N: String(lockMinutos) },
         updatedAt: { S: new Date().toISOString() }
       }
     }));
-    return;
-  }
-  const prev = Number(item.nextLockMs?.N || LOCK_FIVE_MS);
-  const lockMs = prev === LOCK_THIRTY_MS ? LOCK_THIRTY_MS : LOCK_FIVE_MS;
-  await ddb.send(new PutItemCommand({
-    TableName: LOCK_TABLE,
-    Item: {
-      id: { S: id },
-      fails: { N: "0" },
-      lockUntil: { S: new Date(Date.now() + lockMs).toISOString() },
-      nextLockMs: { N: String(lockMs === LOCK_FIVE_MS ? LOCK_THIRTY_MS : LOCK_FIVE_MS) },
-      updatedAt: { S: new Date().toISOString() }
-    }
-  }));
+    return { locked: true, ...lockPayload(lockMs) };
   } catch (err) {
     console.error("login lock put", err?.message || err);
+    return { locked: false };
   }
 }
 
@@ -173,7 +244,7 @@ function corsHeaders() {
     "Access-Control-Allow-Origin": pickCorsOrigin(),
     "Access-Control-Allow-Credentials": "true",
     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Cookie, Accept, Origin, X-User-Email, X-User-Name, X-User-Id, Cache-Control, Pragma",
     Vary: "Origin"
   };
 }
@@ -189,18 +260,38 @@ async function getJwtSecret() {
 
 // Cambiar contraseña (usuario autenticado)
 async function handleChangePassword(evt) {
-  let claims;
-  try { claims = await verifyAuth(evt); } catch { return json(401, { message: "No autorizado" }); }
   let body = {};
   try { body = JSON.parse(evt.body || "{}"); } catch {}
   const oldPassword = String(body.oldPassword || "");
   const newPassword = String(body.newPassword || "");
   if (!oldPassword || !newPassword) return json(400, { message: "Datos incompletos" });
+  const confirm = body.confirmNewPassword != null ? String(body.confirmNewPassword) : newPassword;
+  if (confirm !== newPassword) return json(400, { message: "Las contraseñas no coinciden." });
+  if (newPassword === oldPassword) {
+    return json(400, { message: "La nueva contraseña debe ser distinta a la actual." });
+  }
   const pwdErr = passwordIssue(newPassword);
   if (pwdErr) return json(400, { message: pwdErr });
 
-  const email = String(claims.email || "").toLowerCase();
-  const user = await findUserByEmail(email);
+  const ticket = String(body.changeToken || "").trim();
+  let user = null;
+  if (ticket) {
+    user = await findUserByEmail(body.email);
+    if (!user || !user.pwdChangeTicket || !user.pwdChangeTicketExp) {
+      return json(401, { message: "No autorizado" });
+    }
+    if (new Date(user.pwdChangeTicketExp) < new Date()) {
+      return json(401, { message: "El tiempo para actualizar la contraseña expiró. Inicia sesión de nuevo." });
+    }
+    if (!sameSecret(user.pwdChangeTicket, ticket)) return json(401, { message: "No autorizado" });
+  } else {
+    let claims;
+    try { claims = await verifyAuth(evt); } catch { return json(401, { message: "No autorizado" }); }
+    if (denyPwdChangeToken(claims)) {
+      return json(403, { message: "Debes actualizar tu contraseña para continuar.", mustChangePassword: true });
+    }
+    user = await findUserByEmail(claims.email);
+  }
   if (!user || !user.passwordHash) return json(404, { message: "Usuario no encontrado" });
 
   const ok = await bcrypt.compare(oldPassword, user.passwordHash);
@@ -211,11 +302,12 @@ async function handleChangePassword(evt) {
   await ddb.send(new UpdateItemCommand({
     TableName: USERS_TABLE,
     Key: { id: { S: user.id } },
-    UpdateExpression: "SET password = :p, fechaActualizacion = :u",
+    UpdateExpression: "SET password = :p, fechaActualizacion = :u REMOVE pwdChangeTicket, pwdChangeTicketExp",
     ExpressionAttributeValues: { ":p": { S: hash }, ":u": { S: nowISO } },
   }));
 
-  return json(200, { message: "Contraseña actualizada" });
+  const token = await issueSession(user);
+  return json(200, { message: "Contraseña actualizada", token, user: safeUser(user) });
 }
 
 function json(status, body, extraHeaders = {}) {
@@ -268,6 +360,8 @@ async function findUserByEmail(email) {
     passwordHash: getS("password"),
     resetToken: getS("resetToken"),
     resetTokenExp: getS("resetTokenExp"),
+    pwdChangeTicket: getS("pwdChangeTicket"),
+    pwdChangeTicketExp: getS("pwdChangeTicketExp"),
     activo: getB("activo"),
   };
 }
@@ -298,7 +392,8 @@ async function handleLogin(evt) {
 
   const user = await findUserByEmail(email);
   if (!user || !user.passwordHash) {
-    await registerLoginFail(email);
+    const fail = await registerLoginFail(email);
+    if (fail?.locked) return json(429, fail);
     return json(401, { message: "Credenciales inválidas" });
   }
   if (user.activo === false) {
@@ -310,17 +405,30 @@ async function handleLogin(evt) {
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) {
-    await registerLoginFail(email);
+    const fail = await registerLoginFail(email);
+    if (fail?.locked) return json(429, fail);
     return json(401, { message: "Credenciales inválidas" });
   }
   await registerLoginOk(email);
 
-  const secret = await getJwtSecret();
-  const token = jwt.sign({ sub: user.id, email: user.email, rol: user.rol }, secret, {
-    algorithm: "HS256",
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  if (passwordIssue(password)) {
+    const changeToken = randomUUID();
+    const exp = new Date(Date.now() + 20 * 60 * 1000).toISOString();
+    await ddb.send(new UpdateItemCommand({
+      TableName: USERS_TABLE,
+      Key: { id: { S: user.id } },
+      UpdateExpression: "SET pwdChangeTicket = :t, pwdChangeTicketExp = :e",
+      ExpressionAttributeValues: { ":t": { S: changeToken }, ":e": { S: exp } }
+    }));
+    return json(200, {
+      mustChangePassword: true,
+      changeToken,
+      message: "El cambio de contraseña es obligatorio para cumplir con los requerimientos de seguridad.",
+      user: { email: user.email, nombre: user.nombre }
+    });
+  }
 
+  const token = await issueSession(user);
   return json(200, { token, user: safeUser(user) });
 }
 
@@ -471,6 +579,9 @@ async function handleResetPassword(evt) {
 async function handleMe(evt) {
   let claims;
   try { claims = await verifyAuth(evt); } catch { return json(401, { message: "No autorizado" }); }
+  if (denyPwdChangeToken(claims)) {
+    return json(403, { message: "Debes actualizar tu contraseña para continuar.", mustChangePassword: true });
+  }
   const email = claims.email?.toLowerCase();
   const user = await findUserByEmail(email);
   if (!user) return json(404, { message: "Usuario no encontrado" });
@@ -481,6 +592,9 @@ async function handleMe(evt) {
 async function handleUpdateProfile(evt) {
   let claims;
   try { claims = await verifyAuth(evt); } catch { return json(401, { message: "No autorizado" }); }
+  if (denyPwdChangeToken(claims)) {
+    return json(403, { message: "Debes actualizar tu contraseña para continuar.", mustChangePassword: true });
+  }
   let body = {};
   try { body = JSON.parse(evt.body || "{}"); } catch {}
 
@@ -541,6 +655,7 @@ exports.handler = async (evt) => {
   // --- Routing ---
   // soportar rutas con y sin "/api" para compatibilidad
   const p = path.replace(/\/api\//, "/");
+  if (method === "GET" && (path.endsWith("/api/auth/lock") || p.endsWith("/auth/lock"))) return handleLoginLock(evt);
   if (method === "POST" && (path.endsWith("/api/auth/login") || p.endsWith("/auth/login"))) return handleLogin(evt);
   if (method === "POST" && (path.endsWith("/api/auth/register") || p.endsWith("/auth/register"))) return handleRegister(evt);
   if (method === "GET" && (path.endsWith("/api/auth/me") || p.endsWith("/auth/me"))) return handleMe(evt);

@@ -9,9 +9,5 @@ export function validarPasswordAdmin(raw) {
   }
   if (!/[A-ZÁÉÍÓÚÜÑ]/.test(p)) return 'La contraseña debe incluir una mayúscula.';
   if (!/[a-záéíóúüñ]/.test(p)) return 'La contraseña debe incluir una minúscula.';
-  if (!/\d/.test(p)) return 'La contraseña debe incluir un número.';
-  if (!/[^A-Za-zÁÉÍÓÚÜáéíóúüÑñ0-9]/.test(p)) {
-    return 'La contraseña debe incluir un signo (por ejemplo @ # $ % & *).';
-  }
   return '';
 }
